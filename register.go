@@ -12,11 +12,13 @@ import (
 	"github.com/pdcgo/accounting_service/accounting_model"
 	"github.com/pdcgo/accounting_service/common"
 	"github.com/pdcgo/accounting_service/ledger"
+	"github.com/pdcgo/accounting_service/payment"
 	"github.com/pdcgo/accounting_service/report"
 	"github.com/pdcgo/accounting_service/revenue"
 	"github.com/pdcgo/accounting_service/stock"
 	"github.com/pdcgo/schema/services/accounting_iface/v1/accounting_ifaceconnect"
 	"github.com/pdcgo/schema/services/common/v1/commonconnect"
+	"github.com/pdcgo/schema/services/payment_iface/v1/payment_ifaceconnect"
 	"github.com/pdcgo/schema/services/report_iface/v1/report_ifaceconnect"
 	"github.com/pdcgo/schema/services/revenue_iface/v1/revenue_ifaceconnect"
 	"github.com/pdcgo/schema/services/stock_iface/v1/stock_ifaceconnect"
@@ -43,6 +45,7 @@ func NewMigrationHandler(
 			&accounting_model.BankAccountLabelRelation{},
 			&accounting_model.BankTransferHistory{},
 			&accounting_model.Expense{},
+			&accounting_model.Payment{},
 		)
 	}
 }
@@ -80,6 +83,8 @@ func NewRegister(
 		path, handler = stock_ifaceconnect.NewStockServiceHandler(stock.NewStockService(db, auth), validator, logger)
 		mux.Handle(path, handler)
 		path, handler = report_ifaceconnect.NewAccountReportServiceHandler(report.NewAccountReportService(db, auth), validator, logger)
+		mux.Handle(path, handler)
+		path, handler = payment_ifaceconnect.NewPaymentServiceHandler(payment.NewPaymentService(db, auth), validator, logger)
 		mux.Handle(path, handler)
 
 		//  bagian common

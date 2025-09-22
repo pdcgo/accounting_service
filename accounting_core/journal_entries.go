@@ -120,7 +120,10 @@ func (c *createEntryImpl) Transaction(tx *Transaction) CreateEntry {
 	}
 
 	for _, entry := range c.entries {
-		entry.Desc = tx.Desc
+		if entry.Desc == "" {
+			entry.Desc = tx.Desc
+		}
+
 		entry.TransactionID = tx.ID
 	}
 	return c

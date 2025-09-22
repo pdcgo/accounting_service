@@ -49,7 +49,7 @@ func main() {
 		Task: &taskspb.Task{
 			MessageType: &taskspb.Task_HttpRequest{
 				HttpRequest: &taskspb.HttpRequest{
-					Url:        "https://accounting-service-1008190962565.asia-southeast2.run.app" + stock_ifaceconnect.StockServiceInboundCreateProcedure,
+					Url:        "" + stock_ifaceconnect.StockServiceInboundCreateProcedure,
 					HttpMethod: taskspb.HttpMethod_POST,
 					Headers: map[string]string{
 						"Content-Type": "application/proto",

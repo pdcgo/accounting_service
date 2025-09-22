@@ -3,17 +3,15 @@ package accounting_core
 type AccountKey string
 
 const (
-	CashAccount              AccountKey = "cash"
 	SuplierCashAccount       AccountKey = "supplier_cash"
 	SuplierReceivableAccount AccountKey = "supplier_receivable"
 
 	StockReadyAccount AccountKey = "stock_ready"
 
-	StockCrossAccount           AccountKey = "stock_cross"
-	SupplierPayableAccount      AccountKey = "supplier_payable"
-	ShippingPayableAccount      AccountKey = "shipping_payable"
-	PayableAccount              AccountKey = "payable"
-	ReceivableAccount           AccountKey = "receivable"
+	StockCrossAccount      AccountKey = "stock_cross"
+	SupplierPayableAccount AccountKey = "supplier_payable"
+	ShippingPayableAccount AccountKey = "shipping_payable"
+
 	StockCrossReceivableAccount AccountKey = "stock_cross_receivable"
 	StockCrossPayableAccount    AccountKey = "stock_cross_payable"
 
@@ -25,6 +23,7 @@ const (
 
 // asset
 const (
+	CashAccount              AccountKey = "cash"
 	ShopeepayAccount         AccountKey = "shopeepay"
 	SellingReceivableAccount AccountKey = "selling_receivable"
 	StockPendingAccount      AccountKey = "stock_pending"
@@ -33,6 +32,13 @@ const (
 	StockBrokenAccount       AccountKey = "stock_broken"
 	StockPendingFeeAccount   AccountKey = "stock_pending_fee"
 	StockCodFeeAccount       AccountKey = "stock_cod_fee"
+	ReceivableAccount        AccountKey = "receivable"
+	PaymentInTransitAccount  AccountKey = "payment_in_transit"
+)
+
+// liability
+const (
+	PayableAccount AccountKey = "payable"
 )
 
 // expense
@@ -97,6 +103,11 @@ func DefaultSeedAccount() []*Account {
 			BalanceType: CreditBalance,
 		},
 		// asset
+		{
+			AccountKey:  PaymentInTransitAccount,
+			Coa:         ASSET,
+			BalanceType: DebitBalance,
+		},
 		{
 			AccountKey:  ShopeepayAccount,
 			Coa:         ASSET,

@@ -1,0 +1,161 @@
+package payment
+
+import (
+	"context"
+	"errors"
+	"fmt"
+
+	"connectrpc.com/connect"
+	"github.com/pdcgo/accounting_service/accounting_core"
+	"github.com/pdcgo/accounting_service/accounting_model"
+	"github.com/pdcgo/schema/services/payment_iface/v1"
+	"github.com/pdcgo/shared/interfaces/authorization_iface"
+	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
+)
+
+type paymentServiceImpl struct {
+	db   *gorm.DB
+	auth authorization_iface.Authorization
+}
+
+// PaymentAccept implements payment_ifaceconnect.PaymentServiceHandler.
+func (p *paymentServiceImpl) PaymentAccept(
+	ctx context.Context,
+	req *connect.Request[payment_iface.PaymentAcceptRequest],
+) (*connect.Response[payment_iface.PaymentAcceptResponse], error) {
+	var err error
+	result := payment_iface.PaymentAcceptResponse{}
+	db := p.db.WithContext(ctx)
+	pay := req.Msg
+
+	identity := p.auth.AuthIdentityFromHeader(req.Header())
+	agent := identity.Identity()
+
+	err = identity.
+		HasPermission(authorization_iface.CheckPermissionGroup{
+			&accounting_model.Payment{}: &authorization_iface.CheckPermission{
+				DomainID: uint(pay.TeamId),
+				Actions:  []authorization_iface.Action{authorization_iface.Create},
+			},
+		}).
+		Err()
+
+	if err != nil {
+		return connect.NewResponse(&result), err
+	}
+
+	err = db.Transaction(func(tx *gorm.DB) error {
+		var payment accounting_model.Payment
+		err = tx.
+			Clauses(clause.Locking{
+				Strength: "UPDATE",
+			}).
+			Model(&accounting_model.Payment{}).
+			First(&payment, pay.PaymentId).
+			Error
+		if err != nil {
+			return err
+		}
+
+		if payment.FromTeamID != uint(pay.TeamId) {
+			return errors.New("payment not you own")
+		}
+		if payment.Status != payment_iface.PaymentStatus_PAYMENT_STATUS_PENDING {
+			return errors.New("payment not pending")
+		}
+
+		ref := accounting_core.NewRefID(&accounting_core.RefData{
+			RefType: accounting_core.PaymentRef,
+			ID:      uint(pay.PaymentId),
+		})
+
+		txmut := accounting_core.
+			NewTransactionMutation(tx).
+			ByRefID(ref, true)
+		err = txmut.
+			Err()
+
+		if err != nil {
+			return err
+		}
+
+		trans := txmut.Data()
+
+		desc := accounting_core.EntryDescOption(fmt.Sprintf("accept payment %s", ref))
+
+		// sisi pengirim
+		err = accounting_core.
+			NewCreateEntry(tx, payment.FromTeamID, agent.IdentityID()).
+			From(&accounting_core.EntryAccountPayload{
+				Key:    accounting_core.PaymentInTransitAccount,
+				TeamID: payment.ToTeamID,
+			}, payment.Amount, desc).
+			From(&accounting_core.EntryAccountPayload{
+				Key:    accounting_core.PayableAccount,
+				TeamID: payment.ToTeamID,
+			}, payment.Amount, desc).
+			Transaction(trans).
+			Commit().
+			Err()
+
+		if err != nil {
+			return err
+		}
+
+		// sisi penerima
+		err = accounting_core.
+			NewCreateEntry(tx, payment.ToTeamID, agent.IdentityID()).
+			From(&accounting_core.EntryAccountPayload{
+				Key:    accounting_core.PaymentInTransitAccount,
+				TeamID: payment.ToTeamID,
+			}, payment.Amount, desc).
+			To(&accounting_core.EntryAccountPayload{
+				Key:    accounting_core.CashAccount,
+				TeamID: payment.ToTeamID,
+			}, payment.Amount, desc).
+			Transaction(trans).
+			Commit().
+			Err()
+
+		if err != nil {
+			return err
+		}
+
+		payment.Status = payment_iface.PaymentStatus_PAYMENT_STATUS_ACCEPTED
+		err = tx.Save(&payment).Error
+		if err != nil {
+			return err
+		}
+
+		return nil
+	})
+
+	if err != nil {
+		return connect.NewResponse(&result), err
+	}
+
+	return connect.NewResponse(&result), nil
+}
+
+// PaymentGet implements payment_ifaceconnect.PaymentServiceHandler.
+func (p *paymentServiceImpl) PaymentGet(context.Context, *connect.Request[payment_iface.PaymentGetRequest]) (*connect.Response[payment_iface.PaymentGetResponse], error) {
+	panic("unimplemented")
+}
+
+// PaymentList implements payment_ifaceconnect.PaymentServiceHandler.
+func (p *paymentServiceImpl) PaymentList(context.Context, *connect.Request[payment_iface.PaymentListRequest]) (*connect.Response[payment_iface.PaymentListResponse], error) {
+	panic("unimplemented")
+}
+
+// PaymentReject implements payment_ifaceconnect.PaymentServiceHandler.
+func (p *paymentServiceImpl) PaymentReject(context.Context, *connect.Request[payment_iface.PaymentRejectRequest]) (*connect.Response[payment_iface.PaymentRejectResponse], error) {
+	panic("unimplemented")
+}
+
+func NewPaymentService(db *gorm.DB, auth authorization_iface.Authorization) *paymentServiceImpl {
+	return &paymentServiceImpl{
+		db:   db,
+		auth: auth,
+	}
+}

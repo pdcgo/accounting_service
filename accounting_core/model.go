@@ -221,6 +221,7 @@ const (
 	StockAdjustmentRef     RefType = "stock_adjustment"
 	ExpenseRef             RefType = "expense"
 	RestockRef             RefType = "restock"
+	PaymentRef             RefType = "payment"
 )
 
 type RefData struct {
