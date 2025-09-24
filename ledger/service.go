@@ -26,7 +26,7 @@ func (l *ledgerServiceImpl) AccountKeyList(
 ) (*connect.Response[accounting_iface.AccountKeyListResponse], error) {
 	var err error
 	result := accounting_iface.AccountKeyListResponse{
-		Keys: []string{},
+		Keys: []*accounting_iface.AccountKeyItem{},
 	}
 
 	pay := req.Msg
@@ -34,7 +34,15 @@ func (l *ledgerServiceImpl) AccountKeyList(
 	db := l.db.WithContext(ctx)
 	err = db.
 		Table("accounts a").
-		Select("a.account_key").
+		Select([]string{
+			"a.account_key as key",
+			"a.coa",
+			`case a.balance_type
+				when 'd' then 1
+				when 'c' then 2
+				else 0
+			end as balance_type`,
+		}).
 		Where("a.team_id = ?", pay.TeamId).
 		Find(&result.Keys).
 		Error

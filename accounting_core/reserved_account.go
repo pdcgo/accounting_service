@@ -74,6 +74,12 @@ const (
 	SalesReturnRevenueAccount     AccountKey = "sales_return_revenue"
 )
 
+type AccountKeyInfo struct {
+	AccountKey  AccountKey  `json:"key" gorm:"primaryKey"`
+	Coa         CoaCode     `json:"coa"`
+	BalanceType BalanceType `json:"account_type"`
+}
+
 func DefaultSeedAccount() []*Account {
 	return []*Account{
 		// revenue

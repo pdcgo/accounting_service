@@ -10,12 +10,20 @@ import (
 	"gorm.io/gorm"
 )
 
+var precision = 5
+
+func RoundUp(x float64, n int) float64 {
+	pow := math.Pow(10, float64(n))
+	return math.Ceil(x*pow) / pow
+}
+
 var ErrEmptyEntry = errors.New("entry empty")
 
 type ErrEntryInvalid struct {
-	Debit  float64            `json:"debit"`
-	Credit float64            `json:"credit"`
-	List   JournalEntriesList `json:"list"`
+	Debit     float64            `json:"debit"`
+	Credit    float64            `json:"credit"`
+	List      JournalEntriesList `json:"list"`
+	Precision int                `json:"precision"`
 }
 
 // Error implements error.
@@ -176,12 +184,13 @@ func (c *createEntryImpl) Commit() CreateEntry {
 	}
 
 	// checking debit and credit balance
-	if debit != credit {
+	if RoundUp(debit, precision) != RoundUp(credit, precision) {
 		// entries.PrintJournalEntries(c.tx)
 		return c.setErr(&ErrEntryInvalid{
-			Debit:  debit,
-			Credit: credit,
-			List:   entries,
+			Debit:     debit,
+			Credit:    credit,
+			List:      entries,
+			Precision: precision,
 		})
 	}
 
