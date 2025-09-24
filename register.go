@@ -10,6 +10,7 @@ import (
 	"connectrpc.com/validate"
 	"github.com/pdcgo/accounting_service/accounting_core"
 	"github.com/pdcgo/accounting_service/accounting_model"
+	"github.com/pdcgo/accounting_service/adjustment"
 	"github.com/pdcgo/accounting_service/common"
 	"github.com/pdcgo/accounting_service/ledger"
 	"github.com/pdcgo/accounting_service/payment"
@@ -85,6 +86,8 @@ func NewRegister(
 		path, handler = report_ifaceconnect.NewAccountReportServiceHandler(report.NewAccountReportService(db, auth), validator, logger)
 		mux.Handle(path, handler)
 		path, handler = payment_ifaceconnect.NewPaymentServiceHandler(payment.NewPaymentService(db, auth), validator, logger)
+		mux.Handle(path, handler)
+		path, handler = accounting_ifaceconnect.NewAdjustmentServiceHandler(adjustment.NewAdjustmentService(db, auth), validator, logger)
 		mux.Handle(path, handler)
 
 		//  bagian common
