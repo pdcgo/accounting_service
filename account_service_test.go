@@ -32,7 +32,7 @@ func (a *authIdMock) HasPermission(perms authorization_iface.CheckPermissionGrou
 
 // Identity implements authorization_iface.AuthIdentity.
 func (a *authIdMock) Identity() authorization_iface.Identity {
-	panic("unimplemented")
+	return nil
 }
 
 type authMock struct{}

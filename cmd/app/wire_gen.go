@@ -9,6 +9,7 @@ package main
 import (
 	"github.com/pdcgo/accounting_service"
 	"github.com/pdcgo/shared/configs"
+	"github.com/pdcgo/shared/custom_connect"
 	"net/http"
 )
 
@@ -29,7 +30,11 @@ func InitializeApp() (*App, error) {
 		return nil, err
 	}
 	authorization := NewAuthorization(appConfig, db, cache)
-	registerHandler := accounting_service.NewRegister(db, authorization, serveMux)
+	defaultInterceptor, err := custom_connect.NewDefaultInterceptor()
+	if err != nil {
+		return nil, err
+	}
+	registerHandler := accounting_service.NewRegister(db, authorization, serveMux, defaultInterceptor)
 	app := NewApp(serveMux, registerHandler)
 	return app, nil
 }

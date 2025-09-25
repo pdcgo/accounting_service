@@ -4,8 +4,6 @@ import (
 	"log"
 	"net/http"
 
-	"connectrpc.com/connect"
-	"connectrpc.com/validate"
 	"github.com/pdcgo/accounting_service/accounting_core"
 	"github.com/pdcgo/accounting_service/accounting_model"
 	"github.com/pdcgo/accounting_service/adjustment"
@@ -21,7 +19,7 @@ import (
 	"github.com/pdcgo/schema/services/report_iface/v1/report_ifaceconnect"
 	"github.com/pdcgo/schema/services/revenue_iface/v1/revenue_ifaceconnect"
 	"github.com/pdcgo/schema/services/stock_iface/v1/stock_ifaceconnect"
-	"github.com/pdcgo/shared/custom_logging"
+	"github.com/pdcgo/shared/custom_connect"
 	"github.com/pdcgo/shared/interfaces/authorization_iface"
 	"gorm.io/gorm"
 )
@@ -56,41 +54,34 @@ func NewRegister(
 	db *gorm.DB,
 	auth authorization_iface.Authorization,
 	mux *http.ServeMux,
+	defaultInterceptor custom_connect.DefaultInterceptor,
 ) RegisterHandler {
 
 	return func() {
-		// validator
-		interceptor, err := validate.NewInterceptor()
-		if err != nil {
-			log.Fatal(err)
-		}
 
-		logger := connect.WithInterceptors(&custom_logging.LoggingInterceptor{})
-
-		validator := connect.WithInterceptors(interceptor)
-		path, handler := accounting_ifaceconnect.NewAccountServiceHandler(NewAccountService(db, auth), validator, logger)
+		path, handler := accounting_ifaceconnect.NewAccountServiceHandler(NewAccountService(db, auth), defaultInterceptor)
 		mux.Handle(path, handler)
-		path, handler = accounting_ifaceconnect.NewExpenseServiceHandler(NewExpenseService(db, auth), validator, logger)
+		path, handler = accounting_ifaceconnect.NewExpenseServiceHandler(NewExpenseService(db, auth), defaultInterceptor)
 		mux.Handle(path, handler)
-		path, handler = commonconnect.NewUserServiceHandler(NewUserService(db), validator)
+		path, handler = commonconnect.NewUserServiceHandler(NewUserService(db), defaultInterceptor)
 		mux.Handle(path, handler)
-		path, handler = accounting_ifaceconnect.NewAccountingSetupServiceHandler(NewSetupService(db), validator, logger)
+		path, handler = accounting_ifaceconnect.NewAccountingSetupServiceHandler(NewSetupService(db), defaultInterceptor)
 		mux.Handle(path, handler)
-		path, handler = accounting_ifaceconnect.NewLedgerServiceHandler(ledger.NewLedgerService(db, auth), validator, logger)
+		path, handler = accounting_ifaceconnect.NewLedgerServiceHandler(ledger.NewLedgerService(db, auth), defaultInterceptor)
 		mux.Handle(path, handler)
-		path, handler = revenue_ifaceconnect.NewRevenueServiceHandler(revenue.NewRevenueService(db, auth), validator, logger)
+		path, handler = revenue_ifaceconnect.NewRevenueServiceHandler(revenue.NewRevenueService(db, auth), defaultInterceptor)
 		mux.Handle(path, handler)
-		path, handler = stock_ifaceconnect.NewStockServiceHandler(stock.NewStockService(db, auth), validator, logger)
+		path, handler = stock_ifaceconnect.NewStockServiceHandler(stock.NewStockService(db, auth), defaultInterceptor)
 		mux.Handle(path, handler)
-		path, handler = report_ifaceconnect.NewAccountReportServiceHandler(report.NewAccountReportService(db, auth), validator, logger)
+		path, handler = report_ifaceconnect.NewAccountReportServiceHandler(report.NewAccountReportService(db, auth), defaultInterceptor)
 		mux.Handle(path, handler)
-		path, handler = payment_ifaceconnect.NewPaymentServiceHandler(payment.NewPaymentService(db, auth), validator, logger)
+		path, handler = payment_ifaceconnect.NewPaymentServiceHandler(payment.NewPaymentService(db, auth), defaultInterceptor)
 		mux.Handle(path, handler)
-		path, handler = accounting_ifaceconnect.NewAdjustmentServiceHandler(adjustment.NewAdjustmentService(db, auth), validator, logger)
+		path, handler = accounting_ifaceconnect.NewAdjustmentServiceHandler(adjustment.NewAdjustmentService(db, auth), defaultInterceptor)
 		mux.Handle(path, handler)
 
 		//  bagian common
-		path, handler = commonconnect.NewTeamServiceHandler(common.NewTeamService(db), validator, logger)
+		path, handler = commonconnect.NewTeamServiceHandler(common.NewTeamService(db), defaultInterceptor)
 		mux.Handle(path, handler)
 
 	}

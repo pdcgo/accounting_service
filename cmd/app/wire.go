@@ -9,6 +9,7 @@ import (
 	"github.com/google/wire"
 	"github.com/pdcgo/accounting_service"
 	"github.com/pdcgo/shared/configs"
+	"github.com/pdcgo/shared/custom_connect"
 )
 
 func InitializeApp() (*App, error) {
@@ -17,6 +18,7 @@ func InitializeApp() (*App, error) {
 		http.NewServeMux,
 		NewCache,
 		NewDatabase,
+		custom_connect.NewDefaultInterceptor,
 		NewAuthorization,
 		accounting_service.NewRegister,
 		NewApp,
