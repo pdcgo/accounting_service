@@ -1,9 +1,7 @@
 package accounting_service
 
 import (
-	"context"
 	"log"
-	"log/slog"
 	"net/http"
 
 	"connectrpc.com/connect"
@@ -23,6 +21,7 @@ import (
 	"github.com/pdcgo/schema/services/report_iface/v1/report_ifaceconnect"
 	"github.com/pdcgo/schema/services/revenue_iface/v1/revenue_ifaceconnect"
 	"github.com/pdcgo/schema/services/stock_iface/v1/stock_ifaceconnect"
+	"github.com/pdcgo/shared/custom_logging"
 	"github.com/pdcgo/shared/interfaces/authorization_iface"
 	"gorm.io/gorm"
 )
@@ -66,7 +65,7 @@ func NewRegister(
 			log.Fatal(err)
 		}
 
-		logger := connect.WithInterceptors(&LoggingInterceptor{})
+		logger := connect.WithInterceptors(&custom_logging.LoggingInterceptor{})
 
 		validator := connect.WithInterceptors(interceptor)
 		path, handler := accounting_ifaceconnect.NewAccountServiceHandler(NewAccountService(db, auth), validator, logger)
@@ -96,42 +95,4 @@ func NewRegister(
 
 	}
 
-}
-
-// LoggingInterceptor logs errors from RPC calls
-type LoggingInterceptor struct{}
-
-// WrapUnary satisfies connect.Interceptor
-func (l *LoggingInterceptor) WrapUnary(next connect.UnaryFunc) connect.UnaryFunc {
-	return func(ctx context.Context, req connect.AnyRequest) (connect.AnyResponse, error) {
-		res, err := next(ctx, req)
-		if err != nil {
-			if cErr, ok := err.(*connect.Error); ok {
-				slog.Error("rpc error",
-					"procedure", req.Spec().Procedure,
-					"code", cErr.Code().String(),
-					"msg", cErr.Message(),
-				)
-			} else {
-				slog.Error("request_error",
-					"procedure", req.Spec().Procedure,
-					"error", err,
-					"message", err.Error(),
-					"token", req.Header().Get("Authorization"),
-					slog.Any("payload", req.Any()),
-				)
-			}
-		}
-		return res, err
-	}
-}
-
-// WrapStreamingClient (optional: if you want streaming client logs)
-func (l *LoggingInterceptor) WrapStreamingClient(next connect.StreamingClientFunc) connect.StreamingClientFunc {
-	return next
-}
-
-// WrapStreamingHandler (optional: if you want streaming server logs)
-func (l *LoggingInterceptor) WrapStreamingHandler(next connect.StreamingHandlerFunc) connect.StreamingHandlerFunc {
-	return next
 }
