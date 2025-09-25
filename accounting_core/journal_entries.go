@@ -14,7 +14,8 @@ var precision = 5
 
 func RoundUp(x float64, n int) float64 {
 	pow := math.Pow(10, float64(n))
-	return math.Ceil(x*pow) / pow
+	result := math.Floor(x*pow) / pow
+	return result
 }
 
 var ErrEmptyEntry = errors.New("entry empty")
@@ -185,7 +186,8 @@ func (c *createEntryImpl) Commit() CreateEntry {
 
 	// checking debit and credit balance
 	if RoundUp(debit, precision) != RoundUp(credit, precision) {
-		// entries.PrintJournalEntries(c.tx)
+		// log.Println(RoundUp(debit, precision), RoundUp(credit, precision))
+		entries.PrintJournalEntries(c.tx)
 		return c.setErr(&ErrEntryInvalid{
 			Debit:     debit,
 			Credit:    credit,

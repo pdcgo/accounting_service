@@ -2,7 +2,6 @@ package main
 
 import (
 	"log"
-	"log/slog"
 
 	taskspb "cloud.google.com/go/cloudtasks/apiv2/cloudtaskspb"
 	"connectrpc.com/connect"
@@ -12,8 +11,6 @@ import (
 )
 
 func main() {
-
-	slog.Error("asdasdasdasd")
 
 	pay := &stock_iface.InboundCreateRequest{
 		TeamId:        99,

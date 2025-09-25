@@ -60,38 +60,34 @@ func TestInboundAccept(t *testing.T) {
 							Count:     12,
 							ItemPrice: 45357.142857142855,
 						},
-						// {
-						// 	VariantId: 382,
-						// 	Count:     24,
-						// 	ItemPrice: 50357.142857142855,
-						// },
-
-						// {
-						// 	Count:     6,
-						// 	ItemPrice: 50357.142857142855,
-						// 	VariantId: 11239,
-						// },
-
-						// {
-						// 	VariantId: 3086,
-						// 	ItemPrice: 45357.142857142855,
-						// 	Count:     6,
-						// },
-						// {
-						// 	ItemPrice: 38357.142857142855,
-						// 	VariantId: 3814,
-						// 	Count:     2,
-						// },
-						// {
-						// 	Count:     6,
-						// 	VariantId: 3347,
-						// 	ItemPrice: 45357.142857142855,
-						// },
 					},
 				},
 			})
 
 			assert.Nil(t, err)
+
+			t.Run("test incident 25-09-2025", func(t *testing.T) {
+				// gegara presisi yang beda
+				_, err := srv.InboundAccept(t.Context(), &connect.Request[stock_iface.InboundAcceptRequest]{
+					Msg: &stock_iface.InboundAcceptRequest{
+						TeamId:      51,
+						WarehouseId: 67,
+
+						Source:      stock_iface.InboundSource_INBOUND_SOURCE_RESTOCK,
+						ShippingFee: 61000,
+						ExtTxId:     575612,
+						Accepts: []*stock_iface.VariantItem{
+							{
+								VariantId: 14328,
+								Count:     30,
+								ItemPrice: 50033.333333333336,
+							},
+						},
+					},
+				})
+
+				assert.Nil(t, err)
+			})
 		},
 	)
 

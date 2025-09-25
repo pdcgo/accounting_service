@@ -33,7 +33,6 @@ func (a *accountReportImpl) Balance(
 
 type BalanceView interface {
 	Iterate(handle func(d *report_iface.AccountBalanceItem) error) error
-	Err() error
 }
 
 type balanceViewImpl struct {
@@ -41,11 +40,6 @@ type balanceViewImpl struct {
 	db  *gorm.DB
 	pay *report_iface.BalanceRequest
 	// err error
-}
-
-// Err implements BalanceView.
-func (b *balanceViewImpl) Err() error {
-	panic("unimplemented")
 }
 
 // Iterate implements BalanceView.

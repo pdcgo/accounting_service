@@ -2,6 +2,7 @@ package common
 
 import (
 	"context"
+	"math"
 
 	"connectrpc.com/connect"
 	"github.com/pdcgo/schema/services/common/v1"
@@ -11,6 +12,51 @@ import (
 
 type teamServiceImpl struct {
 	db *gorm.DB
+}
+
+// PublicTeamList implements commonconnect.TeamServiceHandler.
+func (t *teamServiceImpl) PublicTeamList(
+	ctx context.Context,
+	req *connect.Request[common.PublicTeamListRequest],
+) (*connect.Response[common.PublicTeamListResponse], error) {
+	var err error
+
+	pay := req.Msg
+	db := t.db.WithContext(ctx)
+	result := common.PublicTeamListResponse{
+		Datas:    []*common.Team{},
+		PageInfo: &common.PageInfo{},
+	}
+
+	page := pay.Page
+	offset := page.Page*page.Limit - page.Limit
+
+	tx := db.Model(&db_models.Team{}).Where("deleted = ?", false)
+	var total int64
+	if err := tx.Count(&total).Error; err != nil {
+		return &connect.Response[common.PublicTeamListResponse]{}, err
+	}
+
+	err = tx.
+		Select([]string{
+			"id",
+			"name",
+			"team_code",
+			"type",
+		}).
+		Limit(int(page.Limit)).
+		Offset(int(offset)).
+		Find(&result.Datas).Error
+
+	if err != nil {
+		return nil, err
+	}
+
+	pageCount := math.Ceil(float64(total) / float64(page.Limit))
+	result.PageInfo.CurrentPage = page.Page
+	result.PageInfo.TotalPage = int64(pageCount)
+
+	return connect.NewResponse(&result), nil
 }
 
 // PublicTeamIDs implements commonconnect.TeamServiceHandler.

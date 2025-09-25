@@ -15,6 +15,7 @@ type Payment struct {
 	Amount      float64                     `json:"amount"`
 	CreatedByID uint                        `json:"created_by_id"`
 	CreatedAt   time.Time                   `json:"created_at"`
+	AcceptedAt  time.Time                   `json:"accepted_at"`
 }
 
 // GetEntityID implements authorization_iface.Entity.
