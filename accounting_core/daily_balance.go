@@ -58,9 +58,9 @@ func (b *BalanceCalculate) AddEntry(entry *JournalEntry) error {
 
 	switch account.BalanceType {
 	case DebitBalance:
-		balance = entry.Credit - entry.Debit
-	case CreditBalance:
 		balance = entry.Debit - entry.Credit
+	case CreditBalance:
+		balance = entry.Credit - entry.Debit
 	}
 
 	dayBalance := &AccountDailyBalance{

@@ -10,7 +10,7 @@ import (
 	"gorm.io/gorm"
 )
 
-func TestJournalEntries(t *testing.T) {
+func TestDailyDebitCredit(t *testing.T) {
 	var db gorm.DB
 
 	var migrate moretest.SetupFunc = func(t *testing.T) func() error {
@@ -50,6 +50,118 @@ func TestJournalEntries(t *testing.T) {
 
 		assert.Nil(t, err)
 
+		return nil
+	}
+
+	moretest.Suite(t, "testing journal entries",
+		moretest.SetupListFunc{
+			moretest_mock.MockSqliteDatabase(&db),
+			migrate,
+			accounts,
+		}, func(t *testing.T) {
+			err := db.Transaction(func(tx *gorm.DB) error {
+				tran := accounting_core.Transaction{
+					ID: 1,
+					RefID: accounting_core.NewRefID(&accounting_core.RefData{
+						RefType: accounting_core.OrderRef,
+						ID:      1,
+					}),
+					TeamID: 1,
+					Desc:   "test creating transaction",
+				}
+
+				err := accounting_core.
+					NewTransaction(tx).
+					Create(&tran).
+					Err()
+
+				assert.Nil(t, err)
+
+				entryCreate := accounting_core.NewCreateEntry(tx, 1, 1)
+
+				return entryCreate.
+					To(&accounting_core.EntryAccountPayload{
+						Key:    accounting_core.CashAccount,
+						TeamID: 1,
+					}, 1200).
+					From(&accounting_core.EntryAccountPayload{
+						Key:    accounting_core.StockPendingAccount,
+						TeamID: 1,
+					}, 1200).
+					Transaction(&tran).
+					Commit().
+					Err()
+			})
+
+			assert.Nil(t, err)
+
+			t.Run("testing daily", func(t *testing.T) {
+				datas := []*accounting_core.AccountDailyBalance{}
+				err = db.
+					Model(&accounting_core.AccountDailyBalance{}).
+					Find(&datas).
+					Error
+
+				assert.Nil(t, err)
+				assert.Len(t, datas, 2)
+				for _, data := range datas {
+					assert.False(t, data.Debit == 0 && data.Credit == 0)
+
+					var acc accounting_core.Account
+					err = db.Model(&accounting_core.Account{}).First(&acc, data.AccountID).Error
+					assert.Nil(t, err)
+
+					switch acc.AccountKey {
+					case accounting_core.CashAccount:
+						assert.Equal(t, data.Balance, 1200.00)
+					}
+
+				}
+
+			})
+		})
+
+}
+
+func TestJournalEntries(t *testing.T) {
+	var db gorm.DB
+
+	var migrate moretest.SetupFunc = func(t *testing.T) func() error {
+		err := db.AutoMigrate(
+			&accounting_core.JournalEntry{},
+			&accounting_core.AccountDailyBalance{},
+		)
+
+		assert.Nil(t, err)
+
+		return nil
+	}
+
+	var accounts moretest.SetupFunc = func(t *testing.T) func() error {
+
+		err := accounting_core.
+			NewCreateAccount(&db).
+			Create(
+				accounting_core.DebitBalance,
+				accounting_core.ASSET,
+				1,
+				accounting_core.StockPendingAccount,
+				"Pending Stock",
+			)
+
+		assert.Nil(t, err)
+
+		err = accounting_core.
+			NewCreateAccount(&db).
+			Create(
+				accounting_core.DebitBalance,
+				accounting_core.ASSET,
+				1,
+				accounting_core.CashAccount,
+				"Kas",
+			)
+
+		assert.Nil(t, err)
 		return nil
 	}
 

@@ -43,7 +43,11 @@ func (s *setupServiceImpl) RecalculateDaily(
 				Model(&accounting_core.AccountDailyBalance{}).
 				Where("day = ?", daybalance.Day).
 				Where("account_id = ?", daybalance.AccountID).
-				Delete(&accounting_core.AccountDailyBalance{}).
+				Updates(map[string]interface{}{
+					"debit":   0,
+					"credit":  0,
+					"balance": 0,
+				}).
 				Error
 
 			if err != nil {
