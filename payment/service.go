@@ -18,7 +18,10 @@ type paymentServiceImpl struct {
 }
 
 // PaymentGet implements payment_ifaceconnect.PaymentServiceHandler.
-func (p *paymentServiceImpl) PaymentGet(context.Context, *connect.Request[payment_iface.PaymentGetRequest]) (*connect.Response[payment_iface.PaymentGetResponse], error) {
+func (p *paymentServiceImpl) PaymentGet(
+	ctx context.Context,
+	req *connect.Request[payment_iface.PaymentGetRequest],
+) (*connect.Response[payment_iface.PaymentGetResponse], error) {
 	panic("unimplemented")
 }
 

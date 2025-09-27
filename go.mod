@@ -32,7 +32,7 @@ require (
 	cloud.google.com/go/compute/metadata v0.6.0 // indirect
 	cloud.google.com/go/iam v1.5.0 // indirect
 	cloud.google.com/go/secretmanager v1.14.7 // indirect
-	connectrpc.com/validate v0.3.0
+	connectrpc.com/validate v0.3.0 // indirect
 	filippo.io/edwards25519 v1.1.0 // indirect
 	github.com/GoogleCloudPlatform/cloudsql-proxy v1.37.7 // indirect
 	github.com/antlr4-go/antlr/v4 v4.13.0 // indirect
