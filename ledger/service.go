@@ -19,37 +19,6 @@ type ledgerServiceImpl struct {
 	auth authorization_iface.Authorization
 }
 
-// AccountKeyList implements accounting_ifaceconnect.LedgerServiceHandler.
-func (l *ledgerServiceImpl) AccountKeyList(
-	ctx context.Context,
-	req *connect.Request[accounting_iface.AccountKeyListRequest],
-) (*connect.Response[accounting_iface.AccountKeyListResponse], error) {
-	var err error
-	result := accounting_iface.AccountKeyListResponse{
-		Keys: []*accounting_iface.AccountKeyItem{},
-	}
-
-	pay := req.Msg
-
-	db := l.db.WithContext(ctx)
-	err = db.
-		Table("accounts a").
-		Select([]string{
-			"a.account_key as key",
-			"a.coa",
-			`case a.balance_type
-				when 'd' then 1
-				when 'c' then 2
-				else 0
-			end as balance_type`,
-		}).
-		Where("a.team_id = ?", pay.TeamId).
-		Find(&result.Keys).
-		Error
-
-	return connect.NewResponse(&result), err
-}
-
 // EntryList implements accounting_ifaceconnect.LedgerServiceHandler.
 func (l *ledgerServiceImpl) EntryList(
 	ctx context.Context,
