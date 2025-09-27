@@ -7,7 +7,6 @@ import (
 	"github.com/pdcgo/accounting_service/accounting_core"
 	"github.com/pdcgo/accounting_service/accounting_model"
 	"github.com/pdcgo/accounting_service/adjustment"
-	"github.com/pdcgo/accounting_service/common"
 	"github.com/pdcgo/accounting_service/ledger"
 	"github.com/pdcgo/accounting_service/payment"
 	"github.com/pdcgo/accounting_service/report"
@@ -78,10 +77,6 @@ func NewRegister(
 		path, handler = payment_ifaceconnect.NewPaymentServiceHandler(payment.NewPaymentService(db, auth), defaultInterceptor)
 		mux.Handle(path, handler)
 		path, handler = accounting_ifaceconnect.NewAdjustmentServiceHandler(adjustment.NewAdjustmentService(db, auth), defaultInterceptor)
-		mux.Handle(path, handler)
-
-		//  bagian common
-		path, handler = commonconnect.NewTeamServiceHandler(common.NewTeamService(db), defaultInterceptor)
 		mux.Handle(path, handler)
 
 	}
