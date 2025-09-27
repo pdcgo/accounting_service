@@ -95,6 +95,21 @@ func TestJournalEntries(t *testing.T) {
 			})
 
 			assert.Nil(t, err)
+			t.Run("testing daily", func(t *testing.T) {
+				datas := []*accounting_core.AccountDailyBalance{}
+				err = db.
+					Model(&accounting_core.AccountDailyBalance{}).
+					Find(&datas).
+					Error
+
+				assert.Nil(t, err)
+				assert.Len(t, datas, 2)
+				for _, data := range datas {
+					assert.False(t, data.Debit == 0 && data.Credit == 0)
+
+				}
+
+			})
 
 			t.Run("testing getting entry", func(t *testing.T) {
 				entries := []*accounting_core.JournalEntry{}

@@ -18,13 +18,6 @@ import (
 	"gorm.io/gorm/clause"
 )
 
-type BankTransfer struct{}
-
-// GetEntityID implements authorization_iface.Entity.
-func (b *BankTransfer) GetEntityID() string {
-	return "accounting/bank_transfer"
-}
-
 const AccountInitialize authorization_iface.Action = "initialize_acc"
 
 func NewAccountService(db *gorm.DB, auth authorization_iface.Authorization) *accountServiceImpl {
@@ -79,7 +72,7 @@ func (a *accountServiceImpl) AccountMutationList(
 
 	err = identity.
 		HasPermission(authorization_iface.CheckPermissionGroup{
-			&BankTransfer{}: &authorization_iface.CheckPermission{
+			&accounting_model.BankTransfer{}: &authorization_iface.CheckPermission{
 				DomainID: uint(pay.TeamId),
 				Actions:  []authorization_iface.Action{authorization_iface.Read},
 			},
@@ -244,7 +237,7 @@ func (a *accountServiceImpl) AccountBalanceInit(
 
 	err = identity.
 		HasPermission(authorization_iface.CheckPermissionGroup{
-			&BankTransfer{}: &authorization_iface.CheckPermission{
+			&accounting_model.BankTransfer{}: &authorization_iface.CheckPermission{
 				DomainID: authorization.RootDomain,
 				Actions:  []authorization_iface.Action{AccountInitialize},
 			},
@@ -337,7 +330,7 @@ func (a *accountServiceImpl) TransferCreate(
 	agent := identity.Identity()
 	err = identity.
 		HasPermission(authorization_iface.CheckPermissionGroup{
-			&BankTransfer{}: &authorization_iface.CheckPermission{
+			&accounting_model.BankTransfer{}: &authorization_iface.CheckPermission{
 				DomainID: uint(pay.TeamId),
 				Actions:  []authorization_iface.Action{authorization_iface.Create},
 			},

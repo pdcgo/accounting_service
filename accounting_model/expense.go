@@ -17,3 +17,10 @@ type Expense struct {
 	ExpenseAt   time.Time
 	CreatedAt   time.Time
 }
+
+type ExpenseEntity struct{} // hanya untuk memberikan akses
+
+// GetEntityID implements authorization_iface.Entity.
+func (e ExpenseEntity) GetEntityID() string {
+	return "accounting/expense_entity"
+}

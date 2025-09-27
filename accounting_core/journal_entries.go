@@ -208,61 +208,13 @@ func (c *createEntryImpl) Commit() CreateEntry {
 func (c *createEntryImpl) updateBalance(entries JournalEntriesList) *createEntryImpl {
 	var err error
 
-	for _, entry := range entries {
-		y, m, d := entry.EntryTime.Date()
-		day := time.Time{}
-		day = day.AddDate(y-1, int(m)-1, d-1)
+	bcalculate := NewBalanceCalculate(c.tx, MapAccount(c.accountMap))
 
-		var balance float64
-		account, ok := c.accountMap[entry.AccountID]
-		if !ok {
-			err = fmt.Errorf("update balance error acount not found %d", entry.AccountID)
+	for _, entry := range entries {
+		err = bcalculate.AddEntry(entry)
+		if err != nil {
 			return c.setErr(err)
 		}
-
-		switch account.BalanceType {
-		case DebitBalance:
-			balance = entry.Credit - entry.Debit
-		case CreditBalance:
-			balance = entry.Debit - entry.Credit
-		}
-
-		dayBalance := &AccountDailyBalance{
-			Day:           day,
-			AccountID:     entry.AccountID,
-			JournalTeamID: entry.TeamID,
-			Debit:         entry.Debit,
-			Credit:        entry.Debit,
-			Balance:       balance,
-		}
-		row := c.
-			tx.
-			Model(&AccountDailyBalance{}).
-			Where("day = ?", dayBalance.Day).
-			Where("account_id = ?", dayBalance.AccountID).
-			Where("journal_team_id = ?", dayBalance.JournalTeamID).
-			Updates(map[string]interface{}{
-				"debit":   gorm.Expr("debit + ?", dayBalance.Debit),
-				"credit":  gorm.Expr("credit + ?", dayBalance.Credit),
-				"balance": gorm.Expr("balance + ?", dayBalance.Balance),
-			})
-
-		if row.RowsAffected == 0 {
-			err = row.Error
-			if err != nil {
-				return c.setErr(err)
-			}
-
-			err = c.
-				tx.
-				Save(dayBalance).
-				Error
-
-			if err != nil {
-				return c.setErr(err)
-			}
-		}
-
 	}
 
 	return c

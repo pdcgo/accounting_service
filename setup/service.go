@@ -1,4 +1,4 @@
-package accounting_service
+package setup
 
 import (
 	"context"
@@ -6,6 +6,7 @@ import (
 
 	"connectrpc.com/connect"
 	"github.com/pdcgo/accounting_service/accounting_core"
+	"github.com/pdcgo/accounting_service/accounting_model"
 	"github.com/pdcgo/schema/services/accounting_iface/v1"
 	"github.com/pdcgo/shared/authorization"
 	"github.com/pdcgo/shared/db_models"
@@ -84,7 +85,7 @@ func (s *setupServiceImpl) Setup(
 	streamlog("creating permission")
 	dom := authorization.NewDomainV2(s.db, uint(pay.TeamId))
 	err = dom.RoleAddPermission("owner", authorization_iface.RoleAddPermissionPayload{
-		&BankTransfer{}: []*authorization_iface.RoleAddPermissionItem{
+		&accounting_model.BankTransfer{}: []*authorization_iface.RoleAddPermissionItem{
 			{
 				Action: authorization_iface.Create,
 				Policy: authorization_iface.Allow,
@@ -102,7 +103,7 @@ func (s *setupServiceImpl) Setup(
 				Policy: authorization_iface.Allow,
 			},
 		},
-		&ExpenseEntity{}: []*authorization_iface.RoleAddPermissionItem{
+		&accounting_model.ExpenseEntity{}: []*authorization_iface.RoleAddPermissionItem{
 			{
 				Action: authorization_iface.Create,
 				Policy: authorization_iface.Allow,
@@ -127,7 +128,7 @@ func (s *setupServiceImpl) Setup(
 	}
 
 	err = dom.RoleAddPermission("admin", authorization_iface.RoleAddPermissionPayload{
-		&BankTransfer{}: []*authorization_iface.RoleAddPermissionItem{
+		&accounting_model.BankTransfer{}: []*authorization_iface.RoleAddPermissionItem{
 			{
 				Action: authorization_iface.Create,
 				Policy: authorization_iface.Allow,
@@ -145,7 +146,7 @@ func (s *setupServiceImpl) Setup(
 				Policy: authorization_iface.Allow,
 			},
 		},
-		&ExpenseEntity{}: []*authorization_iface.RoleAddPermissionItem{
+		&accounting_model.ExpenseEntity{}: []*authorization_iface.RoleAddPermissionItem{
 			{
 				Action: authorization_iface.Create,
 				Policy: authorization_iface.Allow,

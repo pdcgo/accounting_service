@@ -12,6 +12,7 @@ import (
 	"github.com/pdcgo/accounting_service/payment"
 	"github.com/pdcgo/accounting_service/report"
 	"github.com/pdcgo/accounting_service/revenue"
+	"github.com/pdcgo/accounting_service/setup"
 	"github.com/pdcgo/accounting_service/stock"
 	"github.com/pdcgo/schema/services/accounting_iface/v1/accounting_ifaceconnect"
 	"github.com/pdcgo/schema/services/common/v1/commonconnect"
@@ -65,7 +66,7 @@ func NewRegister(
 		mux.Handle(path, handler)
 		path, handler = commonconnect.NewUserServiceHandler(NewUserService(db), defaultInterceptor)
 		mux.Handle(path, handler)
-		path, handler = accounting_ifaceconnect.NewAccountingSetupServiceHandler(NewSetupService(db), defaultInterceptor)
+		path, handler = accounting_ifaceconnect.NewAccountingSetupServiceHandler(setup.NewSetupService(db), defaultInterceptor)
 		mux.Handle(path, handler)
 		path, handler = accounting_ifaceconnect.NewLedgerServiceHandler(ledger.NewLedgerService(db, auth), defaultInterceptor)
 		mux.Handle(path, handler)

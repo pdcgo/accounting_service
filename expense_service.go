@@ -17,13 +17,6 @@ import (
 	"gorm.io/gorm"
 )
 
-type ExpenseEntity struct{} // hanya untuk memberikan akses
-
-// GetEntityID implements authorization_iface.Entity.
-func (e ExpenseEntity) GetEntityID() string {
-	return "accounting/expense_entity"
-}
-
 type KeyValue struct {
 	T     time.Time
 	Key   string
@@ -52,7 +45,7 @@ func (e *expenseServiceImpl) ExpenseTimeMetric(
 	identity := e.auth.AuthIdentityFromHeader(req.Header())
 	err = identity.
 		HasPermission(authorization_iface.CheckPermissionGroup{
-			ExpenseEntity{}: &authorization_iface.CheckPermission{DomainID: uint(pay.TeamId), Actions: []authorization_iface.Action{authorization_iface.Read}},
+			accounting_model.ExpenseEntity{}: &authorization_iface.CheckPermission{DomainID: uint(pay.TeamId), Actions: []authorization_iface.Action{authorization_iface.Read}},
 		}).
 		Err()
 	if err != nil {
@@ -146,7 +139,7 @@ func (e *expenseServiceImpl) ExpenseOverviewMetric(
 	identity := e.auth.AuthIdentityFromHeader(req.Header())
 	err = identity.
 		HasPermission(authorization_iface.CheckPermissionGroup{
-			ExpenseEntity{}: &authorization_iface.CheckPermission{DomainID: uint(pay.TeamId), Actions: []authorization_iface.Action{authorization_iface.Read}},
+			accounting_model.ExpenseEntity{}: &authorization_iface.CheckPermission{DomainID: uint(pay.TeamId), Actions: []authorization_iface.Action{authorization_iface.Read}},
 		}).
 		Err()
 
@@ -263,7 +256,7 @@ func (e *expenseServiceImpl) ExpenseCreate(
 	agent := identity.Identity()
 	err = identity.
 		HasPermission(authorization_iface.CheckPermissionGroup{
-			ExpenseEntity{}: &authorization_iface.CheckPermission{
+			accounting_model.ExpenseEntity{}: &authorization_iface.CheckPermission{
 				DomainID: uint(pay.TeamId),
 				Actions:  []authorization_iface.Action{authorization_iface.Create},
 			},
@@ -343,7 +336,7 @@ func (e *expenseServiceImpl) ExpenseList(
 	identity := e.auth.AuthIdentityFromHeader(req.Header())
 	err = identity.
 		HasPermission(authorization_iface.CheckPermissionGroup{
-			ExpenseEntity{}: &authorization_iface.CheckPermission{
+			accounting_model.ExpenseEntity{}: &authorization_iface.CheckPermission{
 				DomainID: uint(pay.TeamId),
 				Actions:  []authorization_iface.Action{authorization_iface.Read},
 			},
