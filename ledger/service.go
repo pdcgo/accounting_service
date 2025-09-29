@@ -307,8 +307,8 @@ func (l *ledgerViewImpl) selectFields() []string {
 		"je.credit",
 		`SUM(
 					case
-						when a.balance_type = 'd' then je.credit - je.debit
-						when a.balance_type = 'c' then je.debit - je.credit
+						when a.balance_type = 'd' then je.debit - je.credit
+						when a.balance_type = 'c' then je.credit - je.debit
 					end
 					
 				) OVER (
