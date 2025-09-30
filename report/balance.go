@@ -156,7 +156,8 @@ func (b *balanceViewImpl) lastBalanceQuery() *gorm.DB {
 	}
 
 	query = query.
-		Group("a.account_key, adb.day")
+		Group("a.account_key, adb.day").
+		Order("adb.day desc")
 
 	query = b.
 		db.
