@@ -11,13 +11,136 @@ import (
 type CreateTransaction interface {
 	Labels(labels []*Label) CreateTransaction
 	Create(tran *Transaction) CreateTransaction
+	AddSupplierID(suplierID uint) CreateTransaction
+	AddShopID(shopID uint) CreateTransaction
+	AddCustomerServiceID(customerServiceID uint) CreateTransaction
+	AddTags(tnames []string) CreateTransaction
+
 	Err() error
 }
+
+var ErrTransactionNotCreated = errors.New("transaction not created")
 
 type createTansactionImpl struct {
 	tx   *gorm.DB
 	err  error
 	tran *Transaction
+}
+
+// AddCustomerServiceID implements CreateTransaction.
+func (c *createTansactionImpl) AddCustomerServiceID(customerServiceID uint) CreateTransaction {
+	var err error
+	if c.isTransactionEmpty() {
+		return c.setErr(ErrTransactionNotCreated)
+	}
+
+	rel := TransactionCustomerService{
+		TransactionID:     c.tran.ID,
+		CustomerServiceID: customerServiceID,
+	}
+
+	err = c.tx.Save(&rel).Error
+	if err != nil {
+		return c.setErr(err)
+	}
+
+	return c
+}
+
+// AddShopID implements CreateTransaction.
+func (c *createTansactionImpl) AddShopID(shopID uint) CreateTransaction {
+	var err error
+	if c.isTransactionEmpty() {
+		return c.setErr(ErrTransactionNotCreated)
+	}
+
+	rel := TransactionShop{
+		TransactionID: c.tran.ID,
+		ShopID:        shopID,
+	}
+
+	err = c.tx.Save(&rel).Error
+	if err != nil {
+		return c.setErr(err)
+	}
+
+	return c
+
+}
+
+// AddSupplierID implements CreateTransaction.
+func (c *createTansactionImpl) AddSupplierID(suplierID uint) CreateTransaction {
+	var err error
+	if c.isTransactionEmpty() {
+		return c.setErr(ErrTransactionNotCreated)
+	}
+
+	rel := TransactionSupplier{
+		TransactionID: c.tran.ID,
+		SupplierID:    suplierID,
+	}
+
+	err = c.tx.Save(&rel).Error
+	if err != nil {
+		return c.setErr(err)
+	}
+
+	return c
+}
+
+// AddTags implements CreateTransaction.
+func (c *createTansactionImpl) AddTags(tnames []string) CreateTransaction {
+	var err error
+	if c.isTransactionEmpty() {
+		return c.setErr(ErrTransactionNotCreated)
+	}
+
+	err = c.
+		tx.
+		Transaction(func(tx *gorm.DB) error {
+			tags := []*AccountingTag{}
+			err = tx.
+				Model(&AccountingTag{}).
+				Where("name IN ?", tnames).
+				Find(&tags).
+				Error
+
+			if err != nil {
+				return err
+			}
+
+			for _, tag := range tags {
+				rel := TransactionTag{
+					TransactionID: c.tran.ID,
+					TagID:         tag.ID,
+				}
+				err = tx.Save(&rel).Error
+				if err != nil {
+					return err
+				}
+			}
+
+			return nil
+		})
+
+	if err != nil {
+		return c.setErr(err)
+	}
+
+	return c
+}
+
+func (c *createTansactionImpl) isTransactionEmpty() bool {
+	if c.tran != nil {
+		return false
+	}
+
+	if c.tran.ID != 0 {
+		return false
+	}
+
+	return true
+
 }
 
 // Create implements CreateTransaction.

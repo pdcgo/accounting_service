@@ -223,6 +223,7 @@ const (
 	RestockRef             RefType = "restock"
 	PaymentRef             RefType = "payment"
 	AdminAdjustmentRef     RefType = "admin_adjustment"
+	AdsPaymentRef          RefType = "ads_payment"
 )
 
 type RefData struct {
@@ -246,6 +247,15 @@ func (r RefID) Extract() (*RefData, error) {
 
 func NewRefID(data *RefData) RefID {
 	return RefID(fmt.Sprintf("%s#%d", data.RefType, data.ID))
+}
+
+type StringRefData struct {
+	RefType RefType
+	ID      string
+}
+
+func NewStringRefID(data *StringRefData) RefID {
+	return RefID(fmt.Sprintf("%s#%s", data.RefType, data.ID))
 }
 
 type Transaction struct {
@@ -278,4 +288,36 @@ func (l *Label) Hash() string {
 	hashid := hex.EncodeToString(sum[:])
 	l.ID = hashid
 	return hashid
+}
+
+type AccountingTag struct {
+	ID   uint   `json:"id" gorm:"primarykey"`
+	Name string `json:"name" gorm:"index:name,unique"`
+}
+
+func SanityTag(name string) string {
+	name = strings.TrimSpace(name)
+	name = strings.ToLower(name)
+	name = strings.ReplaceAll(name, " ", "_")
+	return name
+}
+
+type TransactionTag struct {
+	TransactionID uint `json:"transaction_id" gorm:"primaryKey"`
+	TagID         uint `json:"tag_id" gorm:"primaryKey"`
+}
+
+type TransactionShop struct {
+	TransactionID uint `json:"transaction_id" gorm:"primaryKey"`
+	ShopID        uint `json:"shop_id" gorm:"primaryKey"`
+}
+
+type TransactionCustomerService struct {
+	TransactionID     uint `json:"transaction_id" gorm:"primaryKey"`
+	CustomerServiceID uint `json:"customer_service_id" gorm:"primaryKey"`
+}
+
+type TransactionSupplier struct {
+	TransactionID uint `json:"transaction_id" gorm:"primaryKey"`
+	SupplierID    uint `json:"supplier_id" gorm:"primaryKey"`
 }

@@ -7,6 +7,7 @@ import (
 	"github.com/pdcgo/accounting_service/accounting_core"
 	"github.com/pdcgo/accounting_service/accounting_model"
 	"github.com/pdcgo/accounting_service/adjustment"
+	"github.com/pdcgo/accounting_service/ads_expense"
 	"github.com/pdcgo/accounting_service/core"
 	"github.com/pdcgo/accounting_service/ledger"
 	"github.com/pdcgo/accounting_service/payment"
@@ -14,6 +15,7 @@ import (
 	"github.com/pdcgo/accounting_service/revenue"
 	"github.com/pdcgo/accounting_service/setup"
 	"github.com/pdcgo/accounting_service/stock"
+	"github.com/pdcgo/accounting_service/tag"
 	"github.com/pdcgo/schema/services/accounting_iface/v1/accounting_ifaceconnect"
 	"github.com/pdcgo/schema/services/common/v1/commonconnect"
 	"github.com/pdcgo/schema/services/payment_iface/v1/payment_ifaceconnect"
@@ -39,6 +41,12 @@ func NewMigrationHandler(
 			&accounting_core.Label{},
 			&accounting_core.TransactionLabel{},
 			&accounting_core.AccountDailyBalance{},
+			&accounting_core.TransactionShop{},
+			&accounting_core.TransactionSupplier{},
+			&accounting_core.TransactionCustomerService{},
+			&accounting_core.AccountingTag{},
+			&accounting_core.TransactionTag{},
+
 			&accounting_model.BankAccountV2{},
 			&accounting_model.BankAccountLabel{},
 			&accounting_model.BankAccountLabelRelation{},
@@ -82,7 +90,10 @@ func NewRegister(
 		mux.Handle(path, handler)
 		path, handler = accounting_ifaceconnect.NewCoreServiceHandler(core.NewCoreService(db, auth), defaultInterceptor)
 		mux.Handle(path, handler)
-
+		path, handler = accounting_ifaceconnect.NewAdsExpenseServiceHandler(ads_expense.NewAdsExpenseService(db, auth), defaultInterceptor)
+		mux.Handle(path, handler)
+		path, handler = accounting_ifaceconnect.NewTagServiceHandler(tag.NewTagService(db, auth), defaultInterceptor)
+		mux.Handle(path, handler)
 	}
 
 }

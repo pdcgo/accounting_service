@@ -60,6 +60,7 @@ const (
 	OwnerAccommodationAccount AccountKey = "owner_accomodation"
 	ServerExpenseAccount      AccountKey = "server"
 	ShippingExpenseAccount    AccountKey = "shipping_expense"
+	AdsExpenseAccount         AccountKey = "ads_expense"
 	// ongkir ?
 	// om + harum ?
 
@@ -165,6 +166,11 @@ func DefaultSeedAccount() []*Account {
 			BalanceType: DebitBalance,
 		},
 		// expense
+		{
+			AccountKey:  AdsExpenseAccount,
+			Coa:         EXPENSE,
+			BalanceType: DebitBalance,
+		},
 		{
 			AccountKey:  CodCostAccount,
 			Coa:         EXPENSE,
