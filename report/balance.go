@@ -157,14 +157,14 @@ func (b *balanceViewImpl) lastBalanceQuery() *gorm.DB {
 
 	query = query.
 		Group("a.account_key, adb.day").
-		Order("adb.day desc")
+		Order("a.account_key, adb.day desc")
 
 	query = b.
 		db.
 		Table("(?) as daygroup", query).
 		Select([]string{
 			"distinct on (daygroup.account_key) daygroup.account_key",
-			" daygroup.balance",
+			"daygroup.balance",
 		})
 
 	return query
