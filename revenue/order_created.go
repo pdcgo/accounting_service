@@ -21,7 +21,9 @@ func (r *revenueServiceImpl) OnOrder(
 	res := connect.NewResponse(&revenue_iface.OnOrderResponse{})
 	db := r.db.WithContext(ctx)
 
+	// pecah payload
 	pay := req.Msg
+	labelInfo := pay.LabelInfo
 	identity := r.
 		auth.
 		AuthIdentityFromToken(pay.Token)
@@ -45,10 +47,17 @@ func (r *revenueServiceImpl) OnOrder(
 				Desc:    fmt.Sprintf("order from %s", ref),
 				Created: time.Now(),
 			}
-			err = accounting_core.
+
+			txcreate := accounting_core.
 				NewTransaction(tx).
 				Create(&tran).
+				AddShopID(uint(labelInfo.ShopId)).
+				AddCustomerServiceID(agent.IdentityID()).
+				AddTags(labelInfo.Tags)
+
+			err = txcreate.
 				Err()
+
 			if err != nil {
 				return err
 			}

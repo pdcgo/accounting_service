@@ -4,6 +4,7 @@ import (
 	"errors"
 	"time"
 
+	"github.com/pdcgo/shared/db_models"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
 )
@@ -21,10 +22,18 @@ type CreateTransaction interface {
 
 var ErrTransactionNotCreated = errors.New("transaction not created")
 
+type TxLabelExtra struct {
+	ShopID     uint
+	CsID       uint
+	SupplierID uint
+	TagIDs     []uint
+}
+
 type createTansactionImpl struct {
-	tx   *gorm.DB
-	err  error
-	tran *Transaction
+	tx         *gorm.DB
+	err        error
+	tran       *Transaction
+	labelExtra TxLabelExtra
 }
 
 // AddCustomerServiceID implements CreateTransaction.
@@ -44,6 +53,7 @@ func (c *createTansactionImpl) AddCustomerServiceID(customerServiceID uint) Crea
 		return c.setErr(err)
 	}
 
+	c.labelExtra.CsID = customerServiceID
 	return c
 }
 
@@ -52,6 +62,21 @@ func (c *createTansactionImpl) AddShopID(shopID uint) CreateTransaction {
 	var err error
 	if c.isTransactionEmpty() {
 		return c.setErr(ErrTransactionNotCreated)
+	}
+
+	if shopID == 0 {
+		return c.setErr(errors.New("shop id is null"))
+	}
+
+	var shop db_models.Marketplace
+	err = c.
+		tx.
+		Model(&db_models.Marketplace{}).
+		First(&shop, shopID).
+		Error
+
+	if err != nil {
+		return c.setErr(err)
 	}
 
 	rel := TransactionShop{
@@ -64,7 +89,9 @@ func (c *createTansactionImpl) AddShopID(shopID uint) CreateTransaction {
 		return c.setErr(err)
 	}
 
-	return c
+	c.labelExtra.ShopID = shopID
+	return c.
+		AddTags([]string{string(shop.MpType)})
 
 }
 
@@ -85,6 +112,7 @@ func (c *createTansactionImpl) AddSupplierID(suplierID uint) CreateTransaction {
 		return c.setErr(err)
 	}
 
+	c.labelExtra.SupplierID = suplierID
 	return c
 }
 
@@ -95,10 +123,21 @@ func (c *createTansactionImpl) AddTags(tnames []string) CreateTransaction {
 		return c.setErr(ErrTransactionNotCreated)
 	}
 
+	if len(tnames) == 0 {
+		return c
+	}
+
+	tmap := map[string]bool{}
+	for _, tname := range tnames {
+		tmap[tname] = false
+	}
+
+	tags := []*AccountingTag{}
+
 	err = c.
 		tx.
 		Transaction(func(tx *gorm.DB) error {
-			tags := []*AccountingTag{}
+
 			err = tx.
 				Model(&AccountingTag{}).
 				Where("name IN ?", tnames).
@@ -107,6 +146,24 @@ func (c *createTansactionImpl) AddTags(tnames []string) CreateTransaction {
 
 			if err != nil {
 				return err
+			}
+
+			for _, tag := range tags {
+				tmap[tag.Name] = true
+			}
+
+			for _, tname := range tnames {
+				if !tmap[tname] {
+					tag := AccountingTag{
+						Name: SanityTag(tname),
+					}
+					err = tx.Save(&tag).Error
+					if err != nil {
+						return err
+					}
+
+					tags = append(tags, &tag)
+				}
 			}
 
 			for _, tag := range tags {
@@ -126,20 +183,22 @@ func (c *createTansactionImpl) AddTags(tnames []string) CreateTransaction {
 	if err != nil {
 		return c.setErr(err)
 	}
-
+	for _, tag := range tags {
+		c.labelExtra.TagIDs = append(c.labelExtra.TagIDs, tag.ID)
+	}
 	return c
 }
 
 func (c *createTansactionImpl) isTransactionEmpty() bool {
-	if c.tran != nil {
-		return false
+	if c.tran == nil {
+		return true
 	}
 
-	if c.tran.ID != 0 {
-		return false
+	if c.tran.ID == 0 {
+		return true
 	}
 
-	return true
+	return false
 
 }
 
@@ -215,6 +274,9 @@ func (c *createTansactionImpl) setErr(err error) *createTansactionImpl {
 func NewTransaction(tx *gorm.DB) CreateTransaction {
 	return &createTansactionImpl{
 		tx: tx,
+		labelExtra: TxLabelExtra{
+			TagIDs: []uint{},
+		},
 	}
 }
 

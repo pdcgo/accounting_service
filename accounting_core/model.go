@@ -186,26 +186,6 @@ func (ac *Account) SetAmountEntry(amount float64, entry *JournalEntry) error {
 	return nil
 }
 
-type AccountDailyBalance struct {
-	ID            uint      `json:"id" gorm:"primarykey"`
-	Day           time.Time `json:"day" gorm:"index:account_journal,unique"`
-	AccountID     uint      `json:"account_id" gorm:"index:account_journal,unique"`
-	JournalTeamID uint      `json:"journal_team_id" gorm:"index:account_journal,unique"`
-	Debit         float64   `json:"debit"`
-	Credit        float64   `json:"credit"`
-	Balance       float64   `json:"balance"`
-
-	Account *Account `gorm:"-"`
-}
-
-func ParseDate(t time.Time) time.Time {
-	y, m, d := t.Date()
-	day := time.Time{}
-	day = day.AddDate(y-1, int(m)-1, d-1)
-
-	return day
-}
-
 type RefType string
 
 const (
