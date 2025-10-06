@@ -6,12 +6,14 @@ import (
 	"connectrpc.com/connect"
 	"github.com/pdcgo/schema/services/report_iface/v1"
 	"github.com/pdcgo/shared/interfaces/authorization_iface"
+	"github.com/pdcgo/shared/pkg/ware_cache"
 	"gorm.io/gorm"
 )
 
 type accountReportImpl struct {
-	db   *gorm.DB
-	auth authorization_iface.Authorization
+	db    *gorm.DB
+	auth  authorization_iface.Authorization
+	cache ware_cache.Cache
 }
 
 // BalanceDetail implements report_ifaceconnect.AccountReportServiceHandler.
@@ -24,9 +26,14 @@ func (a *accountReportImpl) DailyBalanceDetail(context.Context, *connect.Request
 	panic("unimplemented")
 }
 
-func NewAccountReportService(db *gorm.DB, auth authorization_iface.Authorization) *accountReportImpl {
+func NewAccountReportService(
+	db *gorm.DB,
+	auth authorization_iface.Authorization,
+	cache ware_cache.Cache,
+) *accountReportImpl {
 	return &accountReportImpl{
-		db:   db,
-		auth: auth,
+		db:    db,
+		auth:  auth,
+		cache: cache,
 	}
 }

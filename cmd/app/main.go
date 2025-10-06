@@ -1,12 +1,15 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"net/http"
 	"os"
 
+	cloudtasks "cloud.google.com/go/cloudtasks/apiv2"
 	"github.com/pdcgo/accounting_service"
+	"github.com/pdcgo/accounting_service/accounting_core"
 	"github.com/pdcgo/shared/authorization"
 	"github.com/pdcgo/shared/configs"
 	"github.com/pdcgo/shared/db_connect"
@@ -20,6 +23,10 @@ import (
 
 func NewCache() (ware_cache.Cache, error) {
 	return ware_cache.NewBadgerCache("/tmp/cache")
+}
+
+func NewCloudTaskClient() (*cloudtasks.Client, error) {
+	return cloudtasks.NewClient(context.Background())
 }
 
 func NewAuthorization(
@@ -57,34 +64,16 @@ type App struct {
 func NewApp(
 	mux *http.ServeMux,
 	accountingRegister accounting_service.RegisterHandler,
+	dispatcher accounting_core.AccountReportServiceClientDispatcher,
 	// auth authorization_iface.Authorization,
 ) *App {
 	return &App{
 		Run: func() error {
+			accounting_core.RegisterCustomHandler(
+				"task_daily_update",
+				accounting_core.NewDailyBalanceHandler(dispatcher),
+			)
 
-			// identity := auth.
-			// 	AuthIdentityFromToken("eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJVc2VySUQiOjEyOCwiU3VwZXJVc2VyIjpmYWxzZSwiVmFsaWRVbnRpbCI6MTc1ODM0MjQ1MjM1Njk4OCwiRnJvbSI6InNlbGxpbmciLCJVc2VyQWdlbnQiOiIiLCJDcmVhdGVkQXQiOjE3NTgyNTYwNTIzNTY5ODh9.AtuZ_P25vHSW-JihBrhF2vXOg5Hl0vQMJR6LrK1XsEs")
-			// err := identity.
-			// 	HasPermission(authorization_iface.CheckPermissionGroup{
-			// 		&db_models.InvTransaction{}: &authorization_iface.CheckPermission{
-			// 			DomainID: 47,
-			// 			Actions:  []authorization_iface.Action{authorization_iface.Create},
-			// 		},
-			// 	}).Err()
-
-			// if err != nil {
-			// 	var perm *authorization_iface.PermissionError
-			// 	if errors.As(err, &perm) {
-
-			// 	}
-			// 	debugtool.LogJson(err)
-			// 	log.Println(err)
-
-			// 	agent := identity.Identity()
-			// 	debugtool.LogJson(agent.GetUserID(), agent)
-			// }
-
-			// return nil
 			accountingRegister()
 
 			port := os.Getenv("PORT")

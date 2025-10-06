@@ -8,6 +8,7 @@ import (
 
 	"github.com/google/wire"
 	"github.com/pdcgo/accounting_service"
+	"github.com/pdcgo/accounting_service/accounting_core"
 	"github.com/pdcgo/shared/configs"
 	"github.com/pdcgo/shared/custom_connect"
 )
@@ -18,6 +19,8 @@ func InitializeApp() (*App, error) {
 		http.NewServeMux,
 		NewCache,
 		NewDatabase,
+		NewCloudTaskClient,
+		accounting_core.NewAccountReportServiceClientDispatcher,
 		custom_connect.NewDefaultInterceptor,
 		NewAuthorization,
 		accounting_service.NewRegister,

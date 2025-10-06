@@ -37,9 +37,9 @@ func (e *expenseTransactonImpl) ExpenseCreate(payload *CreatePayload) error {
 		Created: time.Now(),
 		RefID:   accounting_core.RefID(payload.RefID),
 	}
-	err = e.tx.Transaction(func(tx *gorm.DB) error {
-		err = accounting_core.
-			NewTransaction(tx).
+	err = accounting_core.OpenTransaction(e.tx, func(tx *gorm.DB, bookmng accounting_core.BookManage) error {
+		err = bookmng.
+			NewTransaction().
 			Create(&tran).
 			Labels([]*accounting_core.Label{
 				{
@@ -57,8 +57,8 @@ func (e *expenseTransactonImpl) ExpenseCreate(payload *CreatePayload) error {
 			return err
 		}
 
-		err = accounting_core.
-			NewCreateEntry(tx, payload.TeamID, e.agent.GetUserID()).
+		err = bookmng.
+			NewCreateEntry(payload.TeamID, e.agent.GetUserID()).
 			From(&accounting_core.EntryAccountPayload{
 				Key:    accounting_core.CashAccount,
 				TeamID: payload.TeamID,

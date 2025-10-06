@@ -59,7 +59,8 @@ func TestDailyDebitCredit(t *testing.T) {
 			migrate,
 			accounts,
 		}, func(t *testing.T) {
-			err := db.Transaction(func(tx *gorm.DB) error {
+
+			err := accounting_core.OpenTransaction(&db, func(tx *gorm.DB, bookmng accounting_core.BookManage) error {
 				tran := accounting_core.Transaction{
 					ID: 1,
 					RefID: accounting_core.NewRefID(&accounting_core.RefData{
@@ -69,15 +70,14 @@ func TestDailyDebitCredit(t *testing.T) {
 					TeamID: 1,
 					Desc:   "test creating transaction",
 				}
-
-				err := accounting_core.
-					NewTransaction(tx).
+				err := bookmng.
+					NewTransaction().
 					Create(&tran).
 					Err()
 
 				assert.Nil(t, err)
 
-				entryCreate := accounting_core.NewCreateEntry(tx, 1, 1)
+				entryCreate := bookmng.NewCreateEntry(1, 1)
 
 				return entryCreate.
 					To(&accounting_core.EntryAccountPayload{
@@ -172,7 +172,8 @@ func TestJournalEntries(t *testing.T) {
 			accounts,
 		},
 		func(t *testing.T) {
-			err := db.Transaction(func(tx *gorm.DB) error {
+
+			err := accounting_core.OpenTransaction(&db, func(tx *gorm.DB, bookmng accounting_core.BookManage) error {
 				tran := accounting_core.Transaction{
 					ID: 1,
 					RefID: accounting_core.NewRefID(&accounting_core.RefData{
@@ -183,14 +184,14 @@ func TestJournalEntries(t *testing.T) {
 					Desc:   "test creating transaction",
 				}
 
-				err := accounting_core.
-					NewTransaction(tx).
+				err := bookmng.
+					NewTransaction().
 					Create(&tran).
 					Err()
 
 				assert.Nil(t, err)
 
-				entryCreate := accounting_core.NewCreateEntry(tx, 1, 1)
+				entryCreate := bookmng.NewCreateEntry(1, 1)
 
 				return entryCreate.
 					To(&accounting_core.EntryAccountPayload{

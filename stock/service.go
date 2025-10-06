@@ -41,7 +41,7 @@ func (s *stockServiceImpl) InboundUpdate(
 		return connect.NewResponse(&result), err
 	}
 	db := s.db.WithContext(ctx)
-	err = db.Transaction(func(tx *gorm.DB) error {
+	err = accounting_core.OpenTransaction(db, func(tx *gorm.DB, bookmng accounting_core.BookManage) error {
 		var ref accounting_core.RefID
 		switch pay.Source {
 		case stock_iface.InboundSource_INBOUND_SOURCE_RESTOCK:
@@ -89,7 +89,7 @@ func (s *stockServiceImpl) InboundUpdate(
 		}
 
 		// create resetting entry
-		entry := accounting_core.NewCreateEntry(tx, uint(pay.TeamId), agent.IdentityID())
+		entry := bookmng.NewCreateEntry(uint(pay.TeamId), agent.IdentityID())
 		mapBalance, err := oldentries.AccountBalance()
 		if err != nil {
 			return err
@@ -239,7 +239,8 @@ func (s *stockServiceImpl) InboundCreate(
 		RefType: accounting_core.RestockRef,
 		ID:      uint(pay.ExtTxId),
 	})
-	err = db.Transaction(func(tx *gorm.DB) error {
+
+	err = accounting_core.OpenTransaction(db, func(tx *gorm.DB, bookmng accounting_core.BookManage) error {
 		tran := accounting_core.Transaction{
 			TeamID:      uint(pay.TeamId),
 			CreatedByID: agent.GetUserID(),
@@ -248,8 +249,8 @@ func (s *stockServiceImpl) InboundCreate(
 			RefID:       ref,
 		}
 
-		err = accounting_core.
-			NewTransaction(tx).
+		err = bookmng.
+			NewTransaction().
 			Create(&tran).
 			Err()
 
@@ -265,7 +266,7 @@ func (s *stockServiceImpl) InboundCreate(
 		var totalAmount float64 = goodAmount + pay.ShippingFee
 
 		// sisi selling
-		entry := accounting_core.NewCreateEntry(tx, uint(pay.TeamId), agent.GetUserID())
+		entry := bookmng.NewCreateEntry(uint(pay.TeamId), agent.GetUserID())
 
 		switch pay.PaymentMethod {
 		case stock_iface.PaymentMethod_PAYMENT_METHOD_CASH:

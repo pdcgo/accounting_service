@@ -27,12 +27,12 @@ type paymentPaymentTransactionImpl struct {
 
 // Payment implements PaymentTransaction.
 func (p *paymentPaymentTransactionImpl) Payment(payment *PaymentPayload) error {
-	return p.tx.Transaction(func(tx *gorm.DB) error {
+	return accounting_core.OpenTransaction(p.tx, func(tx *gorm.DB, bookmng accounting_core.BookManage) error {
 		var err error
 		var tran accounting_core.Transaction
 
-		err = accounting_core.
-			NewTransaction(tx).
+		err = bookmng.
+			NewTransaction().
 			Create(&tran).
 			Err()
 
@@ -40,7 +40,7 @@ func (p *paymentPaymentTransactionImpl) Payment(payment *PaymentPayload) error {
 			return err
 		}
 
-		entry := accounting_core.NewCreateEntry(tx, payment.FromTeamID, p.agent.GetUserID())
+		entry := bookmng.NewCreateEntry(payment.FromTeamID, p.agent.GetUserID())
 		err = entry.
 			To(&accounting_core.EntryAccountPayload{
 				Key:    accounting_core.CashAccount,
@@ -58,7 +58,7 @@ func (p *paymentPaymentTransactionImpl) Payment(payment *PaymentPayload) error {
 			return err
 		}
 
-		entry = accounting_core.NewCreateEntry(tx, payment.ToTeamID, p.agent.GetUserID())
+		entry = bookmng.NewCreateEntry(payment.ToTeamID, p.agent.GetUserID())
 		err = entry.
 			To(&accounting_core.EntryAccountPayload{
 				Key:    accounting_core.CashAccount,

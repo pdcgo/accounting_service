@@ -38,8 +38,7 @@ func (p *paymentServiceImpl) PaymentCreate(
 		return connect.NewResponse(&result), err
 	}
 
-	err = db.Transaction(func(tx *gorm.DB) error {
-
+	err = accounting_core.OpenTransaction(db, func(tx *gorm.DB, bookmng accounting_core.BookManage) error {
 		payment := accounting_model.Payment{
 			FromTeamID:  uint(pay.FromTeamId),
 			ToTeamID:    uint(pay.ToTeamId),
@@ -66,8 +65,8 @@ func (p *paymentServiceImpl) PaymentCreate(
 			Created:     time.Now(),
 		}
 
-		err = accounting_core.
-			NewTransaction(tx).
+		err = bookmng.
+			NewTransaction().
 			Create(&tran).
 			Err()
 
@@ -76,8 +75,8 @@ func (p *paymentServiceImpl) PaymentCreate(
 		}
 
 		// sisi pengirim
-		err = accounting_core.
-			NewCreateEntry(tx, payment.FromTeamID, agent.IdentityID()).
+		err = bookmng.
+			NewCreateEntry(payment.FromTeamID, agent.IdentityID()).
 			From(&accounting_core.EntryAccountPayload{
 				Key:    accounting_core.CashAccount,
 				TeamID: uint(pay.ToTeamId),
@@ -95,8 +94,8 @@ func (p *paymentServiceImpl) PaymentCreate(
 		}
 
 		// sisi penerima
-		err = accounting_core.
-			NewCreateEntry(tx, payment.ToTeamID, agent.IdentityID()).
+		err = bookmng.
+			NewCreateEntry(payment.ToTeamID, agent.IdentityID()).
 			From(&accounting_core.EntryAccountPayload{
 				Key:    accounting_core.ReceivableAccount,
 				TeamID: uint(pay.FromTeamId),

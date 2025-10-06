@@ -36,7 +36,7 @@ func (r *revenueServiceImpl) OnOrder(
 
 	switch pay.Event {
 	case revenue_iface.OrderEvent_ORDER_EVENT_CREATED:
-		err = db.Transaction(func(tx *gorm.DB) error {
+		err = accounting_core.OpenTransaction(db, func(tx *gorm.DB, bookmng accounting_core.BookManage) error {
 			// creating transaction
 			ref := accounting_core.NewRefID(&accounting_core.RefData{
 				RefType: accounting_core.OrderRef,
@@ -48,8 +48,8 @@ func (r *revenueServiceImpl) OnOrder(
 				Created: time.Now(),
 			}
 
-			txcreate := accounting_core.
-				NewTransaction(tx).
+			txcreate := bookmng.
+				NewTransaction().
 				Create(&tran).
 				AddShopID(uint(labelInfo.ShopId)).
 				AddCustomerServiceID(agent.IdentityID()).
@@ -63,25 +63,25 @@ func (r *revenueServiceImpl) OnOrder(
 			}
 
 			// creating fee ke gudang
-			err = r.createWarehouseFee(tx, agent, pay, &tran)
+			err = r.createWarehouseFee(bookmng, agent, pay, &tran)
 			if err != nil {
 				return err
 			}
 
 			// own product
-			err = r.ownProductStock(tx, agent, pay, &tran)
+			err = r.ownProductStock(bookmng, agent, pay, &tran)
 			if err != nil {
 				return err
 			}
 
 			// cross product
-			err = r.crossProductStock(tx, agent, pay, &tran)
+			err = r.crossProductStock(bookmng, agent, pay, &tran)
 			if err != nil {
 				return err
 			}
 
 			// revenue order
-			err = r.revenueOrder(tx, agent, pay, &tran)
+			err = r.revenueOrder(bookmng, agent, pay, &tran)
 			if err != nil {
 				return err
 			}
@@ -99,7 +99,7 @@ func (r *revenueServiceImpl) OnOrder(
 }
 
 func (r *revenueServiceImpl) ownProductStock(
-	tx *gorm.DB,
+	bookmng accounting_core.BookManage,
 	agent authorization_iface.Identity,
 	pay *revenue_iface.OnOrderRequest,
 	tran *accounting_core.Transaction,
@@ -111,8 +111,8 @@ func (r *revenueServiceImpl) ownProductStock(
 	}
 
 	// sisi selling
-	err = accounting_core.
-		NewCreateEntry(tx, uint(pay.TeamId), agent.GetUserID()).
+	err = bookmng.
+		NewCreateEntry(uint(pay.TeamId), agent.GetUserID()).
 		From(&accounting_core.EntryAccountPayload{
 			Key:    accounting_core.StockReadyAccount,
 			TeamID: uint(pay.WarehouseId),
@@ -130,8 +130,8 @@ func (r *revenueServiceImpl) ownProductStock(
 	}
 
 	// sisi gudang
-	err = accounting_core.
-		NewCreateEntry(tx, uint(pay.WarehouseId), agent.GetUserID()).
+	err = bookmng.
+		NewCreateEntry(uint(pay.WarehouseId), agent.GetUserID()).
 		From(&accounting_core.EntryAccountPayload{
 			Key:    accounting_core.StockReadyAccount,
 			TeamID: uint(pay.TeamId),
@@ -151,7 +151,7 @@ func (r *revenueServiceImpl) ownProductStock(
 }
 
 func (r *revenueServiceImpl) createWarehouseFee(
-	tx *gorm.DB,
+	bookmng accounting_core.BookManage,
 	agent authorization_iface.Identity,
 	pay *revenue_iface.OnOrderRequest,
 	tran *accounting_core.Transaction,
@@ -160,8 +160,8 @@ func (r *revenueServiceImpl) createWarehouseFee(
 	var err error
 
 	// sisi gudang
-	err = accounting_core.
-		NewCreateEntry(tx, uint(pay.WarehouseId), agent.GetUserID()).
+	err = bookmng.
+		NewCreateEntry(uint(pay.WarehouseId), agent.GetUserID()).
 		To(&accounting_core.EntryAccountPayload{
 			Key:    accounting_core.ServiceRevenueAccount, // revenue gudang [pendapatan jasa]
 			TeamID: uint(pay.TeamId),
@@ -179,8 +179,8 @@ func (r *revenueServiceImpl) createWarehouseFee(
 	}
 
 	// sisi selling
-	err = accounting_core.
-		NewCreateEntry(tx, uint(pay.TeamId), agent.GetUserID()).
+	err = bookmng.
+		NewCreateEntry(uint(pay.TeamId), agent.GetUserID()).
 		To(&accounting_core.EntryAccountPayload{
 			Key:    accounting_core.WarehouseCostAccount,
 			TeamID: uint(pay.WarehouseId),
@@ -202,16 +202,77 @@ func (r *revenueServiceImpl) createWarehouseFee(
 
 }
 
+func (r *revenueServiceImpl) crossProductStock(
+	bookmng accounting_core.BookManage,
+	agent authorization_iface.Identity,
+	pay *revenue_iface.OnOrderRequest,
+	tran *accounting_core.Transaction,
+) error {
+	var err error
+	if len(pay.BorrowStock) == 0 {
+		return nil
+	}
+
+	for _, bor := range pay.BorrowStock {
+		err = bookmng.
+			NewCreateEntry(uint(bor.TeamId), agent.GetUserID()).
+			From(&accounting_core.EntryAccountPayload{
+				Key:    accounting_core.StockReadyAccount,
+				TeamID: uint(pay.WarehouseId),
+			}, bor.Amount).
+			To(&accounting_core.EntryAccountPayload{
+				Key:    accounting_core.StockBorrowCostAmount,
+				TeamID: uint(pay.WarehouseId),
+			}, bor.Amount).
+			To(&accounting_core.EntryAccountPayload{
+				Key:    accounting_core.BorrowStockRevenueAccount,
+				TeamID: uint(pay.TeamId),
+			}, bor.SellAmount).
+			To(&accounting_core.EntryAccountPayload{
+				Key:    accounting_core.ReceivableAccount,
+				TeamID: uint(pay.TeamId),
+			}, bor.SellAmount).
+			Transaction(tran).
+			Commit().
+			Err()
+
+		if err != nil {
+			return err
+		}
+
+		err = bookmng.
+			NewCreateEntry(uint(pay.TeamId), agent.GetUserID()).
+			To(&accounting_core.EntryAccountPayload{
+				Key:    accounting_core.StockBorrowCostAmount,
+				TeamID: uint(bor.TeamId),
+			}, bor.SellAmount).
+			To(&accounting_core.EntryAccountPayload{
+				Key:    accounting_core.PayableAccount,
+				TeamID: uint(bor.TeamId),
+			}, bor.SellAmount).
+			Transaction(tran).
+			Commit().
+			Err()
+
+		if err != nil {
+			return err
+		}
+
+	}
+
+	return nil
+}
+
 func (r *revenueServiceImpl) revenueOrder(
-	tx *gorm.DB,
+	bookmng accounting_core.BookManage,
 	agent authorization_iface.Identity,
 	pay *revenue_iface.OnOrderRequest,
 	tran *accounting_core.Transaction,
 ) error {
 	// var err error
 
-	err := accounting_core.
-		NewCreateEntry(tx, uint(pay.TeamId), agent.GetUserID()).
+	err := bookmng.
+		NewCreateEntry(uint(pay.TeamId), agent.GetUserID()).
 		To(&accounting_core.EntryAccountPayload{
 			Key:    accounting_core.SalesRevenueAccount,
 			TeamID: uint(pay.TeamId),

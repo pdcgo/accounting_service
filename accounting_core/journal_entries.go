@@ -66,6 +66,7 @@ type createEntryImpl struct {
 	createdByID uint
 	entries     map[uint]*JournalEntry
 	accountMap  map[uint]*Account
+	afterCommit func(c *createEntryImpl) error
 	err         error
 }
 
@@ -187,7 +188,7 @@ func (c *createEntryImpl) Commit() CreateEntry {
 	// checking debit and credit balance
 	if RoundUp(debit, precision) != RoundUp(credit, precision) {
 		// log.Println(RoundUp(debit, precision), RoundUp(credit, precision))
-		entries.PrintJournalEntries(c.tx)
+		// entries.PrintJournalEntries(c.tx)
 		return c.setErr(&ErrEntryInvalid{
 			Debit:     debit,
 			Credit:    credit,
@@ -201,17 +202,8 @@ func (c *createEntryImpl) Commit() CreateEntry {
 		return c.setErr(err)
 	}
 
-	return c.
-		updateBalance(entries)
-}
-
-func (c *createEntryImpl) updateBalance(entries JournalEntriesList) *createEntryImpl {
-	var err error
-
-	bcalculate := NewBalanceCalculate(c.tx, MapAccount(c.accountMap))
-
-	for _, entry := range entries {
-		err = bcalculate.AddEntry(entry)
+	if c.afterCommit != nil {
+		err = c.afterCommit(c)
 		if err != nil {
 			return c.setErr(err)
 		}
@@ -219,6 +211,49 @@ func (c *createEntryImpl) updateBalance(entries JournalEntriesList) *createEntry
 
 	return c
 }
+
+// func (c *createEntryImpl) updateBalance(entries JournalEntriesList) *createEntryImpl {
+// 	var err error
+
+// 	labels := &report_iface.TxLabelExtra{}
+// 	if c.labelExtra != nil {
+// 		tagIDs := []uint64{}
+// 		for _, tagID := range c.labelExtra.TagIDs {
+// 			tagIDs = append(tagIDs, uint64(tagID))
+// 		}
+// 		labels = &report_iface.TxLabelExtra{
+// 			CsId:       uint64(c.labelExtra.CsID),
+// 			ShopId:     uint64(c.labelExtra.ShopID),
+// 			SupplierId: uint64(c.labelExtra.SupplierID),
+// 			TagIds:     tagIDs,
+// 		}
+// 	}
+
+// 	entryPayload := []*report_iface.EntryPayload{}
+// 	for _, entry := range entries {
+// 		entryPayload = append(entryPayload, &report_iface.EntryPayload{
+// 			Id:            uint64(entry.ID),
+// 			TransactionId: uint64(entry.TransactionID),
+// 			Desc:          entry.Desc,
+// 			AccountId:     uint64(entry.AccountID),
+// 			Debit:         entry.Debit,
+// 			Credit:        entry.Credit,
+// 			TeamId:        uint64(entry.TeamID),
+// 			EntryTime:     timestamppb.New(entry.EntryTime),
+// 		})
+// 	}
+
+// 	err = onEntryCreate(&report_iface.DailyUpdateBalanceRequest{
+// 		LabelExtra: labels,
+// 		Entries:    entryPayload,
+// 	})
+
+// 	if err != nil {
+// 		return c.setErr(err)
+// 	}
+
+// 	return c
+// }
 
 // Desc implements CreateEntry.
 func (c *createEntryImpl) Desc(desc string) CreateEntry {
@@ -327,12 +362,12 @@ func (c *createEntryImpl) setErr(err error) *createEntryImpl {
 	return c
 }
 
-func NewCreateEntry(tx *gorm.DB, teamID uint, createdByID uint) CreateEntry {
-	return &createEntryImpl{
-		tx:          tx,
-		teamID:      teamID,
-		createdByID: createdByID,
-		entries:     map[uint]*JournalEntry{},
-		accountMap:  map[uint]*Account{},
-	}
-}
+// func NewCreateEntry(tx *gorm.DB, teamID uint, createdByID uint) CreateEntry {
+// 	return &createEntryImpl{
+// 		tx:          tx,
+// 		teamID:      teamID,
+// 		createdByID: createdByID,
+// 		entries:     map[uint]*JournalEntry{},
+// 		accountMap:  map[uint]*Account{},
+// 	}
+// }

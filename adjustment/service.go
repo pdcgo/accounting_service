@@ -57,7 +57,7 @@ func (a *adjServiceImpl) AdjCreate(
 	}
 
 	db := a.db.WithContext(ctx)
-	err = db.Transaction(func(tx *gorm.DB) error {
+	err = accounting_core.OpenTransaction(db, func(tx *gorm.DB, bookmng accounting_core.BookManage) error {
 		id := time.Now().Unix()
 		ref := accounting_core.NewRefID(&accounting_core.RefData{
 			RefType: accounting_core.AdminAdjustmentRef,
@@ -72,8 +72,8 @@ func (a *adjServiceImpl) AdjCreate(
 			Created:     time.Now(),
 		}
 
-		err = accounting_core.
-			NewTransaction(tx).
+		err = bookmng.
+			NewTransaction().
 			Create(&tran).
 			Err()
 		if err != nil {
@@ -81,8 +81,8 @@ func (a *adjServiceImpl) AdjCreate(
 		}
 
 		for _, book := range pay.Books {
-			entry := accounting_core.
-				NewCreateEntry(tx, uint(book.TeamId), agent.IdentityID())
+			entry := bookmng.
+				NewCreateEntry(uint(book.TeamId), agent.IdentityID())
 
 			for _, pentry := range book.Entries {
 				entry.Set(uint(pentry.AccountId), pentry.Credit, pentry.Debit)

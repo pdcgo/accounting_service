@@ -39,8 +39,7 @@ func (p *paymentServiceImpl) PaymentAccept(
 	if err != nil {
 		return connect.NewResponse(&result), err
 	}
-
-	err = db.Transaction(func(tx *gorm.DB) error {
+	err = accounting_core.OpenTransaction(db, func(tx *gorm.DB, bookmng accounting_core.BookManage) error {
 		var payment accounting_model.Payment
 		err = tx.
 			Clauses(clause.Locking{
@@ -80,8 +79,8 @@ func (p *paymentServiceImpl) PaymentAccept(
 		desc := accounting_core.EntryDescOption(fmt.Sprintf("accept payment %s", ref))
 
 		// sisi pengirim
-		err = accounting_core.
-			NewCreateEntry(tx, payment.FromTeamID, agent.IdentityID()).
+		err = bookmng.
+			NewCreateEntry(payment.FromTeamID, agent.IdentityID()).
 			From(&accounting_core.EntryAccountPayload{
 				Key:    accounting_core.PaymentInTransitAccount,
 				TeamID: payment.ToTeamID,
@@ -99,8 +98,8 @@ func (p *paymentServiceImpl) PaymentAccept(
 		}
 
 		// sisi penerima
-		err = accounting_core.
-			NewCreateEntry(tx, payment.ToTeamID, agent.IdentityID()).
+		err = bookmng.
+			NewCreateEntry(payment.ToTeamID, agent.IdentityID()).
 			From(&accounting_core.EntryAccountPayload{
 				Key:    accounting_core.PaymentInTransitAccount,
 				TeamID: payment.ToTeamID,

@@ -48,7 +48,7 @@ func (r *revenueServiceImpl) Withdrawal(
 		return res, err
 	}
 
-	err = db.Transaction(func(tx *gorm.DB) error {
+	err = accounting_core.OpenTransaction(db, func(tx *gorm.DB, bookmng accounting_core.BookManage) error {
 		ref := accounting_core.NewRefID(&accounting_core.RefData{
 			RefType: accounting_core.WithdrawalRef,
 			ID:      uint(pay.ShopId),
@@ -88,8 +88,8 @@ func (r *revenueServiceImpl) Withdrawal(
 				Created:     time.Now(),
 			}
 
-			err = accounting_core.
-				NewTransaction(tx).
+			err = bookmng.
+				NewTransaction().
 				Create(&tran).
 				Err()
 
@@ -98,8 +98,8 @@ func (r *revenueServiceImpl) Withdrawal(
 			}
 		}
 
-		err = accounting_core.
-			NewCreateEntry(tx, uint(pay.TeamId), agent.GetUserID()).
+		err = bookmng.
+			NewCreateEntry(uint(pay.TeamId), agent.GetUserID()).
 			From(&accounting_core.EntryAccountPayload{
 				Key:    accounting_core.SellingReceivableAccount,
 				TeamID: uint(pay.TeamId),
@@ -161,67 +161,6 @@ func (r *revenueServiceImpl) OrderCancel(
 	})
 
 	return res, err
-}
-
-func (r *revenueServiceImpl) crossProductStock(
-	tx *gorm.DB,
-	agent authorization_iface.Identity,
-	pay *revenue_iface.OnOrderRequest,
-	tran *accounting_core.Transaction,
-) error {
-	var err error
-	if len(pay.BorrowStock) == 0 {
-		return nil
-	}
-
-	for _, bor := range pay.BorrowStock {
-		err = accounting_core.
-			NewCreateEntry(tx, uint(bor.TeamId), agent.GetUserID()).
-			From(&accounting_core.EntryAccountPayload{
-				Key:    accounting_core.StockReadyAccount,
-				TeamID: uint(pay.WarehouseId),
-			}, bor.Amount).
-			To(&accounting_core.EntryAccountPayload{
-				Key:    accounting_core.StockBorrowCostAmount,
-				TeamID: uint(pay.WarehouseId),
-			}, bor.Amount).
-			To(&accounting_core.EntryAccountPayload{
-				Key:    accounting_core.BorrowStockRevenueAccount,
-				TeamID: uint(pay.TeamId),
-			}, bor.SellAmount).
-			To(&accounting_core.EntryAccountPayload{
-				Key:    accounting_core.ReceivableAccount,
-				TeamID: uint(pay.TeamId),
-			}, bor.SellAmount).
-			Transaction(tran).
-			Commit().
-			Err()
-
-		if err != nil {
-			return err
-		}
-
-		err = accounting_core.
-			NewCreateEntry(tx, uint(pay.TeamId), agent.GetUserID()).
-			To(&accounting_core.EntryAccountPayload{
-				Key:    accounting_core.StockBorrowCostAmount,
-				TeamID: uint(bor.TeamId),
-			}, bor.SellAmount).
-			To(&accounting_core.EntryAccountPayload{
-				Key:    accounting_core.PayableAccount,
-				TeamID: uint(bor.TeamId),
-			}, bor.SellAmount).
-			Transaction(tran).
-			Commit().
-			Err()
-
-		if err != nil {
-			return err
-		}
-
-	}
-
-	return nil
 }
 
 func NewRevenueService(db *gorm.DB, auth authorization_iface.Authorization) *revenueServiceImpl {

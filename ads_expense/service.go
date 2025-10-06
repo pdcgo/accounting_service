@@ -53,7 +53,7 @@ func (a *adsExpenseImpl) AdsExCreate(
 	}
 
 	db := a.db.WithContext(ctx)
-	err = db.Transaction(func(tx *gorm.DB) error {
+	err = accounting_core.OpenTransaction(db, func(tx *gorm.DB, bookmng accounting_core.BookManage) error {
 		ref := accounting_core.NewStringRefID(&accounting_core.StringRefData{
 			RefType: accounting_core.AdsPaymentRef,
 			ID:      fmt.Sprintf("%d_%d", pay.ShopId, time.Now().Unix()),
@@ -95,7 +95,7 @@ func (a *adsExpenseImpl) AdsExCreate(
 			fixtags = append(fixtags, tag.Name)
 		}
 
-		err = accounting_core.NewTransaction(tx).
+		err = bookmng.NewTransaction().
 			Create(&tran).
 			AddShopID(uint(pay.ShopId)).
 			AddTags(fixtags).
@@ -106,8 +106,8 @@ func (a *adsExpenseImpl) AdsExCreate(
 		}
 
 		// bookeeping sellernya
-		err = accounting_core.
-			NewCreateEntry(tx, uint(pay.TeamId), agent.IdentityID()).
+		err = bookmng.
+			NewCreateEntry(uint(pay.TeamId), agent.IdentityID()).
 			From(&accounting_core.EntryAccountPayload{
 				Key:    accounting_core.CashAccount,
 				TeamID: uint(pay.TeamId),

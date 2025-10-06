@@ -26,8 +26,7 @@ func (i *stockAdjustment) adjustment() (*stock_iface.StockAdjustmentResponse, er
 	db := i.s.db.WithContext(i.ctx)
 	pay := i.req.Msg
 
-	err = db.Transaction(func(tx *gorm.DB) error {
-
+	err = accounting_core.OpenTransaction(db, func(tx *gorm.DB, bookmng accounting_core.BookManage) error {
 		ref := accounting_core.NewRefID(&accounting_core.RefData{
 			RefType: accounting_core.StockAdjustmentRef,
 			ID:      uint(pay.ExtTxId),
@@ -41,8 +40,8 @@ func (i *stockAdjustment) adjustment() (*stock_iface.StockAdjustmentResponse, er
 			Created:     time.Now(),
 		}
 
-		err = accounting_core.
-			NewTransaction(tx).
+		err = bookmng.
+			NewTransaction().
 			Create(&tran).
 			Err()
 
@@ -51,12 +50,12 @@ func (i *stockAdjustment) adjustment() (*stock_iface.StockAdjustmentResponse, er
 		}
 
 		// sisi selling
-		entrySel := accounting_core.
-			NewCreateEntry(tx, uint(pay.TeamId), i.agent.IdentityID())
+		entrySel := bookmng.
+			NewCreateEntry(uint(pay.TeamId), i.agent.IdentityID())
 
 		// sisi gudang
-		entryWare := accounting_core.
-			NewCreateEntry(tx, uint(pay.WarehouseId), i.agent.IdentityID())
+		entryWare := bookmng.
+			NewCreateEntry(uint(pay.WarehouseId), i.agent.IdentityID())
 
 		var lost, broken, lostCharge, brokenCharge float64
 

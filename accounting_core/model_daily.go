@@ -22,6 +22,11 @@ type AccountDailyBalance struct {
 	Account *Account `gorm:"-"`
 }
 
+// GetDebitCredit implements DailyBalance.
+func (a *AccountDailyBalance) GetDebitCredit() (debit float64, credit float64, balance float64) {
+	return a.Debit, a.Credit, a.Balance
+}
+
 type ShopDailyBalance struct {
 	ID            uint      `json:"id" gorm:"primarykey"`
 	Day           time.Time `json:"day" gorm:"index:shop_daily_key_unique,unique"`
@@ -37,7 +42,7 @@ type ShopDailyBalance struct {
 
 // GetDebitCredit implements DailyBalance.
 func (s *ShopDailyBalance) GetDebitCredit() (debit float64, credit float64, balance float64) {
-	panic("unimplemented")
+	return s.Debit, s.Credit, s.Balance
 }
 
 type CsDailyBalance struct {
@@ -55,7 +60,7 @@ type CsDailyBalance struct {
 
 // GetDebitCredit implements DailyBalance.
 func (c *CsDailyBalance) GetDebitCredit() (debit float64, credit float64, balance float64) {
-	panic("unimplemented")
+	return c.Debit, c.Credit, c.Balance
 }
 
 type SupplierDailyBalance struct {
@@ -73,7 +78,7 @@ type SupplierDailyBalance struct {
 
 // GetDebitCredit implements DailyBalance.
 func (s *SupplierDailyBalance) GetDebitCredit() (debit float64, credit float64, balance float64) {
-	panic("unimplemented")
+	return s.Debit, s.Credit, s.Balance
 }
 
 type CustomLabelDailyBalance struct {
@@ -87,4 +92,9 @@ type CustomLabelDailyBalance struct {
 	Balance       float64   `json:"balance"`
 
 	Account *Account `gorm:"-"`
+}
+
+// GetDebitCredit implements DailyBalance.
+func (c *CustomLabelDailyBalance) GetDebitCredit() (debit float64, credit float64, balance float64) {
+	return c.Debit, c.Credit, c.Balance
 }

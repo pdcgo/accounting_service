@@ -30,10 +30,11 @@ type TxLabelExtra struct {
 }
 
 type createTansactionImpl struct {
-	tx         *gorm.DB
-	err        error
-	tran       *Transaction
-	labelExtra TxLabelExtra
+	tx                     *gorm.DB
+	err                    error
+	tran                   *Transaction
+	labelExtra             TxLabelExtra
+	afterTransactionCreate func(labels *TxLabelExtra) error
 }
 
 // AddCustomerServiceID implements CreateTransaction.
@@ -210,6 +211,13 @@ func (c *createTansactionImpl) Create(tran *Transaction) CreateTransaction {
 		return c.setErr(err)
 	}
 
+	if c.afterTransactionCreate != nil {
+		err = c.afterTransactionCreate(&c.labelExtra)
+		if err != nil {
+			return c.setErr(err)
+		}
+	}
+
 	c.tran = tran
 
 	return c
@@ -271,14 +279,14 @@ func (c *createTansactionImpl) setErr(err error) *createTansactionImpl {
 	return c
 }
 
-func NewTransaction(tx *gorm.DB) CreateTransaction {
-	return &createTansactionImpl{
-		tx: tx,
-		labelExtra: TxLabelExtra{
-			TagIDs: []uint{},
-		},
-	}
-}
+// func NewTransaction(tx *gorm.DB) CreateTransaction {
+// 	return &createTansactionImpl{
+// 		tx: tx,
+// 		labelExtra: TxLabelExtra{
+// 			TagIDs: []uint{},
+// 		},
+// 	}
+// }
 
 var ErrTransactionNotLoaded = errors.New("transaction not loaded")
 
@@ -404,24 +412,32 @@ func (t *transactionMutationImpl) RollbackEntry(userID uint, desc string) Transa
 
 	teamEntries := map[uint]CreateEntry{}
 
-	for _, entry := range entries {
-		if teamEntries[entry.TeamID] == nil {
-			teamEntries[entry.TeamID] = NewCreateEntry(t.tx, entry.TeamID, userID)
+	err = OpenTransaction(t.tx, func(tx *gorm.DB, bookmng BookManage) error {
+		for _, entry := range entries {
+			if teamEntries[entry.TeamID] == nil {
+				teamEntries[entry.TeamID] = bookmng.NewCreateEntry(entry.TeamID, userID)
+			}
+
+			teamEntries[entry.TeamID].Set(entry.AccountID, entry.Debit, entry.Credit)
 		}
 
-		teamEntries[entry.TeamID].Set(entry.AccountID, entry.Debit, entry.Credit)
-	}
+		for _, nentries := range teamEntries {
+			err = nentries.
+				TransactionID(t.data.ID).
+				Desc(desc).
+				Commit().
+				Err()
 
-	for _, nentries := range teamEntries {
-		err = nentries.
-			TransactionID(t.data.ID).
-			Desc(desc).
-			Commit().
-			Err()
-
-		if err != nil {
-			return t.setErr(err)
+			if err != nil {
+				return err
+			}
 		}
+
+		return nil
+	})
+
+	if err != nil {
+		return t.setErr(err)
 	}
 
 	return t

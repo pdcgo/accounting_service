@@ -248,7 +248,7 @@ func (a *accountServiceImpl) AccountBalanceInit(
 		return connect.NewResponse(&result), err
 	}
 
-	err = db.Transaction(func(tx *gorm.DB) error {
+	err = accounting_core.OpenTransaction(db, func(tx *gorm.DB, bookmng accounting_core.BookManage) error {
 		var account accounting_model.BankAccountV2
 		trans := accounting_core.Transaction{
 			CreatedByID: agent.GetUserID(),
@@ -271,8 +271,8 @@ func (a *accountServiceImpl) AccountBalanceInit(
 			return errors.New("account balance not Empty")
 		}
 
-		err = accounting_core.
-			NewTransaction(tx).
+		err = bookmng.
+			NewTransaction().
 			Create(&trans).
 			Err()
 
@@ -280,8 +280,8 @@ func (a *accountServiceImpl) AccountBalanceInit(
 			return err
 		}
 
-		err = accounting_core.
-			NewCreateEntry(tx, account.TeamID, agent.GetUserID()).
+		err = bookmng.
+			NewCreateEntry(account.TeamID, agent.GetUserID()).
 			From(&accounting_core.EntryAccountPayload{
 				Key:    accounting_core.CapitalStartAccount,
 				TeamID: authorization.RootDomain,
@@ -340,8 +340,8 @@ func (a *accountServiceImpl) TransferCreate(
 	if err != nil {
 		return connect.NewResponse(&result), err
 	}
-
-	err = a.db.Transaction(func(tx *gorm.DB) error {
+	db := a.db.WithContext(ctx)
+	accounting_core.OpenTransaction(db, func(tx *gorm.DB, bookmng accounting_core.BookManage) error {
 		var facc accounting_model.BankAccountV2
 		var tacc accounting_model.BankAccountV2
 		txclause := func() *gorm.DB {
@@ -388,8 +388,8 @@ func (a *accountServiceImpl) TransferCreate(
 			Created:     time.Now(),
 		}
 
-		err = accounting_core.
-			NewTransaction(tx).
+		err = bookmng.
+			NewTransaction().
 			Create(&trans).
 			Err()
 
@@ -414,8 +414,8 @@ func (a *accountServiceImpl) TransferCreate(
 			return err
 		}
 		// book from
-		entry := accounting_core.
-			NewCreateEntry(tx, uint(pay.TeamId), agent.GetUserID()).
+		entry := bookmng.
+			NewCreateEntry(uint(pay.TeamId), agent.GetUserID()).
 			From(&accounting_core.EntryAccountPayload{
 				Key:    accounting_core.CashAccount,
 				TeamID: facc.TeamID,
@@ -441,8 +441,8 @@ func (a *accountServiceImpl) TransferCreate(
 		}
 
 		// book to
-		entry = accounting_core.
-			NewCreateEntry(tx, tacc.TeamID, agent.GetUserID()).
+		entry = bookmng.
+			NewCreateEntry(tacc.TeamID, agent.GetUserID()).
 			From(&accounting_core.EntryAccountPayload{
 				Key:    accounting_core.CashAccount,
 				TeamID: facc.TeamID,
@@ -461,7 +461,6 @@ func (a *accountServiceImpl) TransferCreate(
 		}
 
 		return nil
-
 	})
 
 	return connect.NewResponse(&result), err

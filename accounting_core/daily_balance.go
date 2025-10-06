@@ -159,7 +159,16 @@ func (d *DailyBalanceCalculate) UpdateDaily(
 			Balance:       balance,
 		}
 
-		err = d.updateAccountDailyBalance(dayBalance)
+		err = d.updateDailyBalance(
+			d.
+				tx.
+				Model(&AccountDailyBalance{}).
+				Where("day = ?", dayBalance.Day).
+				Where("account_id = ?", dayBalance.AccountID).
+				Where("journal_team_id = ?", dayBalance.JournalTeamID),
+			dayBalance,
+		)
+
 		if err != nil {
 			return err
 		}
@@ -257,7 +266,16 @@ func (d *DailyBalanceCalculate) UpdateDaily(
 					Balance:       balance,
 				}
 
-				err = d.updateCustomDailyBalance(customDayBalance)
+				err = d.updateDailyBalance(
+					d.
+						tx.
+						Model(&CustomLabelDailyBalance{}).
+						Where("custom_id = ?", customDayBalance.CustomID).
+						Where("day = ?", customDayBalance.Day).
+						Where("account_id = ?", customDayBalance.AccountID).
+						Where("journal_team_id = ?", customDayBalance.JournalTeamID),
+					customDayBalance,
+				)
 
 				if err != nil {
 					return err
@@ -268,10 +286,6 @@ func (d *DailyBalanceCalculate) UpdateDaily(
 	}
 
 	return nil
-}
-
-func (d *DailyBalanceCalculate) updateCustomDailyBalance(daily *CustomLabelDailyBalance) error {
-	panic("unimplemented")
 }
 
 type DailyBalance interface {
@@ -308,39 +322,6 @@ func (d *DailyBalanceCalculate) updateDailyBalance(query *gorm.DB, daily DailyBa
 
 	return err
 
-}
-
-func (d *DailyBalanceCalculate) updateAccountDailyBalance(daily *AccountDailyBalance) error {
-	var err error
-	row := d.
-		tx.
-		Model(&AccountDailyBalance{}).
-		Where("day = ?", daily.Day).
-		Where("account_id = ?", daily.AccountID).
-		Where("journal_team_id = ?", daily.JournalTeamID).
-		Updates(map[string]interface{}{
-			"debit":   gorm.Expr("debit + ?", daily.Debit),
-			"credit":  gorm.Expr("credit + ?", daily.Credit),
-			"balance": gorm.Expr("balance + ?", daily.Balance),
-		})
-
-	if row.RowsAffected == 0 {
-		err = row.Error
-		if err != nil {
-			return err
-		}
-
-		err = d.
-			tx.
-			Save(daily).
-			Error
-
-		if err != nil {
-			return err
-		}
-	}
-
-	return err
 }
 
 type TransactionCalculate interface {

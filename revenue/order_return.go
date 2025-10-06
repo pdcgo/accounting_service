@@ -39,7 +39,7 @@ func (r *revenueServiceImpl) OrderReturn(
 	}
 
 	db := r.db.WithContext(ctx)
-	err = db.Transaction(func(tx *gorm.DB) error {
+	err = accounting_core.OpenTransaction(db, func(tx *gorm.DB, bookmng accounting_core.BookManage) error {
 		ref := accounting_core.NewRefID(&accounting_core.RefData{
 			RefType: accounting_core.OrderReturnRef,
 			ID:      uint(pay.OrderId),
@@ -52,8 +52,8 @@ func (r *revenueServiceImpl) OrderReturn(
 			Created:     time.Now(),
 		}
 
-		err = accounting_core.
-			NewTransaction(tx).
+		err = bookmng.
+			NewTransaction().
 			Create(&tran).
 			Err()
 		if err != nil {
@@ -61,8 +61,8 @@ func (r *revenueServiceImpl) OrderReturn(
 		}
 
 		// entry selling
-		entry := accounting_core.
-			NewCreateEntry(tx, uint(pay.TeamId), agent.IdentityID()).
+		entry := bookmng.
+			NewCreateEntry(uint(pay.TeamId), agent.IdentityID()).
 			From(&accounting_core.EntryAccountPayload{
 				Key:    accounting_core.SalesRevenueAccount,
 				TeamID: uint(pay.TeamId),
@@ -90,8 +90,8 @@ func (r *revenueServiceImpl) OrderReturn(
 		}
 
 		// entry gudang
-		entry = accounting_core.
-			NewCreateEntry(tx, uint(pay.WarehouseId), agent.IdentityID()).
+		entry = bookmng.
+			NewCreateEntry(uint(pay.WarehouseId), agent.IdentityID()).
 			From(&accounting_core.EntryAccountPayload{
 				Key:    accounting_core.StockCostAccount,
 				TeamID: uint(pay.TeamId),

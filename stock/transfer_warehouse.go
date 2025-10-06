@@ -39,12 +39,12 @@ func (s *stockServiceImpl) TransferToWarehouse(
 	teamProduct := map[uint64]TransferItemList{}
 
 	db := s.db.WithContext(ctx)
-	err = db.Transaction(func(tx *gorm.DB) error {
+	err = accounting_core.OpenTransaction(db, func(tx *gorm.DB, bookmng accounting_core.BookManage) error {
 		for _, d := range pay.Products {
 			data := d
 			if teamProduct[d.TeamId] == nil {
 				teamProduct[d.TeamId] = TransferItemList{}
-				teamEntries[d.TeamId] = accounting_core.NewCreateEntry(tx, uint(d.TeamId), agent.IdentityID())
+				teamEntries[d.TeamId] = bookmng.NewCreateEntry(uint(d.TeamId), agent.IdentityID())
 			}
 			teamProduct[d.TeamId] = append(teamProduct[d.TeamId], data)
 		}
@@ -62,8 +62,8 @@ func (s *stockServiceImpl) TransferToWarehouse(
 			Created:     time.Now(),
 		}
 
-		err = accounting_core.
-			NewTransaction(tx).
+		err = bookmng.
+			NewTransaction().
 			Create(&tran).
 			Err()
 
@@ -72,7 +72,7 @@ func (s *stockServiceImpl) TransferToWarehouse(
 		}
 
 		// source ware
-		fromware := accounting_core.NewCreateEntry(tx, uint(pay.FromWarehouseId), agent.IdentityID())
+		fromware := bookmng.NewCreateEntry(uint(pay.FromWarehouseId), agent.IdentityID())
 		// toware := accounting_core.NewCreateEntry(tx, uint(pay.ToWarehouseId), agent.IdentityID())
 
 		for teamID, products := range teamProduct {
@@ -191,13 +191,12 @@ func (s *stockServiceImpl) TransferToWarehouseAccept(
 
 	teamEntries := map[uint64]accounting_core.CreateEntry{}
 	teamProduct := map[uint64]TransferItemList{}
-
-	err = db.Transaction(func(tx *gorm.DB) error {
+	err = accounting_core.OpenTransaction(db, func(tx *gorm.DB, bookmng accounting_core.BookManage) error {
 		for _, d := range pay.Products {
 			data := d
 			if teamProduct[d.TeamId] == nil {
 				teamProduct[d.TeamId] = TransferItemList{}
-				teamEntries[d.TeamId] = accounting_core.NewCreateEntry(tx, uint(d.TeamId), agent.IdentityID())
+				teamEntries[d.TeamId] = bookmng.NewCreateEntry(uint(d.TeamId), agent.IdentityID())
 			}
 			teamProduct[d.TeamId] = append(teamProduct[d.TeamId], data)
 		}
@@ -215,8 +214,8 @@ func (s *stockServiceImpl) TransferToWarehouseAccept(
 			Created:     time.Now(),
 		}
 
-		err = accounting_core.
-			NewTransaction(tx).
+		err = bookmng.
+			NewTransaction().
 			Create(&tran).
 			Err()
 
@@ -225,7 +224,7 @@ func (s *stockServiceImpl) TransferToWarehouseAccept(
 		}
 
 		// transfer acccept
-		toware := accounting_core.NewCreateEntry(tx, uint(pay.ToWarehouseId), agent.IdentityID())
+		toware := bookmng.NewCreateEntry(uint(pay.ToWarehouseId), agent.IdentityID())
 
 		for teamID, products := range teamProduct {
 			totalAmount := products.GetTotalAmount()

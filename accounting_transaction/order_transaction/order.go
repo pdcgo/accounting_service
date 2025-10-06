@@ -54,9 +54,9 @@ func (o *orderTransactionImpl) AdjustmentOrder() error {
 func (o *orderTransactionImpl) CreateOrder(payload *CreateOrderPayload) error {
 	var tran accounting_core.Transaction
 	var err error
-	err = o.tx.Transaction(func(tx *gorm.DB) error {
-		err = accounting_core.
-			NewTransaction(tx).
+	err = accounting_core.OpenTransaction(o.tx, func(tx *gorm.DB, bookmng accounting_core.BookManage) error {
+		err = bookmng.
+			NewTransaction().
 			Create(&tran).
 			Labels([]*accounting_core.Label{
 				{
@@ -78,7 +78,7 @@ func (o *orderTransactionImpl) CreateOrder(payload *CreateOrderPayload) error {
 			}).
 			Err()
 
-		entry := accounting_core.NewCreateEntry(tx, payload.TeamID, o.agent.GetUserID())
+		entry := bookmng.NewCreateEntry(payload.TeamID, o.agent.GetUserID())
 		err = entry.
 			From(&accounting_core.EntryAccountPayload{
 				Key:    accounting_core.StockReadyAccount,
@@ -98,7 +98,7 @@ func (o *orderTransactionImpl) CreateOrder(payload *CreateOrderPayload) error {
 		if len(payload.CrossProductAmount) != 0 {
 			crossTotal := payload.CrossProductAmount.Total()
 
-			entry = accounting_core.NewCreateEntry(tx, payload.TeamID, o.agent.GetUserID())
+			entry = bookmng.NewCreateEntry(payload.TeamID, o.agent.GetUserID())
 
 			entry.
 				From(&accounting_core.EntryAccountPayload{
