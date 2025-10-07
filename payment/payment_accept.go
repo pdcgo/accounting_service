@@ -52,7 +52,7 @@ func (p *paymentServiceImpl) PaymentAccept(
 			return err
 		}
 
-		if payment.FromTeamID != uint(pay.TeamId) {
+		if payment.ToTeamID != uint(pay.TeamId) {
 			return errors.New("payment not you own")
 		}
 		if payment.Status != payment_iface.PaymentStatus_PAYMENT_STATUS_PENDING {
