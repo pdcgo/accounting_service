@@ -102,7 +102,7 @@ func (p *paymentServiceImpl) PaymentAccept(
 			NewCreateEntry(payment.ToTeamID, agent.IdentityID()).
 			From(&accounting_core.EntryAccountPayload{
 				Key:    accounting_core.PaymentInTransitAccount,
-				TeamID: payment.ToTeamID,
+				TeamID: payment.FromTeamID,
 			}, payment.Amount, desc).
 			To(&accounting_core.EntryAccountPayload{
 				Key:    accounting_core.CashAccount,
