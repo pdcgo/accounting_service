@@ -121,6 +121,24 @@ func (s *setupServiceImpl) Setup(
 				Policy: authorization_iface.Allow,
 			},
 		},
+		&accounting_model.Payment{}: []*authorization_iface.RoleAddPermissionItem{
+			{
+				Action: authorization_iface.Create,
+				Policy: authorization_iface.Allow,
+			},
+			{
+				Action: authorization_iface.Read,
+				Policy: authorization_iface.Allow,
+			},
+			{
+				Action: authorization_iface.Delete,
+				Policy: authorization_iface.Allow,
+			},
+			{
+				Action: authorization_iface.Update,
+				Policy: authorization_iface.Allow,
+			},
+		},
 	})
 
 	if err != nil {
@@ -147,6 +165,24 @@ func (s *setupServiceImpl) Setup(
 			},
 		},
 		&accounting_model.ExpenseEntity{}: []*authorization_iface.RoleAddPermissionItem{
+			{
+				Action: authorization_iface.Create,
+				Policy: authorization_iface.Allow,
+			},
+			{
+				Action: authorization_iface.Read,
+				Policy: authorization_iface.Allow,
+			},
+			{
+				Action: authorization_iface.Delete,
+				Policy: authorization_iface.Allow,
+			},
+			{
+				Action: authorization_iface.Update,
+				Policy: authorization_iface.Allow,
+			},
+		},
+		&accounting_model.Payment{}: []*authorization_iface.RoleAddPermissionItem{
 			{
 				Action: authorization_iface.Create,
 				Policy: authorization_iface.Allow,
