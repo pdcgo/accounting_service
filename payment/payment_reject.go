@@ -57,7 +57,7 @@ func (p *paymentServiceImpl) PaymentReject(
 			return err
 		}
 
-		if payment.FromTeamID != uint(pay.TeamId) {
+		if payment.ToTeamID != uint(pay.TeamId) {
 			return errors.New("payment not you own")
 		}
 
