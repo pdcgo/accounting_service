@@ -62,6 +62,12 @@ func (s *setupServiceImpl) Setup(
 		}
 
 		if old.ID != 0 {
+			old.BalanceType = acc.BalanceType
+			old.Coa = acc.Coa
+			err = s.db.Save(&old).Error
+			if err != nil {
+				return err
+			}
 			continue
 		}
 

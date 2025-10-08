@@ -8,7 +8,9 @@ import (
 	"connectrpc.com/connect"
 	"github.com/pdcgo/accounting_service/accounting_core"
 	"github.com/pdcgo/accounting_service/accounting_model"
+	"github.com/pdcgo/schema/services/common/v1"
 	"github.com/pdcgo/schema/services/payment_iface/v1"
+	"github.com/pdcgo/shared/authorization"
 	"github.com/pdcgo/shared/interfaces/authorization_iface"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
@@ -29,10 +31,18 @@ func (p *paymentServiceImpl) PaymentReject(
 		auth.
 		AuthIdentityFromHeader(req.Header())
 
+	var domainID uint
+	switch pay.RequestFrom {
+	case common.RequestFrom_REQUEST_FROM_ADMIN:
+		domainID = authorization.RootDomain
+	default:
+		domainID = uint(pay.TeamId)
+	}
+
 	err = identity.
 		HasPermission(authorization_iface.CheckPermissionGroup{
 			&accounting_model.Payment{}: &authorization_iface.CheckPermission{
-				DomainID: uint(pay.TeamId),
+				DomainID: domainID,
 				Actions:  []authorization_iface.Action{authorization_iface.Update},
 			},
 		}).
