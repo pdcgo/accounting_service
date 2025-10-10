@@ -1,0 +1,19 @@
+stateDiagram-v2
+    [*] --> Order
+    Order --> Created
+    Created --> Process
+    Process --> Dikirim
+    Process --> Cancel
+    Created --> Cancel
+    Dikirim --> Problem
+    Problem --> Lost
+    Dikirim --> Return
+    Dikirim --> Completed
+    Completed --> [*]
+    Return --> [*]
+    Lost --> [*]
+    Cancel --> [*]
+
+
+    Order --> Revenue
+    Revenue --> Withdrawal

@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"connectrpc.com/connect"
+	"github.com/pdcgo/accounting_service/accounting_core"
 	"github.com/pdcgo/schema/services/accounting_iface/v1"
 	"github.com/pdcgo/shared/interfaces/authorization_iface"
 	"gorm.io/gorm"
@@ -42,6 +43,19 @@ func (l *coreServiceImpl) AccountKeyList(
 		Find(&result.Keys).
 		Error
 
+	if err != nil {
+		return connect.NewResponse(&result), err
+	}
+
+	for _, item := range result.Keys {
+		item.FilterExtra = filterExtra[accounting_core.AccountKey(item.Key)]
+		if item.FilterExtra == nil {
+			item.FilterExtra = &accounting_iface.AccountFilterExtra{
+				CustomTag: true,
+			}
+		}
+	}
+
 	return connect.NewResponse(&result), err
 }
 
@@ -50,4 +64,13 @@ func NewCoreService(db *gorm.DB, auth authorization_iface.Authorization) *coreSe
 		db:   db,
 		auth: auth,
 	}
+}
+
+var filterExtra = map[accounting_core.AccountKey]*accounting_iface.AccountFilterExtra{
+	accounting_core.SellingReceivableAccount: {
+		Cs:        true,
+		Supplier:  false,
+		Shop:      true,
+		CustomTag: true,
+	},
 }

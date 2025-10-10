@@ -47,7 +47,8 @@ func (l *ledgerServiceImpl) EntryList(
 		TeamID(uint(pay.TeamId)).
 		AccountKey(pay.AccountKey).
 		TimeRange(pay.TimeRange).
-		Page(pay.Page, result.PageInfo)
+		Page(pay.Page, result.PageInfo).
+		Sort(pay.Sort)
 
 	err = view.
 		Iterate(func(d *accounting_iface.EntryItem) error {
@@ -163,6 +164,7 @@ type LedgerView interface {
 	TimeRange(trange *common.TimeFilter) LedgerView
 	Page(page *common.PageFilter, pageinfo *common.PageInfo) LedgerView
 	Count(c *int64) LedgerView
+	Sort(sortpay *accounting_iface.EntryListSort) LedgerView
 	Iterate(handle func(d *accounting_iface.EntryItem) error) error
 	Find(dest interface{}) LedgerView
 	Err() error
@@ -172,6 +174,37 @@ type ledgerViewImpl struct {
 	db    *gorm.DB
 	query *gorm.DB
 	err   error
+}
+
+// Sort implements LedgerView.
+func (l *ledgerViewImpl) Sort(sortpay *accounting_iface.EntryListSort) LedgerView {
+	if sortpay == nil {
+		return l
+	}
+
+	var field string
+	var orderq string
+	switch sortpay.Field {
+	case accounting_iface.EntryFieldSort_ENTRY_FIELD_SORT_ENTRYTIME:
+		field = "je.entry_time"
+	default:
+		field = "je.entry_time"
+	}
+
+	switch sortpay.Type {
+	case common.SortType_SORT_TYPE_DESC:
+		orderq = fmt.Sprintf("%s desc", field)
+	case common.SortType_SORT_TYPE_ASC:
+		orderq = fmt.Sprintf("%s asc", field)
+	default:
+		orderq = fmt.Sprintf("%s desc", field)
+	}
+
+	l.query = l.
+		query.
+		Order(orderq)
+
+	return l
 }
 
 // Page implements LedgerView.
@@ -324,7 +357,7 @@ func (l *ledgerViewImpl) Find(dest interface{}) LedgerView {
 	err := l.
 		query.
 		Select(l.selectFields()).
-		Order("je.entry_time desc").
+		// Order("je.entry_time desc").
 		Find(dest).
 		Error
 
