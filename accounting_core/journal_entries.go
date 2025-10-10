@@ -47,8 +47,17 @@ func EntryDescOption(desc string) EntryOption {
 	}
 }
 
+type CommitOption func(entry *JournalEntry) error
+
+func RollbackOption() CommitOption {
+	return func(entry *JournalEntry) error {
+		entry.Rollback = true
+		return nil
+	}
+}
+
 type CreateEntry interface {
-	Commit() CreateEntry
+	Commit(opts ...CommitOption) CreateEntry
 	Rollback(oldentries map[uint]*ChangeBalance, opts ...EntryOption) CreateEntry
 	Desc(desc string) CreateEntry
 	TransactionID(txID uint) CreateEntry
@@ -145,7 +154,7 @@ func (c *createEntryImpl) From(account *EntryAccountPayload, amount float64, opt
 }
 
 // Commit implements CreateEntry.
-func (c *createEntryImpl) Commit() CreateEntry {
+func (c *createEntryImpl) Commit(opts ...CommitOption) CreateEntry {
 	if c.isEntryEmpty() {
 		return c.setErr(ErrEmptyEntry)
 	}
@@ -156,6 +165,14 @@ func (c *createEntryImpl) Commit() CreateEntry {
 	for _, entry := range c.entries {
 		if entry.EntryTime.IsZero() {
 			entry.EntryTime = time.Now()
+		}
+
+		// options commit
+		for _, opt := range opts {
+			err := opt(entry)
+			if err != nil {
+				return c.setErr(err)
+			}
 		}
 
 		entry.TeamID = c.teamID

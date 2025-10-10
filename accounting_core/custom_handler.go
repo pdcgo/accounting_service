@@ -56,6 +56,7 @@ func NewDailyBalanceHandler(dispatcher AccountReportServiceClientDispatcher) Cus
 				Debit:         entry.Debit,
 				Credit:        entry.Credit,
 				EntryTime:     timestamppb.New(entry.EntryTime),
+				Rollback:      entry.Rollback,
 			})
 		}
 

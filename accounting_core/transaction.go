@@ -425,7 +425,7 @@ func (t *transactionMutationImpl) RollbackEntry(userID uint, desc string) Transa
 			err = nentries.
 				TransactionID(t.data.ID).
 				Desc(desc).
-				Commit().
+				Commit(RollbackOption()).
 				Err()
 
 			if err != nil {

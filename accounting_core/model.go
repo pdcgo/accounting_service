@@ -40,6 +40,7 @@ type JournalEntry struct {
 	Debit         float64   `json:"debit"`
 	Credit        float64   `json:"credit"`
 	Desc          string    `json:"desc"`
+	Rollback      bool      `json:"rollback" gorm:"index"`
 
 	Account     *Account     `json:"account"`
 	Transaction *Transaction `json:"-"`

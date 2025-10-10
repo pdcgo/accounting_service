@@ -240,18 +240,43 @@ func (s *stockServiceImpl) InboundCreate(
 		ID:      uint(pay.ExtTxId),
 	})
 
+	var desc string
+	var extra *stock_iface.StockInfoExtra
+	if pay.Extras != nil {
+		extra = pay.Extras
+		if extra.ExternalOrderId != "" {
+			desc = fmt.Sprintf("[%s] restock for %s", ref, extra.ExternalOrderId)
+		} else if extra.Receipt != "" {
+			desc = fmt.Sprintf("[%s] restock for %s", ref, extra.Receipt)
+		}
+
+	} else {
+		desc = fmt.Sprintf("[%s] restock created", ref)
+	}
+
 	err = accounting_core.OpenTransaction(db, func(tx *gorm.DB, bookmng accounting_core.BookManage) error {
 		tran := accounting_core.Transaction{
 			TeamID:      uint(pay.TeamId),
 			CreatedByID: agent.GetUserID(),
-			Desc:        fmt.Sprintf("restock for %s", ref),
+			Desc:        desc,
 			Created:     time.Now(),
 			RefID:       ref,
 		}
 
-		err = bookmng.
+		txcreate := bookmng.
 			NewTransaction().
-			Create(&tran).
+			Create(&tran)
+
+		if extra != nil {
+			if extra.CreatedById != 0 {
+				txcreate.AddCustomerServiceID(uint(extra.CreatedById))
+			}
+			if len(extra.Tags) != 0 {
+				txcreate.AddTags(extra.Tags)
+			}
+		}
+
+		err = txcreate.
 			Err()
 
 		if err != nil {

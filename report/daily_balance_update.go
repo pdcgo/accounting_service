@@ -68,25 +68,33 @@ func (a *accountReportImpl) DailyUpdateBalance(
 	labels := pay.LabelExtra
 	for _, entry := range pay.Entries {
 		day := accounting_core.ParseDate(entry.EntryTime.AsTime())
-		var balance float64
+		var balance, debit, credit float64
 		account, err := a.getAccount(ctx, uint(entry.AccountId))
 		if err != nil {
 			return &connect.Response[report_iface.DailyUpdateBalanceResponse]{}, err
 		}
 
+		if !entry.Rollback {
+			debit = entry.Debit
+			credit = entry.Credit
+		} else {
+			debit = entry.Debit * -1
+			credit = entry.Credit * -1
+		}
+
 		switch account.BalanceType {
 		case accounting_core.DebitBalance:
-			balance = entry.Debit - entry.Credit
+			balance = debit - credit
 		case accounting_core.CreditBalance:
-			balance = entry.Credit - entry.Debit
+			balance = credit - debit
 		}
 
 		dayBalance := &accounting_core.AccountDailyBalance{
 			Day:           day,
 			AccountID:     uint(entry.AccountId),
 			JournalTeamID: uint(entry.TeamId),
-			Debit:         entry.Debit,
-			Credit:        entry.Credit,
+			Debit:         debit,
+			Credit:        credit,
 			Balance:       balance,
 		}
 
@@ -110,8 +118,8 @@ func (a *accountReportImpl) DailyUpdateBalance(
 				CsID:          uint(labels.CsId),
 				AccountID:     uint(entry.AccountId),
 				JournalTeamID: uint(entry.TeamId),
-				Debit:         entry.Debit,
-				Credit:        entry.Credit,
+				Debit:         debit,
+				Credit:        credit,
 				Balance:       balance,
 			}
 
@@ -136,8 +144,8 @@ func (a *accountReportImpl) DailyUpdateBalance(
 				ShopID:        uint(labels.ShopId),
 				AccountID:     uint(entry.AccountId),
 				JournalTeamID: uint(entry.TeamId),
-				Debit:         entry.Debit,
-				Credit:        entry.Credit,
+				Debit:         debit,
+				Credit:        credit,
 				Balance:       balance,
 			}
 
@@ -163,8 +171,8 @@ func (a *accountReportImpl) DailyUpdateBalance(
 				SupplierID:    uint(labels.SupplierId),
 				AccountID:     uint(entry.AccountId),
 				JournalTeamID: uint(entry.TeamId),
-				Debit:         entry.Debit,
-				Credit:        entry.Credit,
+				Debit:         debit,
+				Credit:        credit,
 				Balance:       balance,
 			}
 
@@ -192,8 +200,8 @@ func (a *accountReportImpl) DailyUpdateBalance(
 					CustomID:      uint(tagID),
 					AccountID:     uint(entry.AccountId),
 					JournalTeamID: uint(entry.TeamId),
-					Debit:         entry.Debit,
-					Credit:        entry.Credit,
+					Debit:         debit,
+					Credit:        credit,
 					Balance:       balance,
 				}
 
