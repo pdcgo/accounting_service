@@ -2,7 +2,6 @@ package report
 
 import (
 	"context"
-	"time"
 
 	"connectrpc.com/connect"
 	"github.com/pdcgo/accounting_service/accounting_core"
@@ -98,15 +97,15 @@ func (b *balanceViewImpl) dcQuery() *gorm.DB {
 	}
 
 	trange := pay.TimeRange
-	if trange.EndDate != 0 {
-		end := accounting_core.ParseDate(time.UnixMicro(trange.EndDate))
+	if trange.EndDate.IsValid() {
+		end := accounting_core.ParseDate(trange.EndDate.AsTime())
 		query = query.Where("adb.day <= ?",
 			end,
 		)
 	}
 
-	if trange.StartDate != 0 {
-		start := accounting_core.ParseDate(time.UnixMicro(trange.StartDate))
+	if trange.StartDate.IsValid() {
+		start := accounting_core.ParseDate(trange.StartDate.AsTime())
 		query = query.Where("adb.day > ?",
 			start,
 		)
@@ -133,15 +132,15 @@ func (b *balanceViewImpl) lastBalanceQuery() *gorm.DB {
 
 	pay := b.pay
 	trange := b.pay.TimeRange
-	if trange.EndDate != 0 {
+	if trange.EndDate.IsValid() {
 		query = query.Where("adb.day <= ?",
-			time.UnixMicro(trange.EndDate),
+			trange.EndDate.AsTime(),
 		)
 	}
 
-	if trange.StartDate != 0 {
+	if trange.StartDate.IsValid() {
 		query = query.Where("adb.day > ?",
-			time.UnixMicro(trange.StartDate),
+			trange.StartDate.AsTime(),
 		)
 	}
 

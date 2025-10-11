@@ -2,7 +2,6 @@ package report
 
 import (
 	"context"
-	"time"
 
 	"connectrpc.com/connect"
 	"github.com/pdcgo/accounting_service/accounting_core"
@@ -90,15 +89,15 @@ func createDailyReportQ(db *gorm.DB, pay *report_iface.DailyBalanceRequest) *gor
 	}
 
 	trange := pay.TimeRange
-	if trange.EndDate != 0 {
-		end := accounting_core.ParseDate(time.UnixMicro(trange.EndDate))
+	if trange.EndDate.IsValid() {
+		end := accounting_core.ParseDate(trange.EndDate.AsTime())
 		query = query.Where("adb.day <= ?",
 			end,
 		)
 	}
 
-	if trange.StartDate != 0 {
-		start := accounting_core.ParseDate(time.UnixMicro(trange.StartDate))
+	if trange.StartDate.IsValid() {
+		start := accounting_core.ParseDate(trange.StartDate.AsTime())
 		query = query.Where("adb.day > ?",
 			start,
 		)
