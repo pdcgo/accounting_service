@@ -1,2 +1,2 @@
-@REM gcloud run deploy accounting-service --source . --no-traffic
-gcloud run deploy accounting-service --source .
+gcloud run deploy accounting-service --source . --no-traffic
+@REM gcloud run deploy accounting-service --source .

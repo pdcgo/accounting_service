@@ -67,14 +67,13 @@ func NewCoreService(db *gorm.DB, auth authorization_iface.Authorization) *coreSe
 }
 
 var filterExtra = map[accounting_core.AccountKey]*accounting_iface.AccountFilterExtra{
-	accounting_core.SellingReceivableAccount: {
-		Cs:        true,
-		Supplier:  false,
-		Shop:      true,
-		CustomTag: true,
-	},
 	accounting_core.PayableAccount: {
 		Team: true,
+	},
+	accounting_core.SellingReceivableAccount: {
+		Cs:        true,
+		Shop:      true,
+		CustomTag: true,
 	},
 	accounting_core.ReceivableAccount: {
 		Team: true,

@@ -78,15 +78,15 @@ func (a *accountReportImpl) DailyUpdateBalance(
 			debit = entry.Debit
 			credit = entry.Credit
 		} else {
-			debit = entry.Debit * -1
-			credit = entry.Credit * -1
+			debit = entry.Credit * -1
+			credit = entry.Debit * -1
 		}
 
 		switch account.BalanceType {
 		case accounting_core.DebitBalance:
-			balance = debit - credit
+			balance = entry.Debit - entry.Credit
 		case accounting_core.CreditBalance:
-			balance = credit - debit
+			balance = entry.Credit - entry.Debit
 		}
 
 		dayBalance := &accounting_core.AccountDailyBalance{
