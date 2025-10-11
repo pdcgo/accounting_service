@@ -73,4 +73,13 @@ var filterExtra = map[accounting_core.AccountKey]*accounting_iface.AccountFilter
 		Shop:      true,
 		CustomTag: true,
 	},
+	accounting_core.PayableAccount: {
+		Team: true,
+	},
+	accounting_core.ReceivableAccount: {
+		Team: true,
+	},
+	accounting_core.BorrowStockRevenueAccount: {
+		Team: true,
+	},
 }
