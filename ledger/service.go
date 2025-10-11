@@ -161,7 +161,7 @@ type LedgerView interface {
 	createQuery() LedgerView
 	TeamID(tid uint) LedgerView
 	AccountKey(acc_key string) LedgerView
-	TimeRange(trange *common.TimeFilter) LedgerView
+	TimeRange(trange *common.TimeFilterRange) LedgerView
 	Page(page *common.PageFilter, pageinfo *common.PageInfo) LedgerView
 	Count(c *int64) LedgerView
 	Sort(sortpay *accounting_iface.EntryListSort) LedgerView
@@ -304,21 +304,21 @@ func (l *ledgerViewImpl) TeamID(tid uint) LedgerView {
 }
 
 // TimeRange implements LedgerView.
-func (l *ledgerViewImpl) TimeRange(trange *common.TimeFilter) LedgerView {
+func (l *ledgerViewImpl) TimeRange(trange *common.TimeFilterRange) LedgerView {
 	// filter time range
-	if trange.StartDate != 0 {
+	if trange.StartDate.IsValid() {
 		l.query = l.
 			query.
 			Where("je.entry_time > ?",
-				time.UnixMicro(trange.StartDate).Local(),
+				trange.StartDate.AsTime().Local(),
 			)
 	}
 
-	if trange.EndDate != 0 {
+	if trange.EndDate.IsValid() {
 		l.query = l.
 			query.
 			Where("je.entry_time <= ?",
-				time.UnixMicro(trange.EndDate).Local(),
+				trange.EndDate.AsTime().Local(),
 			)
 	}
 
