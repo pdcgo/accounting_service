@@ -17,6 +17,37 @@ type tagServiceImpl struct {
 	auth authorization_iface.Authorization
 }
 
+// TagIDs implements accounting_ifaceconnect.TagServiceHandler.
+func (t *tagServiceImpl) TagIDs(
+	ctx context.Context,
+	req *connect.Request[accounting_iface.TagIDsRequest],
+) (*connect.Response[accounting_iface.TagIDsResponse], error) {
+	var err error
+	result := &accounting_iface.TagIDsResponse{
+		Data: map[uint64]string{},
+	}
+	pay := req.Msg
+
+	datas := []*accounting_core.AccountingTag{}
+
+	err = t.
+		db.
+		Model(&accounting_core.AccountingTag{}).
+		Where("id in ?", pay.Ids).
+		Find(&datas).
+		Error
+
+	if err != nil {
+		return connect.NewResponse(result), err
+	}
+
+	for _, item := range datas {
+		result.Data[uint64(item.ID)] = item.Name
+	}
+
+	return connect.NewResponse(result), nil
+}
+
 // TagCreate implements accounting_ifaceconnect.TagServiceHandler.
 func (t *tagServiceImpl) TagCreate(
 	ctx context.Context,
