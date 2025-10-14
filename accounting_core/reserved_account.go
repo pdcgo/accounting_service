@@ -23,17 +23,19 @@ const (
 
 // asset
 const (
-	CashAccount              AccountKey = "cash"
-	ShopeepayAccount         AccountKey = "shopeepay"
-	SellingReceivableAccount AccountKey = "selling_receivable"
-	StockPendingAccount      AccountKey = "stock_pending"
-	StockTransferAccount     AccountKey = "stock_transfer"
-	StockLostAccount         AccountKey = "stock_lost"
-	StockBrokenAccount       AccountKey = "stock_broken"
-	StockPendingFeeAccount   AccountKey = "stock_pending_fee"
-	StockCodFeeAccount       AccountKey = "stock_cod_fee"
-	ReceivableAccount        AccountKey = "receivable"
-	PaymentInTransitAccount  AccountKey = "payment_in_transit"
+	CashAccount                 AccountKey = "cash"
+	ShopeepayAccount            AccountKey = "shopeepay"
+	SellingEstReceivableAccount AccountKey = "selling_est_receivable"
+	SellingAdjReceivableAccount AccountKey = "selling_adj_receivable"
+	SellingReceivableAccount    AccountKey = "selling_receivable"
+	StockPendingAccount         AccountKey = "stock_pending"
+	StockTransferAccount        AccountKey = "stock_transfer"
+	StockLostAccount            AccountKey = "stock_lost"
+	StockBrokenAccount          AccountKey = "stock_broken"
+	StockPendingFeeAccount      AccountKey = "stock_pending_fee"
+	StockCodFeeAccount          AccountKey = "stock_cod_fee"
+	ReceivableAccount           AccountKey = "receivable"
+	PaymentInTransitAccount     AccountKey = "payment_in_transit"
 )
 
 // liability
@@ -125,6 +127,17 @@ func DefaultSeedAccount() []*Account {
 			Coa:         ASSET,
 			BalanceType: DebitBalance,
 		},
+		{
+			AccountKey:  SellingEstReceivableAccount,
+			Coa:         ASSET,
+			BalanceType: DebitBalance,
+		},
+		{
+			AccountKey:  SellingAdjReceivableAccount,
+			Coa:         ASSET,
+			BalanceType: DebitBalance,
+		},
+
 		{
 			AccountKey:  SellingReceivableAccount,
 			Coa:         ASSET,

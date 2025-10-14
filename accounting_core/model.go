@@ -195,6 +195,7 @@ const (
 	OrderRef               RefType = "order"
 	OrderReturnRef         RefType = "order_return"
 	OrderProblemRef        RefType = "order_problem"
+	OrderFundRef           RefType = "order_fund"
 	StockAcceptRef         RefType = "stock_accept"
 	StockTransferRef       RefType = "stock_transfer"
 	StockTransferAcceptRef RefType = "stock_transfer_accept"

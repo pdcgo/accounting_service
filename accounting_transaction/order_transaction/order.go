@@ -85,7 +85,7 @@ func (o *orderTransactionImpl) CreateOrder(payload *CreateOrderPayload) error {
 				TeamID: payload.TeamID,
 			}, payload.OwnProductAmount).
 			To(&accounting_core.EntryAccountPayload{
-				Key:    accounting_core.SellingReceivableAccount,
+				Key:    accounting_core.SellingEstReceivableAccount,
 				TeamID: payload.TeamID,
 			}, payload.OwnProductAmount).
 			TransactionID(tran.ID).
@@ -130,7 +130,7 @@ func (o *orderTransactionImpl) CreateOrder(payload *CreateOrderPayload) error {
 					TeamID: payload.TeamID,
 				}, crossTotal).
 				To(&accounting_core.EntryAccountPayload{
-					Key:    accounting_core.SellingReceivableAccount,
+					Key:    accounting_core.SellingEstReceivableAccount,
 					TeamID: payload.TeamID,
 				}, crossTotal).
 				TransactionID(tran.ID).

@@ -278,7 +278,7 @@ func (r *revenueServiceImpl) revenueOrder(
 			TeamID: uint(pay.TeamId),
 		}, pay.OrderAmount).
 		To(&accounting_core.EntryAccountPayload{
-			Key:    accounting_core.SellingReceivableAccount,
+			Key:    accounting_core.SellingEstReceivableAccount,
 			TeamID: uint(pay.TeamId),
 		}, pay.OrderAmount).
 		Transaction(tran).

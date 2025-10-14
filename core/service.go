@@ -70,7 +70,7 @@ var filterExtra = map[accounting_core.AccountKey]*accounting_iface.AccountFilter
 	accounting_core.PayableAccount: {
 		Team: true,
 	},
-	accounting_core.SellingReceivableAccount: {
+	accounting_core.SellingEstReceivableAccount: {
 		Cs:        true,
 		Shop:      true,
 		CustomTag: true,

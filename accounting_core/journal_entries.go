@@ -56,6 +56,13 @@ func RollbackOption() CommitOption {
 	}
 }
 
+func CustomTimeOption(t time.Time) CommitOption {
+	return func(entry *JournalEntry) error {
+		entry.EntryTime = t
+		return nil
+	}
+}
+
 type CreateEntry interface {
 	Commit(opts ...CommitOption) CreateEntry
 	Rollback(oldentries map[uint]*ChangeBalance, opts ...EntryOption) CreateEntry

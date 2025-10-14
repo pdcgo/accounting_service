@@ -101,7 +101,7 @@ func (r *revenueServiceImpl) Withdrawal(
 		err = bookmng.
 			NewCreateEntry(uint(pay.TeamId), agent.GetUserID()).
 			From(&accounting_core.EntryAccountPayload{
-				Key:    accounting_core.SellingReceivableAccount,
+				Key:    accounting_core.SellingEstReceivableAccount,
 				TeamID: uint(pay.TeamId),
 			}, pay.Amount).
 			To(&accounting_core.EntryAccountPayload{
