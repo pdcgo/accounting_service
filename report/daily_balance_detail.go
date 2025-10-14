@@ -133,7 +133,7 @@ func dailyBalanceDetailQ(db *gorm.DB, pay *report_iface.DailyBalanceDetailReques
 			Where("adb.custom_id = ?", pay.LabelId)
 
 	case report_iface.LabelFilterType_LABEL_FILTER_TYPE_CS:
-		query = query.
+		query = db.
 			Table("cs_daily_balances adb").
 			Joins("join accounts a on a.id = adb.account_id").
 			Select([]string{
