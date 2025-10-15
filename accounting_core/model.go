@@ -143,10 +143,10 @@ func (entries JournalEntriesList) PrintJournalEntries(db *gorm.DB) error {
 
 type Account struct {
 	ID          uint        `json:"id" gorm:"primarykey"`
-	AccountKey  AccountKey  `json:"key" gorm:"index:team_key,unique"`
+	AccountKey  AccountKey  `json:"account_key" gorm:"index:team_key,unique"`
 	TeamID      uint        `json:"team_id" gorm:"index:team_key,unique"`
 	Coa         CoaCode     `json:"coa"`
-	BalanceType BalanceType `json:"account_type"`
+	BalanceType BalanceType `json:"balance_type"`
 
 	Name string `json:"name"`
 

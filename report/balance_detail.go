@@ -192,7 +192,7 @@ func (b *balanceDetailViewImpl) lastBalanceQuery() *gorm.DB {
 			Table("account_daily_balances adb").
 			Joins("join accounts a on a.id = adb.account_id").
 			Select([]string{
-				"a.id as label_id",
+				"a.team_id as label_id",
 				"adb.day",
 				"adb.balance",
 			})

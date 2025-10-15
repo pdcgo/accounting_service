@@ -10,7 +10,6 @@ import (
 	"github.com/pdcgo/accounting_service/accounting_model"
 	"github.com/pdcgo/schema/services/common/v1"
 	"github.com/pdcgo/schema/services/payment_iface/v1"
-	"github.com/pdcgo/shared/authorization"
 	"github.com/pdcgo/shared/interfaces/authorization_iface"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
@@ -32,23 +31,23 @@ func (p *paymentServiceImpl) PaymentAccept(
 	var domainID uint
 	switch pay.RequestFrom {
 	case common.RequestFrom_REQUEST_FROM_ADMIN:
-		domainID = authorization.RootDomain
+		// domainID = authorization.RootDomain
 	default:
 		domainID = uint(pay.TeamId)
+		err = identity.
+			HasPermission(authorization_iface.CheckPermissionGroup{
+				&accounting_model.Payment{}: &authorization_iface.CheckPermission{
+					DomainID: domainID,
+					Actions:  []authorization_iface.Action{authorization_iface.Create},
+				},
+			}).
+			Err()
+
+		if err != nil {
+			return connect.NewResponse(&result), err
+		}
 	}
 
-	err = identity.
-		HasPermission(authorization_iface.CheckPermissionGroup{
-			&accounting_model.Payment{}: &authorization_iface.CheckPermission{
-				DomainID: domainID,
-				Actions:  []authorization_iface.Action{authorization_iface.Create},
-			},
-		}).
-		Err()
-
-	if err != nil {
-		return connect.NewResponse(&result), err
-	}
 	err = accounting_core.OpenTransaction(db, func(tx *gorm.DB, bookmng accounting_core.BookManage) error {
 		var payment accounting_model.Payment
 		err = tx.

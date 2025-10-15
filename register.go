@@ -27,6 +27,19 @@ import (
 	"gorm.io/gorm"
 )
 
+type SeedHandler func() error
+
+func NewSeedHandler(
+	db *gorm.DB,
+) SeedHandler {
+	return func() error {
+		log.Println("seeding account service")
+		// domain := authorization.NewDomainV2(db, authorization.RootDomain)
+		// domain.RoleAddPermission()
+		return nil
+	}
+}
+
 type MigrationHandler func() error
 
 func NewMigrationHandler(

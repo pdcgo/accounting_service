@@ -74,6 +74,8 @@ func (a *accountReportImpl) DailyUpdateBalance(
 			return &connect.Response[report_iface.DailyUpdateBalanceResponse]{}, err
 		}
 
+		// debugtool.LogJson(account)
+
 		if !entry.Rollback {
 			debit = entry.Debit
 			credit = entry.Credit
@@ -87,6 +89,8 @@ func (a *accountReportImpl) DailyUpdateBalance(
 			balance = entry.Debit - entry.Credit
 		case accounting_core.CreditBalance:
 			balance = entry.Credit - entry.Debit
+		default:
+			return &connect.Response[report_iface.DailyUpdateBalanceResponse]{}, errors.New("account not credit or debit")
 		}
 
 		dayBalance := &accounting_core.AccountDailyBalance{
@@ -226,14 +230,12 @@ func (a *accountReportImpl) DailyUpdateBalance(
 	return &connect.Response[report_iface.DailyUpdateBalanceResponse]{}, err
 }
 
-type DailyBalance interface {
-	GetDebitCredit() (debit float64, credit float64, balance float64)
-}
-
-func (a *accountReportImpl) updateDailyBalance(query *gorm.DB, daily DailyBalance) error {
+func (a *accountReportImpl) updateDailyBalance(query *gorm.DB, daily accounting_core.DailyBalance) error {
 	var err error
+	var incBalance float64
 
 	debit, credit, balance := daily.GetDebitCredit()
+	incBalance += balance
 
 	row := query.
 		Updates(map[string]interface{}{
@@ -248,16 +250,52 @@ func (a *accountReportImpl) updateDailyBalance(query *gorm.DB, daily DailyBalanc
 			return err
 		}
 
-		err = a.
-			db.
-			Save(daily).
-			Error
+		var beforeBalance float64
 
-		if err != nil {
-			return err
-		}
+		err = a.db.Transaction(func(tx *gorm.DB) error {
+			err = daily.
+				Before(a.db, true).
+				Select([]string{
+					"balance",
+				}).
+				Order("day desc").
+				Limit(1).
+				Find(&beforeBalance).
+				Error
+
+			if err != nil {
+				return err
+			}
+
+			daily.AddBalance(beforeBalance)
+			err = a.
+				db.
+				Save(daily).
+				Error
+
+			if err != nil {
+				return err
+			}
+
+			return nil
+		})
+
+		incBalance += beforeBalance
 	}
+
+	err = a.updateAfterIncrement(daily, incBalance)
 
 	return err
 
+}
+
+func (a *accountReportImpl) updateAfterIncrement(daily accounting_core.DailyBalance, incAmount float64) error {
+	err := daily.
+		After(a.db, false).
+		Updates(map[string]interface{}{
+			"balance": gorm.Expr("balance + ?", incAmount),
+		}).
+		Error
+
+	return err
 }

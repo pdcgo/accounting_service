@@ -289,7 +289,11 @@ func (d *DailyBalanceCalculate) UpdateDaily(
 }
 
 type DailyBalance interface {
+	AddBalance(balance float64)
 	GetDebitCredit() (debit float64, credit float64, balance float64)
+	Before(tx *gorm.DB, lock bool) *gorm.DB
+	After(tx *gorm.DB, lock bool) *gorm.DB
+	Empty() DailyBalance
 }
 
 func (d *DailyBalanceCalculate) updateDailyBalance(query *gorm.DB, daily DailyBalance) error {
