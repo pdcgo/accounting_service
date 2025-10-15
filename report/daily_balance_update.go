@@ -299,3 +299,85 @@ func (a *accountReportImpl) updateAfterIncrement(daily accounting_core.DailyBala
 
 	return err
 }
+
+// begin;
+// lock table account_daily_balances in ACCESS exclusive mode;
+
+// with entries as (
+// 	select
+// 		date(je.entry_time AT TIME ZONE 'Asia/Jakarta')::timestamp AT TIME ZONE 'Asia/Jakarta' + INTERVAL '7 hours' as day,
+// 		je.account_id,
+// 		je.team_id,
+// 		case
+// 			when je.rollback = true then je.credit * -1
+// 			else je.debit
+// 		end as debit,
+// 		case
+// 			when je.rollback = true then je.debit * -1
+// 			else je.credit
+// 		end as credit,
+
+// 		case
+// 			when a.balance_type = 'd' then je.debit - je.credit
+// 			when a.balance_type = 'c' then je.credit - je.debit
+// 		end as balance
+
+// 	--	*
+// 	from
+// 		journal_entries je
+// 	join accounts a on a.id = je.account_id
+// ),
+
+// summary as (
+// 	select
+// 		en.day,
+// 		en.account_id,
+// 		en.team_id,
+// 		sum(en.debit) as debit,
+// 		sum(en.credit) as credit,
+// 		sum(en.balance) as balance
+
+// 	from entries en
+// 	group by en.day, en.account_id, en.team_id
+// ),
+
+// statdata as (
+// 	select
+// 		su.day,
+// 		su.account_id,
+// 		su.team_id,
+// 		su.debit,
+// 		su.credit,
+// 		sum(su.balance) over (
+// 			partition by su.account_id, su.team_id
+// 			order by su.day asc
+// 		) as balance
+
+// 	from summary su
+// --	where
+// --		su.account_id = 251
+// --	order by su.day desc
+// )
+
+// insert into account_daily_balances (day, account_id, journal_team_id, debit, credit, balance)
+// select day, account_id, team_id, debit, credit, balance from statdata
+// on conflict (day, account_id, journal_team_id)
+// do update
+// set
+// 	debit=excluded.debit,
+// 	credit=excluded.credit,
+// 	balance=excluded.balance
+// ;
+
+// --SQL Error [23505]: ERROR: duplicate key value violates unique constraint "account_journal"
+// --  Detail: Key (day, account_id, journal_team_id)=(2025-09-19 07:00:00+07, 211, 67) already exists.
+
+// --	SQL Error [25P02]: ERROR: current transaction is aborted, commands ignored until end of transaction block
+// --  ERROR: current transaction is aborted, commands ignored until end of transaction block
+// --  ERROR: current transaction is aborted, commands ignored until end of transaction block
+// --    ERROR: duplicate key value violates unique constraint "account_journal"
+// --  Detail: Key (day, account_id, journal_team_id)=(2025-09-19 07:00:00+07, 211, 67) already exists.
+// --    ERROR: duplicate key value violates unique constraint "account_journal"
+// --  Detail: Key (day, account_id, journal_team_id)=(2025-09-19 07:00:00+07, 211, 67) already exists.
+
+// commit;

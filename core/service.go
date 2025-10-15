@@ -102,4 +102,7 @@ var filterExtra = map[accounting_core.AccountKey]*accounting_iface.AccountFilter
 	accounting_core.WarehouseCostAccount: {
 		Team: true,
 	},
+	accounting_core.PaymentInTransitAccount: {
+		Team: true,
+	},
 }
