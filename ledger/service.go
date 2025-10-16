@@ -5,6 +5,7 @@ import (
 	"encoding/csv"
 	"fmt"
 	"math"
+	"strings"
 	"time"
 
 	"connectrpc.com/connect"
@@ -46,6 +47,7 @@ func (l *ledgerServiceImpl) EntryList(
 		createQuery().
 		TeamID(uint(pay.TeamId)).
 		AccountKey(pay.AccountKey).
+		Search(pay.Keyword).
 		TimeRange(pay.TimeRange).
 		Page(pay.Page, result.PageInfo).
 		Sort(pay.Sort)
@@ -83,6 +85,7 @@ func (l *ledgerServiceImpl) EntryListExport(
 		createQuery().
 		TeamID(uint(pay.TeamId)).
 		AccountKey(pay.AccountKey).
+		Search(pay.Keyword).
 		TimeRange(pay.TimeRange)
 
 	writer := &ConnectStreamWriter{
@@ -163,6 +166,7 @@ type LedgerView interface {
 	AccountKey(acc_key string) LedgerView
 	TimeRange(trange *common.TimeFilterRange) LedgerView
 	Page(page *common.PageFilter, pageinfo *common.PageInfo) LedgerView
+	Search(keyword string) LedgerView
 	Count(c *int64) LedgerView
 	Sort(sortpay *accounting_iface.EntryListSort) LedgerView
 	Iterate(handle func(d *accounting_iface.EntryItem) error) error
@@ -174,6 +178,15 @@ type ledgerViewImpl struct {
 	db    *gorm.DB
 	query *gorm.DB
 	err   error
+}
+
+// Search implements LedgerView.
+func (l *ledgerViewImpl) Search(keyword string) LedgerView {
+	keyword = strings.ToLower(keyword)
+	l.query = l.
+		query.
+		Where("je.desc ilike ?", "%"+keyword+"%")
+	return l
 }
 
 // Sort implements LedgerView.

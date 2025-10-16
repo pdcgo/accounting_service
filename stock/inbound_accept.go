@@ -63,17 +63,31 @@ func (i *inboundAccept) accept() (*stock_iface.InboundAcceptResponse, error) {
 			return fmt.Errorf("%s not supported", pay.Source)
 		}
 
+		extra := &stock_iface.StockInfoExtra{}
+		desc := fmt.Sprintf("stock diterima %s", ref)
+
+		if pay.Extras != nil {
+			extra = pay.Extras
+			if extra.Receipt != "" {
+				desc = fmt.Sprintf("stock diterima dengan resi %s", extra.Receipt)
+			}
+			if extra.ExternalOrderId != "" {
+				desc = fmt.Sprintf("stock diterima dengan orderid %s", extra.ExternalOrderId)
+			}
+		}
+
 		tran := accounting_core.Transaction{
 			TeamID:      uint(pay.TeamId),
 			RefID:       ref,
 			CreatedByID: i.agent.IdentityID(),
-			Desc:        fmt.Sprintf("stock diterima %s", ref),
+			Desc:        desc,
 			Created:     time.Now(),
 		}
 
 		err = bookmng.
 			NewTransaction().
 			Create(&tran).
+			AddTags(extra.Tags).
 			Err()
 
 		if err != nil {
