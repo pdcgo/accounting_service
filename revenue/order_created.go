@@ -42,9 +42,24 @@ func (r *revenueServiceImpl) OnOrder(
 				RefType: accounting_core.OrderRef,
 				ID:      uint(pay.OrderId),
 			})
+
+			desc := fmt.Sprintf("order from %s", ref)
+			ordInfo := &revenue_iface.OrderInfo{}
+			if pay.OrderInfo != nil {
+				ordInfo = pay.OrderInfo
+				if ordInfo.ExternalOrderId != "" {
+					desc = fmt.Sprintf("%s dengan orderid %s", desc, ordInfo.ExternalOrderId)
+				}
+
+				if ordInfo.Receipt != "" {
+					desc = fmt.Sprintf("%s dengan resi %s", desc, ordInfo.Receipt)
+				}
+
+			}
+
 			tran := accounting_core.Transaction{
 				RefID:   ref,
-				Desc:    fmt.Sprintf("order from %s", ref),
+				Desc:    desc,
 				Created: time.Now(),
 			}
 
