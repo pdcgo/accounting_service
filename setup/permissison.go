@@ -106,13 +106,12 @@ func RegisterPermission(db *gorm.DB, teamID uint, teamType db_models.TeamType, s
 		return err
 	}
 
-	rootDomain := authorization.NewDomainV2(db, authorization.RootDomain)
 	for roleKey, permissions := range rootRoleItem {
 		for ent := range permissions {
 			streamlog(fmt.Sprintf("check %s with entity %s", roleKey, ent.GetEntityID()))
 		}
 
-		err := rootDomain.RoleAddPermission(roleKey, permissions)
+		err := domain.RoleAddPermissionWithDomain(roleKey, authorization.RootDomain, permissions)
 		if err != nil {
 			streamlog(err.Error())
 			return err
