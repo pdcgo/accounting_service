@@ -1,4 +1,4 @@
-package accounting_service
+package setup
 
 import (
 	"fmt"
@@ -73,7 +73,7 @@ func defaultRolePermission() RoleMap {
 	return roleMap
 }
 
-func RegisterPermission(db *gorm.DB, teamID uint, teamType db_models.TeamType) error {
+func RegisterPermission(db *gorm.DB, teamID uint, teamType db_models.TeamType, streamlog func(msg string)) error {
 	var err error
 
 	roleMap := defaultRolePermission()
@@ -82,13 +82,19 @@ func RegisterPermission(db *gorm.DB, teamID uint, teamType db_models.TeamType) e
 	roleItem, ok := roleMap[teamType]
 	if !ok {
 		err = fmt.Errorf("team type %s not found in role map", teamType)
+		streamlog(err.Error())
 		return err
 	}
 
 	domain := authorization.NewDomainV2(db, teamID)
 	for roleKey, permissions := range roleItem {
+		for ent := range permissions {
+			streamlog(fmt.Sprintf("check %s with entity %s", roleKey, ent.GetEntityID()))
+		}
+
 		err := domain.RoleAddPermission(roleKey, permissions)
 		if err != nil {
+			streamlog(err.Error())
 			return err
 		}
 	}
@@ -96,13 +102,19 @@ func RegisterPermission(db *gorm.DB, teamID uint, teamType db_models.TeamType) e
 	rootRoleItem := rootRoleMap[teamType]
 	if !ok {
 		err = fmt.Errorf("team type %s not found in root role map", teamType)
+		streamlog(err.Error())
 		return err
 	}
 
 	rootDomain := authorization.NewDomainV2(db, authorization.RootDomain)
 	for roleKey, permissions := range rootRoleItem {
+		for ent := range permissions {
+			streamlog(fmt.Sprintf("check %s with entity %s", roleKey, ent.GetEntityID()))
+		}
+
 		err := rootDomain.RoleAddPermission(roleKey, permissions)
 		if err != nil {
+			streamlog(err.Error())
 			return err
 		}
 	}

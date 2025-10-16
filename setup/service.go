@@ -6,11 +6,8 @@ import (
 
 	"connectrpc.com/connect"
 	"github.com/pdcgo/accounting_service/accounting_core"
-	"github.com/pdcgo/accounting_service/accounting_model"
 	"github.com/pdcgo/schema/services/accounting_iface/v1"
-	"github.com/pdcgo/shared/authorization"
 	"github.com/pdcgo/shared/db_models"
-	"github.com/pdcgo/shared/interfaces/authorization_iface"
 	"gorm.io/gorm"
 )
 
@@ -89,127 +86,13 @@ func (s *setupServiceImpl) Setup(
 	}
 
 	streamlog("creating permission")
-	dom := authorization.NewDomainV2(s.db, uint(pay.TeamId))
-	err = dom.RoleAddPermission("owner", authorization_iface.RoleAddPermissionPayload{
-		&accounting_model.BankTransfer{}: []*authorization_iface.RoleAddPermissionItem{
-			{
-				Action: authorization_iface.Create,
-				Policy: authorization_iface.Allow,
-			},
-			{
-				Action: authorization_iface.Read,
-				Policy: authorization_iface.Allow,
-			},
-			{
-				Action: authorization_iface.Delete,
-				Policy: authorization_iface.Allow,
-			},
-			{
-				Action: authorization_iface.Update,
-				Policy: authorization_iface.Allow,
-			},
-		},
-		&accounting_model.ExpenseEntity{}: []*authorization_iface.RoleAddPermissionItem{
-			{
-				Action: authorization_iface.Create,
-				Policy: authorization_iface.Allow,
-			},
-			{
-				Action: authorization_iface.Read,
-				Policy: authorization_iface.Allow,
-			},
-			{
-				Action: authorization_iface.Delete,
-				Policy: authorization_iface.Allow,
-			},
-			{
-				Action: authorization_iface.Update,
-				Policy: authorization_iface.Allow,
-			},
-		},
-		&accounting_model.Payment{}: []*authorization_iface.RoleAddPermissionItem{
-			{
-				Action: authorization_iface.Create,
-				Policy: authorization_iface.Allow,
-			},
-			{
-				Action: authorization_iface.Read,
-				Policy: authorization_iface.Allow,
-			},
-			{
-				Action: authorization_iface.Delete,
-				Policy: authorization_iface.Allow,
-			},
-			{
-				Action: authorization_iface.Update,
-				Policy: authorization_iface.Allow,
-			},
-		},
-	})
-
+	var tdata db_models.Team
+	err = s.db.Model(&db_models.Team{}).First(&tdata, pay.TeamId).Error
 	if err != nil {
 		streamlog(err.Error())
+		return err
 	}
-
-	err = dom.RoleAddPermission("admin", authorization_iface.RoleAddPermissionPayload{
-		&accounting_model.BankTransfer{}: []*authorization_iface.RoleAddPermissionItem{
-			{
-				Action: authorization_iface.Create,
-				Policy: authorization_iface.Allow,
-			},
-			{
-				Action: authorization_iface.Read,
-				Policy: authorization_iface.Allow,
-			},
-			{
-				Action: authorization_iface.Delete,
-				Policy: authorization_iface.Allow,
-			},
-			{
-				Action: authorization_iface.Update,
-				Policy: authorization_iface.Allow,
-			},
-		},
-		&accounting_model.ExpenseEntity{}: []*authorization_iface.RoleAddPermissionItem{
-			{
-				Action: authorization_iface.Create,
-				Policy: authorization_iface.Allow,
-			},
-			{
-				Action: authorization_iface.Read,
-				Policy: authorization_iface.Allow,
-			},
-			{
-				Action: authorization_iface.Delete,
-				Policy: authorization_iface.Allow,
-			},
-			{
-				Action: authorization_iface.Update,
-				Policy: authorization_iface.Allow,
-			},
-		},
-		&accounting_model.Payment{}: []*authorization_iface.RoleAddPermissionItem{
-			{
-				Action: authorization_iface.Create,
-				Policy: authorization_iface.Allow,
-			},
-			{
-				Action: authorization_iface.Read,
-				Policy: authorization_iface.Allow,
-			},
-			{
-				Action: authorization_iface.Delete,
-				Policy: authorization_iface.Allow,
-			},
-			{
-				Action: authorization_iface.Update,
-				Policy: authorization_iface.Allow,
-			},
-		},
-	})
-	if err != nil {
-		streamlog(err.Error())
-	}
+	RegisterPermission(s.db, uint(pay.TeamId), tdata.Type, streamlog)
 	streamlog("setup completed...")
 	return nil
 }
