@@ -2,7 +2,6 @@ package accounting_core
 
 import (
 	"context"
-	"encoding/json"
 
 	cloudtasks "cloud.google.com/go/cloudtasks/apiv2"
 	"cloud.google.com/go/cloudtasks/apiv2/cloudtaskspb"
@@ -10,6 +9,7 @@ import (
 	"github.com/pdcgo/schema/services/report_iface/v1"
 	"github.com/pdcgo/schema/services/report_iface/v1/report_ifaceconnect"
 	"github.com/pdcgo/shared/configs"
+	"google.golang.org/protobuf/encoding/protojson"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
@@ -103,7 +103,7 @@ func (a *accReportDispatcher) DailyUpdateBalance(
 	ctx context.Context,
 	req *connect.Request[report_iface.DailyUpdateBalanceRequest],
 ) (*connect.Response[report_iface.DailyUpdateBalanceResponse], error) {
-	content, err := json.Marshal(req.Msg)
+	content, err := protojson.Marshal(req.Msg)
 	if err != nil {
 		return &connect.Response[report_iface.DailyUpdateBalanceResponse]{}, err
 	}
