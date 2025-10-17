@@ -115,7 +115,9 @@ func (a *accReportDispatcher) DailyUpdateBalance(
 		}
 	}
 
-	reqheaders["Content-Type"] = "application/grpc-web"
+	// reqheaders["Content-Type"] = "application/grpc-web"
+	reqheaders["Content-Type"] = "application/json"
+	reqheaders["Connect-Protocol-Version"] = "1"
 
 	task := cloudtaskspb.CreateTaskRequest{
 		Parent: a.cfg.GetPath(configs.SlowQueue),
