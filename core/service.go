@@ -79,10 +79,19 @@ var filterExtra = map[accounting_core.AccountKey]*accounting_iface.AccountFilter
 		Team: true,
 	},
 	accounting_core.BorrowStockRevenueAccount: {
-		Team: true,
+		Team:      true,
+		Shop:      true,
+		CustomTag: true,
 	},
 	accounting_core.StockLostAccount: {
 		Team: true,
+	},
+	accounting_core.StockCostAccount: {
+		Team:      true,
+		Shop:      true,
+		Supplier:  true,
+		Cs:        true,
+		CustomTag: true,
 	},
 	accounting_core.StockLostCostAccount: {
 		Team: true,
@@ -91,7 +100,11 @@ var filterExtra = map[accounting_core.AccountKey]*accounting_iface.AccountFilter
 		Team: true,
 	},
 	accounting_core.StockBorrowCostAmount: {
-		Team: true,
+		Team:      true,
+		Shop:      true,
+		Supplier:  true,
+		Cs:        true,
+		CustomTag: true,
 	},
 	accounting_core.StockPendingAccount: {
 		Team: true,
@@ -101,8 +114,19 @@ var filterExtra = map[accounting_core.AccountKey]*accounting_iface.AccountFilter
 	},
 	accounting_core.WarehouseCostAccount: {
 		Team: true,
+		Shop: true,
 	},
 	accounting_core.PaymentInTransitAccount: {
 		Team: true,
+	},
+	accounting_core.SalesReturnRevenueAccount: {
+		Cs:        true,
+		Shop:      true,
+		CustomTag: true,
+	},
+	accounting_core.SalesRevenueAccount: {
+		Cs:        true,
+		Shop:      true,
+		CustomTag: true,
 	},
 }
