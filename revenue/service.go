@@ -18,13 +18,13 @@ type revenueServiceImpl struct {
 	auth authorization_iface.Authorization
 }
 
-// OrderCompleted implements revenue_ifaceconnect.RevenueServiceHandler.
-func (r *revenueServiceImpl) OrderCompleted(context.Context, *connect.Request[revenue_iface.OrderCompletedRequest]) (*connect.Response[revenue_iface.OrderCompletedResponse], error) {
+// RevenueAdjustment implements revenue_ifaceconnect.RevenueServiceHandler.
+func (r *revenueServiceImpl) RevenueAdjustment(context.Context, *connect.Request[revenue_iface.RevenueAdjustmentRequest]) (*connect.Response[revenue_iface.RevenueAdjustmentResponse], error) {
 	panic("unimplemented")
 }
 
-// RevenueAdjustment implements revenue_ifaceconnect.RevenueServiceHandler.
-func (r *revenueServiceImpl) RevenueAdjustment(context.Context, *connect.Request[revenue_iface.RevenueAdjustmentRequest]) (*connect.Response[revenue_iface.RevenueAdjustmentResponse], error) {
+// OrderCompleted implements revenue_ifaceconnect.RevenueServiceHandler.
+func (r *revenueServiceImpl) OrderCompleted(context.Context, *connect.Request[revenue_iface.OrderCompletedRequest]) (*connect.Response[revenue_iface.OrderCompletedResponse], error) {
 	panic("unimplemented")
 }
 

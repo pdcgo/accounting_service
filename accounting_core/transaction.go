@@ -205,7 +205,10 @@ func (c *createTansactionImpl) isTransactionEmpty() bool {
 
 // Create implements CreateTransaction.
 func (c *createTansactionImpl) Create(tran *Transaction) CreateTransaction {
-	tran.Created = time.Now()
+	if tran.Created.IsZero() {
+		tran.Created = time.Now()
+	}
+
 	err := c.tx.Save(tran).Error
 	if err != nil {
 		return c.setErr(err)
