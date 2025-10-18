@@ -87,15 +87,15 @@ func (e *expenseServiceImpl) ExpenseTimeMetric(
 		query = query.Where("je.team_id = ?", pay.TeamId)
 	}
 
-	if pay.TimeRange.EndDate != 0 {
+	if pay.TimeRange.EndDate.IsValid() {
 		query = query.Where("je.entry_time <= ?",
-			time.UnixMicro(pay.TimeRange.EndDate).Local(),
+			pay.TimeRange.EndDate.AsTime(),
 		)
 	}
 
-	if pay.TimeRange.StartDate != 0 {
+	if pay.TimeRange.StartDate.IsValid() {
 		query = query.Where("je.entry_time > ?",
-			time.UnixMicro(pay.TimeRange.StartDate).Local(),
+			pay.TimeRange.StartDate.AsTime(),
 		)
 	}
 	items := []*KeyValue{}
@@ -167,15 +167,15 @@ func (e *expenseServiceImpl) ExpenseOverviewMetric(
 		query = query.Where("je.team_id = ?", pay.TeamId)
 	}
 
-	if pay.TimeRange.EndDate != 0 {
+	if pay.TimeRange.EndDate.IsValid() {
 		query = query.Where("je.entry_time <= ?",
-			time.UnixMicro(pay.TimeRange.EndDate).Local(),
+			pay.TimeRange.EndDate.AsTime(),
 		)
 	}
 
-	if pay.TimeRange.StartDate != 0 {
+	if pay.TimeRange.StartDate.IsValid() {
 		query = query.Where("je.entry_time > ?",
-			time.UnixMicro(pay.TimeRange.StartDate).Local(),
+			pay.TimeRange.StartDate.AsTime(),
 		)
 	}
 
@@ -370,15 +370,15 @@ func (e *expenseServiceImpl) ExpenseList(
 			query = query.Where("e.created_by_id = ?", pay.ByUserId)
 		}
 
-		if pay.TimeRange.StartDate != 0 {
+		if pay.TimeRange.StartDate.IsValid() {
 			query = query.Where("e.expense_at > ?",
-				time.UnixMicro(pay.TimeRange.StartDate).Local(),
+				pay.TimeRange.StartDate.AsTime(),
 			)
 		}
 
-		if pay.TimeRange.EndDate != 0 {
+		if pay.TimeRange.EndDate.IsValid() {
 			query = query.Where("e.expense_at <= ?",
-				time.UnixMicro(pay.TimeRange.EndDate).Local(),
+				pay.TimeRange.EndDate.AsTime(),
 			)
 		}
 

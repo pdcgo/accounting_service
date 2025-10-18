@@ -91,7 +91,7 @@ func dailyBalanceDetailQ(db *gorm.DB, pay *report_iface.DailyBalanceDetailReques
 				"adb.credit as credit",
 				"adb.balance as balance",
 			}).
-			Where("adb.account_id = ?", pay.LabelId)
+			Where("a.team_id = ?", pay.LabelId)
 
 	case report_iface.LabelFilterType_LABEL_FILTER_TYPE_SHOP:
 		query = db.
