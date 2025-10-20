@@ -143,13 +143,13 @@ func (r *revenueProcessor) fund(fund *revenue_iface.RevenueStreamEventFund) erro
 						Key:    accounting_core.SellingAdjReceivableAccount,
 						TeamID: teamID,
 					}, math.Abs(diffAmount))
+				// To(&accounting_core.EntryAccountPayload{
+				// 	Key:    accounting_core.SellingReceivableAccount,
+				// 	TeamID: teamID,
+				// }, math.Abs(diffAmount))
 			}
 		}
 		err = entry.
-			To(&accounting_core.EntryAccountPayload{
-				Key:    accounting_core.SellingAdjReceivableAccount,
-				TeamID: teamID,
-			}, fund.EstAmount-fund.Amount).
 			Transaction(&tran).
 			Commit(accounting_core.CustomTimeOption(fund.At.AsTime())).
 			Err()
