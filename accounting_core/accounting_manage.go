@@ -1,6 +1,10 @@
 package accounting_core
 
-import "gorm.io/gorm"
+import (
+	"errors"
+
+	"gorm.io/gorm"
+)
 
 type BookManage interface {
 	NewCreateEntry(teamID uint, createdByID uint) CreateEntry
@@ -77,6 +81,10 @@ func OpenTransaction(tx *gorm.DB, handle func(tx *gorm.DB, bookmng BookManage) e
 			if err != nil {
 				return err
 			}
+		}
+
+		if len(hdlr.entries) == 0 {
+			return errors.New("entries empty in ending transaction")
 		}
 
 		return nil

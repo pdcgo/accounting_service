@@ -25,6 +25,18 @@ const (
 
 type BalanceType string
 
+func (b BalanceType) DiffBalance(debit, credit float64) float64 {
+	switch b {
+	case CreditBalance:
+		return credit - debit
+	case DebitBalance:
+		return debit - credit
+	default:
+		return 0
+	}
+
+}
+
 const (
 	CreditBalance BalanceType = "c"
 	DebitBalance  BalanceType = "d"
@@ -63,6 +75,8 @@ func (cb *ChangeBalance) Change() float64 {
 		change = cb.Credit - cb.Debit
 	}
 
+	// debugtool.LogJson(cb, change)
+
 	return change
 }
 
@@ -85,8 +99,13 @@ func (entries JournalEntriesList) AccountBalance() (map[uint]*ChangeBalance, err
 			changemap[en.AccountID] = change
 		}
 
-		change.Debit += en.Debit
-		change.Credit += en.Credit
+		if en.Rollback {
+			change.Debit += en.Credit
+			change.Credit += en.Debit
+		} else {
+			change.Debit += en.Debit
+			change.Credit += en.Credit
+		}
 
 	}
 	return changemap, nil

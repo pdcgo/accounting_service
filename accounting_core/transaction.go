@@ -2,6 +2,8 @@ package accounting_core
 
 import (
 	"errors"
+	"fmt"
+	"math"
 	"time"
 
 	"github.com/pdcgo/shared/db_models"
@@ -381,6 +383,10 @@ func (t *transactionMutationImpl) ByRefID(refid RefID, lock bool) TransactionMut
 	if err != nil {
 		return t.setErr(err)
 	}
+
+	if t.data.ID == 0 {
+		return t.setErr(fmt.Errorf("transaction %s not found", refid))
+	}
 	return t
 }
 
@@ -392,7 +398,7 @@ func (t *transactionMutationImpl) Err() error {
 // RollbackEntry implements TransactionMutation.
 func (t *transactionMutationImpl) RollbackEntry(userID uint, desc string) TransactionMutation {
 	var err error
-	entries := []*JournalEntry{}
+	entries := JournalEntriesList{}
 
 	if t.data == nil {
 		return t.setErr(ErrTransactionNotLoaded)
@@ -401,6 +407,7 @@ func (t *transactionMutationImpl) RollbackEntry(userID uint, desc string) Transa
 	err = t.
 		tx.
 		Model(&JournalEntry{}).
+		Preload("Account").
 		Where("transaction_id = ?", t.data.ID).
 		Find(&entries).
 		Error
@@ -413,18 +420,55 @@ func (t *transactionMutationImpl) RollbackEntry(userID uint, desc string) Transa
 		return t.setErr(errors.New("entries on transaction is empty"))
 	}
 
-	teamEntries := map[uint]CreateEntry{}
+	// accbalance, _ := entries.AccountBalance()
+	// debugtool.LogJson(accbalance)
 
 	err = OpenTransaction(t.tx, func(tx *gorm.DB, bookmng BookManage) error {
-		for _, entry := range entries {
+
+		teamEntries := map[uint]JournalEntriesList{}
+		teamBookEntry := map[uint]CreateEntry{}
+		for _, dd := range entries {
+			entry := dd
 			if teamEntries[entry.TeamID] == nil {
-				teamEntries[entry.TeamID] = bookmng.NewCreateEntry(entry.TeamID, userID)
+				teamEntries[entry.TeamID] = JournalEntriesList{}
+				teamBookEntry[entry.TeamID] = bookmng.NewCreateEntry(entry.TeamID, userID)
 			}
 
-			teamEntries[entry.TeamID].Set(entry.AccountID, entry.Debit, entry.Credit)
+			teamEntries[entry.TeamID] = append(teamEntries[entry.TeamID], entry)
 		}
 
-		for _, nentries := range teamEntries {
+		for teamID, tentries := range teamEntries {
+			var accBalance map[uint]*ChangeBalance
+			accBalance, err = tentries.AccountBalance()
+			if err != nil {
+				return err
+			}
+
+			for accID, accentries := range accBalance {
+				diff := accentries.Change()
+				// fmt.Printf("%3.f -- %s\n", diff, accentries.Account.Name)
+
+				switch accentries.Account.BalanceType {
+				case DebitBalance:
+					if diff > 0 {
+						teamBookEntry[teamID].Set(accID, 0, diff)
+					}
+					if diff < 0 {
+						teamBookEntry[teamID].Set(accID, math.Abs(diff), 0)
+					}
+				case CreditBalance:
+					if diff > 0 {
+						teamBookEntry[teamID].Set(accID, diff, 0)
+					}
+					if diff < 0 {
+						teamBookEntry[teamID].Set(accID, 0, math.Abs(diff))
+					}
+				}
+			}
+
+		}
+
+		for _, nentries := range teamBookEntry {
 			err = nentries.
 				TransactionID(t.data.ID).
 				Desc(desc).

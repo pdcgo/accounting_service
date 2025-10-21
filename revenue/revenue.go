@@ -83,12 +83,49 @@ type revenueProcessor struct {
 	init *revenue_iface.RevenueStreamEventInit
 }
 
+func (r *revenueProcessor) checkTxExist(refID accounting_core.RefID) (bool, error) {
+	var err error
+	var txID uint
+
+	err = r.
+		db.
+		Model(&accounting_core.Transaction{}).
+		Where("ref_id = ?", refID).
+		Select("id").
+		Find(&txID).
+		Error
+
+	if err != nil {
+		return false, err
+	}
+
+	if txID != 0 {
+		return true, nil
+	}
+
+	return false, err
+}
+
 func (r *revenueProcessor) fund(fund *revenue_iface.RevenueStreamEventFund) error {
 	var err error
 	init := r.init
 	var shopID uint = uint(init.ShopId)
 	var teamID uint = uint(init.TeamId)
 	var userID uint = uint(init.UserId)
+
+	refID := accounting_core.NewStringRefID(&accounting_core.StringRefData{
+		RefType: accounting_core.OrderFundRef,
+		ID:      fund.OrderId,
+	})
+	var exist bool
+	exist, err = r.checkTxExist(refID)
+	if err != nil {
+		return err
+	}
+
+	if exist {
+		return nil
+	}
 
 	err = accounting_core.OpenTransaction(r.db, func(tx *gorm.DB, bookmng accounting_core.BookManage) error {
 		refID := accounting_core.NewStringRefID(&accounting_core.StringRefData{
@@ -168,12 +205,23 @@ func (r *revenueProcessor) withdrawal(wd *revenue_iface.RevenueStreamEventWithdr
 	var err error
 	init := r.init
 
+	refID := NewShopDateRefID(&WithdrawRefData{
+		RefType: accounting_core.WithdrawalRef,
+		ShopID:  uint(init.ShopId),
+		At:      wd.At.AsTime(),
+	})
+
+	var exist bool
+	exist, err = r.checkTxExist(refID)
+	if err != nil {
+		return err
+	}
+
+	if exist {
+		return nil
+	}
+
 	err = accounting_core.OpenTransaction(r.db, func(tx *gorm.DB, bookmng accounting_core.BookManage) error {
-		refID := NewShopDateRefID(&WithdrawRefData{
-			RefType: accounting_core.WithdrawalRef,
-			ShopID:  uint(init.ShopId),
-			At:      wd.At.AsTime(),
-		})
 
 		tran := accounting_core.Transaction{
 			RefID:       refID,
@@ -221,12 +269,23 @@ func (r *revenueProcessor) adjustment(adj *revenue_iface.RevenueStreamEventAdjus
 	var teamID uint = uint(init.TeamId)
 	var userID uint = uint(init.UserId)
 
+	refID := NewShopDateRefID(&WithdrawRefData{
+		RefType: accounting_core.AdminAdjustmentRef,
+		ShopID:  shopID,
+		At:      adj.At.AsTime(),
+	})
+
+	var exist bool
+	exist, err = r.checkTxExist(refID)
+	if err != nil {
+		return err
+	}
+
+	if exist {
+		return nil
+	}
+
 	err = accounting_core.OpenTransaction(r.db, func(tx *gorm.DB, bookmng accounting_core.BookManage) error {
-		refID := NewShopDateRefID(&WithdrawRefData{
-			RefType: accounting_core.AdminAdjustmentRef,
-			ShopID:  shopID,
-			At:      adj.At.AsTime(),
-		})
 
 		tran := accounting_core.Transaction{
 			RefID:       refID,

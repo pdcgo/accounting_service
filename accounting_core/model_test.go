@@ -8,6 +8,158 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+func TestEntriesAccountBalance(t *testing.T) {
+	entries := accounting_core.JournalEntriesList{
+		{
+			AccountID:     1,
+			TeamID:        1,
+			TransactionID: 1,
+			Debit:         12000,
+			Credit:        0,
+			Account: &accounting_core.Account{
+				ID:          1,
+				AccountKey:  accounting_core.StockReadyAccount,
+				TeamID:      1,
+				Coa:         10,
+				BalanceType: accounting_core.DebitBalance,
+			},
+		},
+		{
+			AccountID:     2,
+			TeamID:        1,
+			TransactionID: 1,
+			Debit:         0,
+			Credit:        12000,
+			Account: &accounting_core.Account{
+				ID:          2,
+				AccountKey:  accounting_core.StockPendingAccount,
+				TeamID:      1,
+				Coa:         10,
+				BalanceType: accounting_core.DebitBalance,
+			},
+		},
+	}
+
+	changes, err := entries.AccountBalance()
+	assert.Nil(t, err)
+
+	assert.Equal(t, 12000.00, changes[1].Change())
+	assert.Equal(t, -12000.00, changes[2].Change())
+
+	entries = append(entries, &accounting_core.JournalEntry{
+		AccountID:     1,
+		TeamID:        1,
+		TransactionID: 1,
+		Debit:         0,
+		Credit:        12000,
+		Account: &accounting_core.Account{
+			ID:          1,
+			AccountKey:  accounting_core.StockReadyAccount,
+			TeamID:      1,
+			Coa:         10,
+			BalanceType: accounting_core.DebitBalance,
+		},
+		Rollback: true,
+	})
+
+	entries = append(entries, &accounting_core.JournalEntry{
+		AccountID:     2,
+		TeamID:        1,
+		TransactionID: 1,
+		Debit:         12000,
+		Credit:        0,
+		Account: &accounting_core.Account{
+			ID:          2,
+			AccountKey:  accounting_core.StockPendingAccount,
+			TeamID:      1,
+			Coa:         10,
+			BalanceType: accounting_core.DebitBalance,
+		},
+		Rollback: true,
+	})
+
+	changes, err = entries.AccountBalance()
+	assert.Nil(t, err)
+
+	assert.Equal(t, 0.00, changes[1].Change())
+	assert.Equal(t, 0.00, changes[2].Change())
+
+	entries = append(entries, &accounting_core.JournalEntry{
+		AccountID:     1,
+		TeamID:        1,
+		TransactionID: 1,
+		Debit:         15000,
+		Credit:        0,
+		Account: &accounting_core.Account{
+			ID:          1,
+			AccountKey:  accounting_core.StockReadyAccount,
+			TeamID:      1,
+			Coa:         10,
+			BalanceType: accounting_core.DebitBalance,
+		},
+	})
+
+	entries = append(entries, &accounting_core.JournalEntry{
+		AccountID:     2,
+		TeamID:        1,
+		TransactionID: 1,
+		Debit:         0,
+		Credit:        15000,
+		Account: &accounting_core.Account{
+			ID:          2,
+			AccountKey:  accounting_core.StockPendingAccount,
+			TeamID:      1,
+			Coa:         10,
+			BalanceType: accounting_core.DebitBalance,
+		},
+	})
+
+	changes, err = entries.AccountBalance()
+	assert.Nil(t, err)
+
+	assert.Equal(t, 15000.00, changes[1].Change())
+	assert.Equal(t, -15000.00, changes[2].Change())
+
+	entries = append(entries, &accounting_core.JournalEntry{
+		AccountID:     1,
+		TeamID:        1,
+		TransactionID: 1,
+		Debit:         0,
+		Credit:        15000,
+		Account: &accounting_core.Account{
+			ID:          1,
+			AccountKey:  accounting_core.StockReadyAccount,
+			TeamID:      1,
+			Coa:         10,
+			BalanceType: accounting_core.DebitBalance,
+		},
+		Rollback: true,
+	})
+
+	entries = append(entries, &accounting_core.JournalEntry{
+		AccountID:     2,
+		TeamID:        1,
+		TransactionID: 1,
+		Debit:         15000,
+		Credit:        0,
+		Account: &accounting_core.Account{
+			ID:          2,
+			AccountKey:  accounting_core.StockPendingAccount,
+			TeamID:      1,
+			Coa:         10,
+			BalanceType: accounting_core.DebitBalance,
+		},
+		Rollback: true,
+	})
+
+	changes, err = entries.AccountBalance()
+	assert.Nil(t, err)
+
+	assert.Equal(t, 0.00, changes[1].Change())
+	assert.Equal(t, 0.00, changes[2].Change())
+
+}
+
 func TestModelJournalEntrieeList(t *testing.T) {
 	entries := accounting_core.JournalEntriesList{
 		{
