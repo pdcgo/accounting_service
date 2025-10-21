@@ -2,6 +2,7 @@ package accounting_core
 
 import (
 	"errors"
+	"fmt"
 
 	"gorm.io/gorm"
 )
@@ -85,6 +86,12 @@ func OpenTransaction(tx *gorm.DB, handle func(tx *gorm.DB, bookmng BookManage) e
 
 		if len(hdlr.entries) == 0 {
 			return errors.New("entries empty in ending transaction")
+		}
+
+		for _, entry := range hdlr.entries {
+			if entry.ID == 0 {
+				return fmt.Errorf("theres entry not save desc %s", entry.Desc)
+			}
 		}
 
 		return nil

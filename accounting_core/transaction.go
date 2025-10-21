@@ -450,18 +450,19 @@ func (t *transactionMutationImpl) RollbackEntry(userID uint, desc string) Transa
 
 				switch accentries.Account.BalanceType {
 				case DebitBalance:
-					if diff > 0 {
-						teamBookEntry[teamID].Set(accID, 0, diff)
-					}
-					if diff < 0 {
-						teamBookEntry[teamID].Set(accID, math.Abs(diff), 0)
-					}
-				case CreditBalance:
+
 					if diff > 0 {
 						teamBookEntry[teamID].Set(accID, diff, 0)
 					}
 					if diff < 0 {
 						teamBookEntry[teamID].Set(accID, 0, math.Abs(diff))
+					}
+				case CreditBalance:
+					if diff > 0 {
+						teamBookEntry[teamID].Set(accID, 0, diff)
+					}
+					if diff < 0 {
+						teamBookEntry[teamID].Set(accID, math.Abs(diff), 0)
 					}
 				}
 			}

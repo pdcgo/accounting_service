@@ -99,13 +99,16 @@ func (entries JournalEntriesList) AccountBalance() (map[uint]*ChangeBalance, err
 			changemap[en.AccountID] = change
 		}
 
-		if en.Rollback {
-			change.Debit += en.Credit
-			change.Credit += en.Debit
-		} else {
-			change.Debit += en.Debit
-			change.Credit += en.Credit
-		}
+		// if en.Rollback {
+		// 	change.Debit += en.Credit
+		// 	change.Credit += en.Debit
+		// } else {
+		// 	change.Debit += en.Debit
+		// 	change.Credit += en.Credit
+		// }
+
+		change.Debit += en.Debit
+		change.Credit += en.Credit
 
 	}
 	return changemap, nil
