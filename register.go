@@ -9,6 +9,7 @@ import (
 	"github.com/pdcgo/accounting_service/adjustment"
 	"github.com/pdcgo/accounting_service/ads_expense"
 	"github.com/pdcgo/accounting_service/core"
+	"github.com/pdcgo/accounting_service/expense"
 	"github.com/pdcgo/accounting_service/ledger"
 	"github.com/pdcgo/accounting_service/payment"
 	"github.com/pdcgo/accounting_service/report"
@@ -88,7 +89,7 @@ func NewRegister(
 
 		path, handler := accounting_ifaceconnect.NewAccountServiceHandler(NewAccountService(db, auth), defaultInterceptor)
 		mux.Handle(path, handler)
-		path, handler = accounting_ifaceconnect.NewExpenseServiceHandler(NewExpenseService(db, auth), defaultInterceptor)
+		path, handler = accounting_ifaceconnect.NewExpenseServiceHandler(expense.NewExpenseService(db, auth), defaultInterceptor)
 		mux.Handle(path, handler)
 		path, handler = accounting_ifaceconnect.NewAccountingSetupServiceHandler(setup.NewSetupService(db), defaultInterceptor)
 		mux.Handle(path, handler)

@@ -14,7 +14,6 @@ type Expense struct {
 	ExpenseType accounting_iface.ExpenseType
 	ExpenseKey  string
 	Amount      float64
-	ExpenseAt   time.Time
 	CreatedAt   time.Time
 }
 
