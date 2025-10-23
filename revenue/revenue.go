@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"math"
+	"strings"
 	"time"
 
 	"connectrpc.com/connect"
@@ -269,11 +270,24 @@ func (r *revenueProcessor) adjustment(adj *revenue_iface.RevenueStreamEventAdjus
 	var teamID uint = uint(init.TeamId)
 	var userID uint = uint(init.UserId)
 
-	refID := NewShopDateRefID(&WithdrawRefData{
-		RefType: accounting_core.AdminAdjustmentRef,
-		ShopID:  shopID,
-		At:      adj.At.AsTime(),
-	})
+	var refID accounting_core.RefID
+
+	orderID := adj.OrderId
+	orderID = strings.ReplaceAll(orderID, "-", "")
+	orderID = strings.Trim(orderID, " ")
+
+	if orderID != "" {
+		refID = accounting_core.NewStringRefID(&accounting_core.StringRefData{
+			RefType: accounting_core.AdjustmentRef,
+			ID:      adj.OrderId,
+		})
+	} else {
+		refID = NewShopDateRefID(&WithdrawRefData{
+			RefType: accounting_core.AdjustmentRef,
+			ShopID:  shopID,
+			At:      adj.At.AsTime(),
+		})
+	}
 
 	var exist bool
 	exist, err = r.checkTxExist(refID)
@@ -350,6 +364,6 @@ type WithdrawRefData struct {
 }
 
 func NewShopDateRefID(data *WithdrawRefData) accounting_core.RefID {
-	raw := fmt.Sprintf("%s#%d#%s", data.RefType, data.ShopID, data.At.Format("2006-01-02#1500"))
+	raw := fmt.Sprintf("%s#%d#%d", data.RefType, data.ShopID, data.At.Unix())
 	return accounting_core.RefID(raw)
 }
