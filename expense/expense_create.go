@@ -51,35 +51,37 @@ func (e *expenseServiceImpl) ExpenseCreate(
 		return &result, err
 	}
 
-	err = e.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
-		exp := accounting_model.Expense{
-			TeamID:      uint(pay.TeamId),
-			CreatedByID: agent.GetUserID(),
-			ExpenseType: pay.ExpenseType,
-			ExpenseKey:  pay.ExpenseKey,
-			Desc:        pay.Desc,
-			Amount:      pay.Amount,
-			CreatedAt:   time.Now(),
-		}
-
-		err = tx.Save(&exp).Error
-		if err != nil {
-			return err
-		}
-
-		err = expense_transaction.
-			NewExpenseTransaction(tx, identity.Identity()).
-			ExpenseCreate(&expense_transaction.CreatePayload{
+	err = e.
+		db.
+		WithContext(ctx).
+		Transaction(func(tx *gorm.DB) error {
+			exp := accounting_model.Expense{
 				TeamID:      uint(pay.TeamId),
-				ExpenseKey:  accounting_core.AccountKey(pay.ExpenseKey),
+				CreatedByID: agent.GetUserID(),
 				ExpenseType: pay.ExpenseType,
-				Amount:      pay.Amount,
+				ExpenseKey:  pay.ExpenseKey,
 				Desc:        pay.Desc,
-				RefID:       pay.RefId,
-			})
+				Amount:      pay.Amount,
+				CreatedAt:   time.Now(),
+			}
 
-		return err
-	})
+			err = tx.Save(&exp).Error
+			if err != nil {
+				return err
+			}
+
+			err = expense_transaction.
+				NewExpenseTransaction(tx, identity.Identity()).
+				ExpenseCreate(&expense_transaction.CreatePayload{
+					TeamID:      uint(pay.TeamId),
+					ExpenseKey:  accounting_core.AccountKey(pay.ExpenseKey),
+					ExpenseType: pay.ExpenseType,
+					Amount:      pay.Amount,
+					Desc:        pay.Desc,
+				})
+
+			return err
+		})
 
 	return &result, err
 }

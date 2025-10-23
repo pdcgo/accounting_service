@@ -12,7 +12,6 @@ import (
 
 type CreatePayload struct {
 	TeamID      uint
-	RefID       string
 	ExpenseKey  accounting_core.AccountKey
 	ExpenseType accounting_iface.ExpenseType
 	Amount      float64
@@ -32,10 +31,17 @@ type expenseTransactonImpl struct {
 func (e *expenseTransactonImpl) ExpenseCreate(payload *CreatePayload) error {
 	var err error
 
+	ref := accounting_core.NewStringRefID(&accounting_core.StringRefData{
+		RefType: accounting_core.ExpenseRef,
+		ID:      fmt.Sprintf("%d-%s-%d", payload.TeamID, payload.ExpenseType, time.Now().Unix()),
+	})
+
 	var tran accounting_core.Transaction = accounting_core.Transaction{
-		Desc:    payload.Desc,
-		Created: time.Now(),
-		RefID:   accounting_core.RefID(payload.RefID),
+		Desc:        payload.Desc,
+		Created:     time.Now(),
+		RefID:       ref,
+		TeamID:      payload.TeamID,
+		CreatedByID: e.agent.GetUserID(),
 	}
 	err = accounting_core.OpenTransaction(e.tx, func(tx *gorm.DB, bookmng accounting_core.BookManage) error {
 		err = bookmng.
