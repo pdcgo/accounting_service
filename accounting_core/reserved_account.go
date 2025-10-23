@@ -36,11 +36,18 @@ const (
 	StockCodFeeAccount          AccountKey = "stock_cod_fee"
 	ReceivableAccount           AccountKey = "receivable"
 	PaymentInTransitAccount     AccountKey = "payment_in_transit"
+	AdjAssetAccount             AccountKey = "adj_asset"
+)
+
+// Equity
+const (
+	AdjEquityAccount AccountKey = "adj_equity"
 )
 
 // liability
 const (
-	PayableAccount AccountKey = "payable"
+	PayableAccount      AccountKey = "payable"
+	AdjLiabilityAccount AccountKey = "adj_liability"
 )
 
 // expense
@@ -63,6 +70,7 @@ const (
 	ServerExpenseAccount      AccountKey = "server"
 	ShippingExpenseAccount    AccountKey = "shipping_expense"
 	AdsExpenseAccount         AccountKey = "ads_expense"
+	AdjExpenseAccount         AccountKey = "adj_expense"
 	// ongkir ?
 	// om + harum ?
 
@@ -75,6 +83,7 @@ const (
 	SalesRevenueAdjustmentAccount AccountKey = "sales_revenue_adjustment"
 	SalesRevenueAccount           AccountKey = "sales_revenue"
 	SalesReturnRevenueAccount     AccountKey = "sales_return_revenue"
+	AdjRevenueAccount             AccountKey = "adj_revenue"
 )
 
 type AccountKeyInfo struct {

@@ -130,6 +130,11 @@ func (c *createTansactionImpl) AddTags(tnames []string) CreateTransaction {
 		return c
 	}
 
+	for i, tname := range tnames {
+		tname = SanityTag(tname)
+		tnames[i] = tname
+	}
+
 	tmap := map[string]bool{}
 	for _, tname := range tnames {
 		tmap[tname] = false

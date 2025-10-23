@@ -56,7 +56,7 @@ func (e *expenseServiceImpl) ExpenseList(
 	}
 	err = identity.
 		HasPermission(authorization_iface.CheckPermissionGroup{
-			accounting_model.ExpenseEntity{}: &authorization_iface.CheckPermission{
+			&accounting_model.ExpenseEntity{}: &authorization_iface.CheckPermission{
 				DomainID: domainID,
 				Actions:  []authorization_iface.Action{authorization_iface.Read},
 			},

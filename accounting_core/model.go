@@ -169,6 +169,7 @@ type Account struct {
 	TeamID      uint        `json:"team_id" gorm:"index:team_key,unique"`
 	Coa         CoaCode     `json:"coa"`
 	BalanceType BalanceType `json:"balance_type"`
+	CanAdjust   bool        `json:"can_adjust"`
 
 	Name string `json:"name"`
 
@@ -228,6 +229,7 @@ const (
 	PaymentRef             RefType = "payment"
 	AdminAdjustmentRef     RefType = "admin_adjustment"
 	AdsPaymentRef          RefType = "ads_payment"
+	AdjustmentRef          RefType = "common_adjustment"
 )
 
 type RefData struct {

@@ -100,5 +100,6 @@ func OpenTransaction(tx *gorm.DB, handle func(tx *gorm.DB, bookmng BookManage) e
 	if err != nil {
 		return err
 	}
+
 	return nil
 }
