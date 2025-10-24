@@ -77,6 +77,7 @@ func (e *expenseServiceImpl) ExpenseList(
 				"e.created_by_id",
 				"e.desc",
 				"e.expense_type",
+				"e.expense_key",
 				"e.amount",
 				// "(EXTRACT(EPOCH FROM e.expense_at) * 1000000)::BIGINT AS expense_at",
 				"(EXTRACT(EPOCH FROM e.created_at) * 1000000)::BIGINT AS created_at",

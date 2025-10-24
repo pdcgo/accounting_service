@@ -68,17 +68,22 @@ func (a *adjServiceImpl) AccountAdjustment(
 				return nil, errors.New("adjustment multiple team needs admin")
 			}
 
+			bookeepingMap := map[uint64]bool{}
+			for _, adj := range adjTeam.Adjs {
+				bookeepingMap[adj.BookeepingId] = true
+			}
+
 			for _, ads := range adjTeam.Adjs {
-				if adjTeam.Adjs[ads.TeamId] == nil {
+				if !bookeepingMap[ads.TeamId] {
 					return nil, fmt.Errorf("adjustment for teamid %d not found", ads.TeamId)
 				}
 			}
 		}
 
 		if adjcount == 1 {
-			for teamID := range adjTeam.Adjs {
+			for _, adj := range adjTeam.Adjs {
 				if pay.RequestFrom != common.RequestFrom_REQUEST_FROM_ADMIN {
-					if pay.TeamId != teamID {
+					if pay.TeamId != adj.BookeepingId {
 						return nil, errors.New("teamid adjustment not same")
 					}
 				}
@@ -107,7 +112,9 @@ func (a *adjServiceImpl) AccountAdjustment(
 				Created:     time.Now(),
 			}
 
-			for bookTeamID, adj := range adjTeam.Adjs {
+			for _, adj := range adjTeam.Adjs {
+				bookTeamID := adj.BookeepingId
+
 				// getting acccount id
 				var acc, adjAcc accounting_core.Account
 				err = tx.
