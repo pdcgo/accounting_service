@@ -234,6 +234,7 @@ func (r *revenueProcessor) withdrawal(wd *revenue_iface.RevenueStreamEventWithdr
 		err = bookmng.
 			NewTransaction().
 			Create(&tran).
+			AddShopID(uint(r.init.ShopId)).
 			Err()
 
 		if err != nil {

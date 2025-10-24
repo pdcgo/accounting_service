@@ -67,7 +67,7 @@ func (e *expenseServiceImpl) ExpenseList(
 		return res, err
 	}
 
-	db := e.db.WithContext(ctx)
+	db := e.db.WithContext(ctx).Debug()
 	createQuery := func() *gorm.DB {
 		query := db.
 			Table("expenses e").
@@ -78,7 +78,7 @@ func (e *expenseServiceImpl) ExpenseList(
 				"e.desc",
 				"e.expense_type",
 				"e.amount",
-				"(EXTRACT(EPOCH FROM e.expense_at) * 1000000)::BIGINT AS expense_at",
+				// "(EXTRACT(EPOCH FROM e.expense_at) * 1000000)::BIGINT AS expense_at",
 				"(EXTRACT(EPOCH FROM e.created_at) * 1000000)::BIGINT AS created_at",
 			})
 
@@ -91,13 +91,13 @@ func (e *expenseServiceImpl) ExpenseList(
 		}
 
 		if pay.TimeRange.StartDate.IsValid() {
-			query = query.Where("e.expense_at > ?",
+			query = query.Where("e.created_at > ?",
 				pay.TimeRange.StartDate.AsTime(),
 			)
 		}
 
 		if pay.TimeRange.EndDate.IsValid() {
-			query = query.Where("e.expense_at <= ?",
+			query = query.Where("e.created_at <= ?",
 				pay.TimeRange.EndDate.AsTime(),
 			)
 		}
