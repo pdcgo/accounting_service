@@ -107,6 +107,10 @@ func (e *expenseServiceImpl) ExpenseList(
 			query = query.Where("e.expense_type = ?", pay.ExpenseType)
 		}
 
+		if pay.ExpenseKey != "" {
+			query = query.Where("e.expense_key = ?", pay.ExpenseKey)
+		}
+
 		return query
 	}
 
