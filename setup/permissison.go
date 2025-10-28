@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/pdcgo/accounting_service/accounting_model"
+	"github.com/pdcgo/accounting_service/adjustment"
 	"github.com/pdcgo/shared/authorization"
 	"github.com/pdcgo/shared/db_models"
 	"github.com/pdcgo/shared/interfaces/authorization_iface"
@@ -33,18 +34,24 @@ var fullAccess = []*authorization_iface.RoleAddPermissionItem{
 	},
 }
 
-var accountingPermission authorization_iface.RoleAddPermissionPayload = authorization_iface.RoleAddPermissionPayload{
-	&accounting_model.BankTransfer{}:  fullAccess,
-	&accounting_model.ExpenseEntity{}: fullAccess,
-	&accounting_model.Payment{}:       fullAccess,
-}
+var accountingPermission authorization_iface.RoleAddPermissionPayload = authorization_iface.RoleAddPermissionPayload{}
 
 func defaultRootRolePermission() RoleMap {
 	roleMap := RoleMap{
 		db_models.RootTeamType: {},
 		db_models.AdminTeamType: RoleItem{
-			"owner": accountingPermission,
-			"admin": accountingPermission,
+			"owner": authorization_iface.RoleAddPermissionPayload{
+				&accounting_model.BankTransfer{}:  fullAccess,
+				&accounting_model.ExpenseEntity{}: fullAccess,
+				&accounting_model.Payment{}:       fullAccess,
+				&adjustment.AdjustmentAccess{}:    fullAccess,
+			},
+			"admin": authorization_iface.RoleAddPermissionPayload{
+				&accounting_model.BankTransfer{}:  fullAccess,
+				&accounting_model.ExpenseEntity{}: fullAccess,
+				&accounting_model.Payment{}:       fullAccess,
+				&adjustment.AdjustmentAccess{}:    fullAccess,
+			},
 		},
 		db_models.SellingTeamType:   RoleItem{},
 		db_models.WarehouseTeamType: RoleItem{},
@@ -57,16 +64,28 @@ func defaultRolePermission() RoleMap {
 	roleMap := RoleMap{
 		db_models.RootTeamType: {},
 		db_models.AdminTeamType: RoleItem{
-			"owner": accountingPermission,
-			"admin": accountingPermission,
+			"owner": authorization_iface.RoleAddPermissionPayload{
+				&adjustment.AdjustmentAccess{}: fullAccess,
+			},
+			"admin": authorization_iface.RoleAddPermissionPayload{
+				&adjustment.AdjustmentAccess{}: fullAccess,
+			},
 		},
 		db_models.SellingTeamType: RoleItem{
-			"owner": accountingPermission,
-			"admin": accountingPermission,
+			"owner": authorization_iface.RoleAddPermissionPayload{
+				&adjustment.AdjustmentAccess{}: fullAccess,
+			},
+			"admin": authorization_iface.RoleAddPermissionPayload{
+				&adjustment.AdjustmentAccess{}: fullAccess,
+			},
 		},
 		db_models.WarehouseTeamType: RoleItem{
-			"owner": accountingPermission,
-			"admin": accountingPermission,
+			"owner": authorization_iface.RoleAddPermissionPayload{
+				&adjustment.AdjustmentAccess{}: fullAccess,
+			},
+			"admin": authorization_iface.RoleAddPermissionPayload{
+				&adjustment.AdjustmentAccess{}: fullAccess,
+			},
 		},
 	}
 
