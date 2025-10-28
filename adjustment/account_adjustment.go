@@ -13,6 +13,7 @@ import (
 	"github.com/pdcgo/schema/services/common/v1"
 	"github.com/pdcgo/shared/authorization"
 	"github.com/pdcgo/shared/interfaces/authorization_iface"
+	"github.com/pdcgo/shared/pkg/debugtool"
 	"gorm.io/gorm"
 )
 
@@ -63,7 +64,29 @@ func (a *adjServiceImpl) AccountAdjustment(
 	for _, adjTeam := range pay.Adjustments {
 		// checking teamid
 		adjcount := len(adjTeam.Adjs)
+
+		var checkPair bool
+
+		if adjcount == 1 {
+			adj := adjTeam.Adjs[0]
+			if pay.RequestFrom == common.RequestFrom_REQUEST_FROM_ADMIN {
+
+				if adj.BookeepingId != adj.TeamId {
+					checkPair = true
+				}
+			} else {
+				if pay.TeamId != adj.BookeepingId || pay.TeamId != adj.TeamId {
+					return nil, errors.New("teamid adjustment not same")
+				}
+			}
+		}
+
 		if adjcount > 1 {
+			checkPair = true
+
+		}
+
+		if checkPair {
 			if pay.RequestFrom != common.RequestFrom_REQUEST_FROM_ADMIN {
 				return nil, errors.New("adjustment multiple team needs admin")
 			}
@@ -73,23 +96,13 @@ func (a *adjServiceImpl) AccountAdjustment(
 				bookeepingMap[adj.BookeepingId] = true
 			}
 
+			debugtool.LogJson(bookeepingMap)
+
 			for _, ads := range adjTeam.Adjs {
 				if !bookeepingMap[ads.TeamId] {
 					return nil, fmt.Errorf("adjustment for teamid %d not found", ads.TeamId)
 				}
 			}
-		}
-
-		if adjcount == 1 {
-			for _, adj := range adjTeam.Adjs {
-				if pay.RequestFrom != common.RequestFrom_REQUEST_FROM_ADMIN {
-					if pay.TeamId != adj.BookeepingId {
-						return nil, errors.New("teamid adjustment not same")
-					}
-				}
-
-			}
-
 		}
 
 	}

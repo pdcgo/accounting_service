@@ -15,6 +15,67 @@ func ParseDate(t time.Time) time.Time {
 	return day
 }
 
+type AccountKeyDailyBalance struct {
+	ID            uint       `json:"id" gorm:"primarykey"`
+	Day           time.Time  `json:"day" gorm:"index:account_key_journal,unique"`
+	JournalTeamID uint       `json:"journal_team_id" gorm:"index:account_key_journal,unique"`
+	AccountKey    AccountKey `json:"account_key" gorm:"index:account_key_journal,unique"`
+	Debit         float64    `json:"debit"`
+	Credit        float64    `json:"credit"`
+	Balance       float64    `json:"balance"`
+}
+
+// AddBalance implements DailyBalance.
+func (a *AccountKeyDailyBalance) AddBalance(balance float64) {
+	a.Balance += balance
+}
+
+// After implements DailyBalance.
+func (a *AccountKeyDailyBalance) After(tx *gorm.DB, lock bool) *gorm.DB {
+	if lock {
+		tx = tx.
+			Clauses(
+				clause.Locking{
+					Strength: "UPDATE",
+				},
+			)
+	}
+
+	return tx.
+		Model(&AccountKeyDailyBalance{}).
+		Where("day > ?", a.Day).
+		Where("account_key = ?", a.AccountKey).
+		Where("journal_team_id = ?", a.JournalTeamID)
+}
+
+// Before implements DailyBalance.
+func (a *AccountKeyDailyBalance) Before(tx *gorm.DB, lock bool) *gorm.DB {
+	if lock {
+		tx = tx.
+			Clauses(
+				clause.Locking{
+					Strength: "UPDATE",
+				},
+			)
+	}
+
+	return tx.
+		Model(&AccountKeyDailyBalance{}).
+		Where("day < ?", a.Day).
+		Where("account_key = ?", a.AccountKey).
+		Where("journal_team_id = ?", a.JournalTeamID)
+}
+
+// Empty implements DailyBalance.
+func (a *AccountKeyDailyBalance) Empty() DailyBalance {
+	return &AccountKeyDailyBalance{}
+}
+
+// GetDebitCredit implements DailyBalance.
+func (a *AccountKeyDailyBalance) GetDebitCredit() (debit float64, credit float64, balance float64) {
+	return a.Debit, a.Credit, a.Balance
+}
+
 type AccountDailyBalance struct {
 	ID            uint      `json:"id" gorm:"primarykey"`
 	Day           time.Time `json:"day" gorm:"index:account_journal,unique"`

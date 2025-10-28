@@ -93,6 +93,29 @@ func (a *accountReportImpl) DailyUpdateBalance(
 			return &connect.Response[report_iface.DailyUpdateBalanceResponse]{}, errors.New("account not credit or debit")
 		}
 
+		keyDailyBalance := &accounting_core.AccountKeyDailyBalance{
+			Day:           day,
+			JournalTeamID: uint(entry.TeamId),
+			AccountKey:    account.AccountKey,
+			Debit:         debit,
+			Credit:        credit,
+			Balance:       balance,
+		}
+
+		err = a.updateDailyBalance(
+			a.
+				db.
+				Model(&accounting_core.AccountKeyDailyBalance{}).
+				Where("day = ?", keyDailyBalance.Day).
+				Where("account_key = ?", keyDailyBalance.AccountKey).
+				Where("journal_team_id = ?", keyDailyBalance.JournalTeamID),
+			keyDailyBalance,
+		)
+
+		if err != nil {
+			return &connect.Response[report_iface.DailyUpdateBalanceResponse]{}, err
+		}
+
 		dayBalance := &accounting_core.AccountDailyBalance{
 			Day:           day,
 			AccountID:     uint(entry.AccountId),

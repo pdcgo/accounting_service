@@ -23,6 +23,7 @@ func TestDailyUpdateBalance(t *testing.T) {
 	var migrate moretest.SetupFunc = func(t *testing.T) func() error {
 		err := db.AutoMigrate(
 			&accounting_core.Account{},
+			&accounting_core.AccountKeyDailyBalance{},
 			&accounting_core.AccountDailyBalance{},
 			&accounting_core.CsDailyBalance{},
 			&accounting_core.ShopDailyBalance{},
@@ -125,6 +126,7 @@ func TestDailyBalance(t *testing.T) {
 		err := db.AutoMigrate(
 			&accounting_core.JournalEntry{},
 			&accounting_core.Account{},
+			&accounting_core.AccountKeyDailyBalance{},
 			&accounting_core.AccountDailyBalance{},
 			&accounting_core.ShopDailyBalance{},
 		)
