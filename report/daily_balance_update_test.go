@@ -7,6 +7,7 @@ import (
 
 	"connectrpc.com/connect"
 	"github.com/pdcgo/accounting_service/accounting_core"
+	"github.com/pdcgo/accounting_service/accounting_mock"
 	"github.com/pdcgo/schema/services/report_iface/v1"
 	"github.com/pdcgo/shared/authorization/authorization_mock"
 	"github.com/pdcgo/shared/pkg/moretest"
@@ -16,6 +17,119 @@ import (
 	"google.golang.org/protobuf/types/known/timestamppb"
 	"gorm.io/gorm"
 )
+
+func loadAccount(db *gorm.DB, teamID uint, key accounting_core.AccountKey, account *accounting_core.Account) moretest.SetupFunc {
+
+	return func(t *testing.T) func() error {
+		err := db.
+			Model(&accounting_core.Account{}).
+			Where("account_key = ?", key).
+			Where("team_id = ?", teamID).
+			First(&account).
+			Error
+
+		assert.Nil(t, err)
+
+		return nil
+	}
+}
+
+func TestAccountKeyDailyBalance(t *testing.T) {
+	var db gorm.DB
+	var migrate moretest.SetupFunc = func(t *testing.T) func() error {
+		err := db.AutoMigrate(
+			&accounting_core.Account{},
+			&accounting_core.AccountKeyDailyBalance{},
+			&accounting_core.AccountDailyBalance{},
+			&accounting_core.CsDailyBalance{},
+			&accounting_core.ShopDailyBalance{},
+			&accounting_core.SupplierDailyBalance{},
+			&accounting_core.CustomLabelDailyBalance{},
+		)
+
+		assert.Nil(t, err)
+
+		return nil
+	}
+
+	var hutangAcc2 accounting_core.Account
+
+	moretest.Suite(t, "testing account key",
+		moretest.SetupListFunc{
+			moretest_mock.MockSqliteDatabase(&db),
+			migrate,
+			accounting_mock.PopulateAccountKey(&db, 1),
+			accounting_mock.PopulateAccountKey(&db, 2),
+			loadAccount(&db, 2, accounting_core.PayableAccount, &hutangAcc2),
+		},
+		func(t *testing.T) {
+
+			reportService := NewAccountReportService(
+				&db,
+				&authorization_mock.EmptyAuthorizationMock{},
+				ware_cache.NewLocalCache(),
+			)
+
+			t.Run("testing daily accountkey", func(t *testing.T) {
+				_, err := reportService.DailyUpdateBalance(t.Context(), &connect.Request[report_iface.DailyUpdateBalanceRequest]{
+					Msg: &report_iface.DailyUpdateBalanceRequest{
+						LabelExtra: &report_iface.TxLabelExtra{},
+						Entries: []*report_iface.EntryPayload{
+							{
+								Id:            1,
+								AccountId:     uint64(hutangAcc2.ID),
+								TeamId:        1,
+								EntryTime:     timestamppb.Now(),
+								Debit:         12000,
+								Desc:          "today",
+								TransactionId: 1,
+								Credit:        0,
+							},
+							{
+								Id:            1,
+								AccountId:     uint64(hutangAcc2.ID),
+								TeamId:        1,
+								EntryTime:     timestamppb.Now(),
+								Debit:         0,
+								Desc:          "today",
+								TransactionId: 1,
+								Credit:        12000,
+							},
+							{
+								Id:            1,
+								AccountId:     uint64(hutangAcc2.ID),
+								TeamId:        1,
+								EntryTime:     timestamppb.New(time.Now().AddDate(0, 0, -1)),
+								Debit:         0,
+								Desc:          "today",
+								TransactionId: 1,
+								Credit:        12000,
+							},
+						},
+					},
+				})
+
+				assert.Nil(t, err)
+
+				t.Run("testing accountkey", func(t *testing.T) {
+					dAccounts := []*accounting_core.AccountKeyDailyBalance{}
+					err = db.
+						Model(&accounting_core.AccountKeyDailyBalance{}).
+						Find(&dAccounts).
+						Order("day desc").
+						Error
+
+					assert.Nil(t, err)
+					assert.Len(t, dAccounts, 2)
+					assert.NotEqual(t, 0, dAccounts[0].Balance)
+
+				})
+			})
+
+		},
+	)
+
+}
 
 func TestDailyUpdateBalance(t *testing.T) {
 	var db gorm.DB

@@ -67,8 +67,7 @@ func (a *accountReportImpl) DailyBalance(
 
 func createDailyReportQ(db *gorm.DB, pay *report_iface.DailyBalanceRequest) *gorm.DB {
 	query := db.
-		Table("account_daily_balances adb").
-		Joins("join accounts a on a.id = adb.account_id").
+		Table("account_key_daily_balances adb").
 		Select([]string{
 			"(EXTRACT(EPOCH FROM adb.day) * 1000000)::BIGINT as day",
 			"sum(adb.debit) as debit",
@@ -85,7 +84,7 @@ func createDailyReportQ(db *gorm.DB, pay *report_iface.DailyBalanceRequest) *gor
 
 	if pay.AccountKey != "" {
 		query = query.
-			Where("a.account_key = ?", pay.AccountKey)
+			Where("adb.account_key = ?", pay.AccountKey)
 	}
 
 	trange := pay.TimeRange

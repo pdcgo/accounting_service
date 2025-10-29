@@ -55,6 +55,7 @@ func NewMigrationHandler(
 			&accounting_core.Label{},
 			&accounting_core.TransactionLabel{},
 			&accounting_core.AccountDailyBalance{},
+			&accounting_core.AccountKeyDailyBalance{},
 			&accounting_core.TransactionShop{},
 			&accounting_core.TransactionSupplier{},
 			&accounting_core.TransactionCustomerService{},
