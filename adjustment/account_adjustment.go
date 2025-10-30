@@ -52,6 +52,7 @@ func (a *adjServiceImpl) AccountAdjustment(
 		HasPermission(authorization_iface.CheckPermissionGroup{
 			&AdjustmentAccess{}: &authorization_iface.CheckPermission{
 				DomainID: domainID,
+				Actions:  []authorization_iface.Action{authorization_iface.Create},
 			},
 		}).
 		Err()

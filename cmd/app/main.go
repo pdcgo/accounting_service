@@ -21,8 +21,8 @@ import (
 	"gorm.io/gorm"
 )
 
-func NewCache() (ware_cache.Cache, error) {
-	return ware_cache.NewBadgerCache("/tmp/cache")
+func NewCache(cfg *configs.AppConfig) (ware_cache.Cache, error) {
+	return ware_cache.NewCustomCache(cfg.CacheService.Endpoint), nil
 }
 
 func NewCloudTaskClient() (*cloudtasks.Client, error) {

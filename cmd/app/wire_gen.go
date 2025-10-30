@@ -26,7 +26,7 @@ func InitializeApp() (*App, error) {
 	if err != nil {
 		return nil, err
 	}
-	cache, err := NewCache()
+	cache, err := NewCache(appConfig)
 	if err != nil {
 		return nil, err
 	}

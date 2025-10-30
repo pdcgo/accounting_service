@@ -45,7 +45,13 @@ type balanceViewImpl struct {
 func (b *balanceViewImpl) Iterate(handle func(d *report_iface.AccountBalanceItem) error) error {
 	var err error
 
-	query := b.baseQuery()
+	baseQuery := b.dcQuery()
+	lbQuery := b.lastBalanceQuery()
+	query := b.
+		db.
+		Table("(?) as base", baseQuery).
+		Joins("full outer join (?) as bal on bal.account_key = base.account_key", lbQuery)
+
 	rows, err := query.Rows()
 
 	if err != nil {
@@ -68,14 +74,52 @@ func (b *balanceViewImpl) Iterate(handle func(d *report_iface.AccountBalanceItem
 	return nil
 }
 
+func (b *balanceViewImpl) lastBalanceQuery() *gorm.DB {
+	query := b.
+		db.
+		Table("account_key_daily_balances adb").
+		Select([]string{
+			"distinct on (adb.account_key) adb.account_key",
+			"adb.balance",
+		})
+
+	pay := b.pay
+	trange := b.pay.TimeRange
+	if trange.EndDate.IsValid() {
+		query = query.Where("adb.day <= ?",
+			trange.EndDate.AsTime(),
+		)
+	}
+
+	if trange.StartDate.IsValid() {
+		query = query.Where("adb.day > ?",
+			trange.StartDate.AsTime(),
+		)
+	}
+
+	if pay.TeamId != 0 {
+		query = query.
+			Where("adb.journal_team_id = ?", pay.TeamId)
+	}
+
+	if len(pay.AccountKeys) != 0 {
+		query = query.
+			Where("adb.account_key in ?", pay.AccountKeys)
+	}
+
+	query = query.
+		Order("adb.account_key, adb.day desc")
+
+	return query
+}
+
 // createQuery implements BalanceView.
-func (b *balanceViewImpl) baseQuery() *gorm.DB {
+func (b *balanceViewImpl) dcQuery() *gorm.DB {
 	query := b.
 		db.
 		Table("account_key_daily_balances adb").
 		Select([]string{
 			"adb.account_key",
-			"sum(adb.balance) as balance",
 			"sum(adb.debit) as debit",
 			"sum(adb.credit) as credit",
 		})

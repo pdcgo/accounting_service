@@ -82,7 +82,7 @@ func (p *paymentServiceImpl) PaymentCreate(
 				TeamID: uint(pay.ToTeamId),
 			}, pay.Amount).
 			To(&accounting_core.EntryAccountPayload{
-				Key:    accounting_core.PaymentInTransitAccount,
+				Key:    accounting_core.PendingPaymentPayAccount,
 				TeamID: uint(pay.ToTeamId),
 			}, pay.Amount).
 			Transaction(&tran).
@@ -101,7 +101,7 @@ func (p *paymentServiceImpl) PaymentCreate(
 				TeamID: uint(pay.FromTeamId),
 			}, pay.Amount).
 			To(&accounting_core.EntryAccountPayload{
-				Key:    accounting_core.PaymentInTransitAccount,
+				Key:    accounting_core.PendingPaymentReceiveAccount,
 				TeamID: uint(pay.FromTeamId),
 			}, pay.Amount).
 			Transaction(&tran).

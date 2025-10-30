@@ -93,7 +93,7 @@ func (p *paymentServiceImpl) PaymentAccept(
 		err = bookmng.
 			NewCreateEntry(payment.FromTeamID, agent.IdentityID()).
 			From(&accounting_core.EntryAccountPayload{
-				Key:    accounting_core.PaymentInTransitAccount,
+				Key:    accounting_core.PendingPaymentPayAccount,
 				TeamID: payment.ToTeamID,
 			}, payment.Amount, desc).
 			From(&accounting_core.EntryAccountPayload{
@@ -112,7 +112,7 @@ func (p *paymentServiceImpl) PaymentAccept(
 		err = bookmng.
 			NewCreateEntry(payment.ToTeamID, agent.IdentityID()).
 			From(&accounting_core.EntryAccountPayload{
-				Key:    accounting_core.PaymentInTransitAccount,
+				Key:    accounting_core.PendingPaymentReceiveAccount,
 				TeamID: payment.FromTeamID,
 			}, payment.Amount, desc).
 			To(&accounting_core.EntryAccountPayload{

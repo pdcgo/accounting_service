@@ -23,20 +23,22 @@ const (
 
 // asset
 const (
-	CashAccount                 AccountKey = "cash"
-	ShopeepayAccount            AccountKey = "shopeepay"
-	SellingEstReceivableAccount AccountKey = "selling_est_receivable"
-	SellingAdjReceivableAccount AccountKey = "selling_adj_receivable"
-	SellingReceivableAccount    AccountKey = "selling_receivable"
-	StockPendingAccount         AccountKey = "stock_pending"
-	StockTransferAccount        AccountKey = "stock_transfer"
-	StockLostAccount            AccountKey = "stock_lost"
-	StockBrokenAccount          AccountKey = "stock_broken"
-	StockPendingFeeAccount      AccountKey = "stock_pending_fee"
-	StockCodFeeAccount          AccountKey = "stock_cod_fee"
-	ReceivableAccount           AccountKey = "receivable"
-	PaymentInTransitAccount     AccountKey = "payment_in_transit"
-	AdjAssetAccount             AccountKey = "adj_asset"
+	CashAccount                  AccountKey = "cash"
+	ShopeepayAccount             AccountKey = "shopeepay"
+	SellingEstReceivableAccount  AccountKey = "selling_est_receivable"
+	SellingAdjReceivableAccount  AccountKey = "selling_adj_receivable"
+	SellingReceivableAccount     AccountKey = "selling_receivable"
+	StockPendingAccount          AccountKey = "stock_pending"
+	StockTransferAccount         AccountKey = "stock_transfer"
+	StockLostAccount             AccountKey = "stock_lost"
+	StockBrokenAccount           AccountKey = "stock_broken"
+	StockPendingFeeAccount       AccountKey = "stock_pending_fee"
+	StockCodFeeAccount           AccountKey = "stock_cod_fee"
+	ReceivableAccount            AccountKey = "receivable"
+	PendingPaymentReceiveAccount AccountKey = "pending_payment_receive"
+	PendingPaymentPayAccount     AccountKey = "pending_payment_pay"
+	// PaymentInTransitAccount      AccountKey = "payment_in_transit"
+	AdjAssetAccount AccountKey = "adj_asset"
 )
 
 // Equity
@@ -122,7 +124,13 @@ func DefaultSeedAccount() []*Account {
 		},
 		// asset
 		{
-			AccountKey:  PaymentInTransitAccount,
+			AccountKey:  PendingPaymentPayAccount,
+			Coa:         ASSET,
+			BalanceType: DebitBalance,
+		},
+
+		{
+			AccountKey:  PendingPaymentReceiveAccount,
 			Coa:         ASSET,
 			BalanceType: DebitBalance,
 		},

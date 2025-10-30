@@ -117,7 +117,10 @@ var filterExtra = map[accounting_core.AccountKey]*accounting_iface.AccountFilter
 		Team: true,
 		Shop: true,
 	},
-	accounting_core.PaymentInTransitAccount: {
+	accounting_core.PendingPaymentPayAccount: {
+		Team: true,
+	},
+	accounting_core.PendingPaymentReceiveAccount: {
 		Team: true,
 	},
 	accounting_core.SalesReturnRevenueAccount: {
