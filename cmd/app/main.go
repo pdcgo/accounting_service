@@ -12,6 +12,7 @@ import (
 	"github.com/pdcgo/accounting_service/accounting_core"
 	"github.com/pdcgo/shared/authorization"
 	"github.com/pdcgo/shared/configs"
+	"github.com/pdcgo/shared/custom_connect"
 	"github.com/pdcgo/shared/db_connect"
 	"github.com/pdcgo/shared/interfaces/authorization_iface"
 	"github.com/pdcgo/shared/pkg/cloud_logging"
@@ -39,22 +40,6 @@ func NewAuthorization(
 
 func NewDatabase(cfg *configs.AppConfig) (*gorm.DB, error) {
 	return db_connect.NewProductionDatabase("accounting_service", &cfg.Database)
-}
-
-func withCors(next http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Access-Control-Allow-Origin", "*")
-		w.Header().Set("Access-Control-Allow-Credentials", "true")
-		w.Header().Set("Access-Control-Allow-Headers", "Connect-Protocol-Version, Referer, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization, Accept, Origin, Cache-Control, X-Requested-With")
-		w.Header().Set("Access-Control-Allow-Methods", "HEAD,PATCH,OPTIONS,GET,POST,PUT,DELETE")
-
-		if r.Method == "OPTIONS" {
-			w.WriteHeader(http.StatusNoContent)
-			return
-		}
-
-		next.ServeHTTP(w, r)
-	})
 }
 
 type App struct {
@@ -89,7 +74,7 @@ func NewApp(
 				listen,
 				// Use h2c so we can serve HTTP/2 without TLS.
 				h2c.NewHandler(
-					withCors(mux),
+					custom_connect.WithCORS(mux),
 					&http2.Server{}),
 			)
 

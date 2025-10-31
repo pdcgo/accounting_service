@@ -4,6 +4,7 @@ import (
 	"log"
 	"net/http"
 
+	"connectrpc.com/connect"
 	"github.com/pdcgo/accounting_service/accounting_core"
 	"github.com/pdcgo/accounting_service/accounting_model"
 	"github.com/pdcgo/accounting_service/adjustment"
@@ -91,8 +92,14 @@ func NewRegister(
 
 		path, handler := accounting_ifaceconnect.NewAccountServiceHandler(NewAccountService(db, auth), defaultInterceptor)
 		mux.Handle(path, handler)
-		path, handler = accounting_ifaceconnect.NewExpenseServiceHandler(expense.NewExpenseService(db, auth), defaultInterceptor)
+
+		path, handler = accounting_ifaceconnect.NewExpenseServiceHandler(
+			expense.NewExpenseService(db, auth),
+			defaultInterceptor,
+			connect.WithInterceptors(&custom_connect.RequestSourceIntercept{}),
+		)
 		mux.Handle(path, handler)
+
 		path, handler = accounting_ifaceconnect.NewAccountingSetupServiceHandler(setup.NewSetupService(db), defaultInterceptor)
 		mux.Handle(path, handler)
 		path, handler = accounting_ifaceconnect.NewLedgerServiceHandler(ledger.NewLedgerService(db, auth), defaultInterceptor)

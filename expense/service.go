@@ -8,8 +8,11 @@ import (
 	"connectrpc.com/connect"
 	"github.com/pdcgo/accounting_service/accounting_core"
 	"github.com/pdcgo/accounting_service/accounting_model"
+	"github.com/pdcgo/schema/services/access_iface/v1"
 	"github.com/pdcgo/schema/services/accounting_iface/v1"
 	"github.com/pdcgo/schema/services/common/v1"
+	"github.com/pdcgo/shared/authorization"
+	"github.com/pdcgo/shared/custom_connect"
 	"github.com/pdcgo/shared/interfaces/authorization_iface"
 	"gorm.io/gorm"
 )
@@ -38,11 +41,26 @@ func (e *expenseServiceImpl) ExpenseTimeMetric(
 	res := &connect.Response[accounting_iface.ExpenseTimeMetricResponse]{
 		Msg: result,
 	}
+
+	var domainID uint
+
+	source := custom_connect.GetRequestSource(ctx)
+	switch source.RequestFrom {
+	case access_iface.RequestFrom_REQUEST_FROM_ADMIN:
+		domainID = authorization.RootDomain
+	default:
+		domainID = uint(source.TeamId)
+
+	}
+
 	pay := req.Msg
 	identity := e.auth.AuthIdentityFromHeader(req.Header())
 	err = identity.
 		HasPermission(authorization_iface.CheckPermissionGroup{
-			accounting_model.ExpenseEntity{}: &authorization_iface.CheckPermission{DomainID: uint(pay.TeamId), Actions: []authorization_iface.Action{authorization_iface.Read}},
+			accounting_model.ExpenseEntity{}: &authorization_iface.CheckPermission{
+				DomainID: domainID,
+				Actions:  []authorization_iface.Action{authorization_iface.Read},
+			},
 		}).
 		Err()
 	if err != nil {
@@ -134,9 +152,23 @@ func (e *expenseServiceImpl) ExpenseOverviewMetric(
 
 	pay := req.Msg
 	identity := e.auth.AuthIdentityFromHeader(req.Header())
+
+	var domainID uint
+
+	source := custom_connect.GetRequestSource(ctx)
+	switch source.RequestFrom {
+	case access_iface.RequestFrom_REQUEST_FROM_ADMIN:
+		domainID = authorization.RootDomain
+	default:
+		domainID = uint(source.TeamId)
+
+	}
+
 	err = identity.
 		HasPermission(authorization_iface.CheckPermissionGroup{
-			accounting_model.ExpenseEntity{}: &authorization_iface.CheckPermission{DomainID: uint(pay.TeamId), Actions: []authorization_iface.Action{authorization_iface.Read}},
+			accounting_model.ExpenseEntity{}: &authorization_iface.CheckPermission{
+				DomainID: domainID,
+				Actions:  []authorization_iface.Action{authorization_iface.Read}},
 		}).
 		Err()
 
