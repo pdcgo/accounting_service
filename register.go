@@ -17,6 +17,7 @@ import (
 	"github.com/pdcgo/accounting_service/setup"
 	"github.com/pdcgo/accounting_service/stock"
 	"github.com/pdcgo/accounting_service/tag"
+	"github.com/pdcgo/accounting_service/transfer"
 	"github.com/pdcgo/schema/services/accounting_iface/v1/accounting_ifaceconnect"
 	"github.com/pdcgo/schema/services/payment_iface/v1/payment_ifaceconnect"
 	"github.com/pdcgo/schema/services/report_iface/v1/report_ifaceconnect"
@@ -112,6 +113,7 @@ func NewRegister(
 		mux.Handle(path, handler)
 		path, handler = accounting_ifaceconnect.NewTagServiceHandler(tag.NewTagService(db, auth), defaultInterceptor)
 		mux.Handle(path, handler)
+		path, handler = accounting_ifaceconnect.NewTransferServiceHandler(transfer.NewTransferService(db, auth), defaultInterceptor)
 	}
 
 }

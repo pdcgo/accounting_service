@@ -327,3 +327,16 @@ type TransactionSupplier struct {
 	TransactionID uint `json:"transaction_id" gorm:"primaryKey"`
 	SupplierID    uint `json:"supplier_id" gorm:"primaryKey"`
 }
+
+type TypeLabelKey string
+
+type TypeLabel struct {
+	ID    uint         `json:"id" gorm:"primarykey"`
+	Key   TypeLabelKey `json:"key" gorm:"index:keyval,unique"`
+	Value string       `json:"value" gorm:"index:keyval,unique"`
+}
+
+type TransactionTypeLabel struct {
+	TransactionID uint `json:"transaction_id" gorm:"primaryKey"`
+	TypeLabelID   uint `json:"type_label_id" gorm:"primaryKey"`
+}

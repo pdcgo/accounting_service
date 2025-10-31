@@ -248,10 +248,6 @@ func (e *expenseServiceImpl) ExpenseTypeList(
 				Name: "Server",
 			},
 			{
-				Key:  string(accounting_core.KitchenExpenseAccount),
-				Name: "Dapur",
-			},
-			{
 				Key:  string(accounting_core.OtherExpenseAccount),
 				Name: "Lain-Lain",
 			},
