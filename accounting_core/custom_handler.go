@@ -6,9 +6,12 @@ import (
 	cloudtasks "cloud.google.com/go/cloudtasks/apiv2"
 	"cloud.google.com/go/cloudtasks/apiv2/cloudtaskspb"
 	"connectrpc.com/connect"
+	"github.com/pdcgo/schema/services/access_iface/v1"
 	"github.com/pdcgo/schema/services/report_iface/v1"
 	"github.com/pdcgo/schema/services/report_iface/v1/report_ifaceconnect"
+	"github.com/pdcgo/shared/authorization"
 	"github.com/pdcgo/shared/configs"
+	"github.com/pdcgo/shared/custom_connect"
 	"google.golang.org/protobuf/encoding/protojson"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
@@ -78,6 +81,16 @@ type accReportDispatcher struct {
 	host   string
 }
 
+// MonthlyBalance implements AccountReportServiceClientDispatcher.
+func (a *accReportDispatcher) MonthlyBalance(context.Context, *connect.Request[report_iface.MonthlyBalanceRequest]) (*connect.Response[report_iface.MonthlyBalanceResponse], error) {
+	panic("unimplemented")
+}
+
+// MonthlyBalanceDetail implements AccountReportServiceClientDispatcher.
+func (a *accReportDispatcher) MonthlyBalanceDetail(context.Context, *connect.Request[report_iface.MonthlyBalanceDetailRequest]) (*connect.Response[report_iface.MonthlyBalanceDetailResponse], error) {
+	panic("unimplemented")
+}
+
 // Balance implements AccountReportServiceClientDispatcher.
 func (a *accReportDispatcher) Balance(context.Context, *connect.Request[report_iface.BalanceRequest]) (*connect.Response[report_iface.BalanceResponse], error) {
 	panic("unimplemented")
@@ -118,6 +131,19 @@ func (a *accReportDispatcher) DailyUpdateBalance(
 	// reqheaders["Content-Type"] = "application/grpc-web"
 	reqheaders["Content-Type"] = "application/json"
 	reqheaders["Connect-Protocol-Version"] = "1"
+
+	token, err := custom_connect.RequestSourceSerialize(
+		&access_iface.RequestSource{
+			TeamId:      uint64(authorization.RootDomain),
+			RequestFrom: access_iface.RequestFrom_REQUEST_FROM_SYSTEM,
+		},
+	)
+
+	if err != nil {
+		return &connect.Response[report_iface.DailyUpdateBalanceResponse]{}, err
+	}
+
+	reqheaders["X-Pdc-Source"] = token
 
 	task := cloudtaskspb.CreateTaskRequest{
 		Parent: a.cfg.GetPath(configs.SlowQueue),

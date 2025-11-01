@@ -89,6 +89,7 @@ func NewRegister(
 ) RegisterHandler {
 
 	return func() {
+		sourceInterceptor := connect.WithInterceptors(&custom_connect.RequestSourceIntercept{})
 
 		path, handler := accounting_ifaceconnect.NewAccountServiceHandler(NewAccountService(db, auth), defaultInterceptor)
 		mux.Handle(path, handler)
@@ -96,19 +97,25 @@ func NewRegister(
 		path, handler = accounting_ifaceconnect.NewExpenseServiceHandler(
 			expense.NewExpenseService(db, auth),
 			defaultInterceptor,
-			connect.WithInterceptors(&custom_connect.RequestSourceIntercept{}),
+			sourceInterceptor,
 		)
 		mux.Handle(path, handler)
 
 		path, handler = accounting_ifaceconnect.NewAccountingSetupServiceHandler(setup.NewSetupService(db), defaultInterceptor)
 		mux.Handle(path, handler)
-		path, handler = accounting_ifaceconnect.NewLedgerServiceHandler(ledger.NewLedgerService(db, auth), defaultInterceptor)
+		path, handler = accounting_ifaceconnect.NewLedgerServiceHandler(
+			ledger.NewLedgerService(db, auth),
+			defaultInterceptor,
+			sourceInterceptor,
+		)
 		mux.Handle(path, handler)
 		path, handler = revenue_ifaceconnect.NewRevenueServiceHandler(revenue.NewRevenueService(db, auth), defaultInterceptor)
 		mux.Handle(path, handler)
 		path, handler = stock_ifaceconnect.NewStockServiceHandler(stock.NewStockService(db, auth), defaultInterceptor)
 		mux.Handle(path, handler)
-		path, handler = report_ifaceconnect.NewAccountReportServiceHandler(report.NewAccountReportService(db, auth, cache), defaultInterceptor)
+		path, handler = report_ifaceconnect.NewAccountReportServiceHandler(
+			report.NewAccountReportService(db, auth, cache),
+			defaultInterceptor)
 		mux.Handle(path, handler)
 		path, handler = payment_ifaceconnect.NewPaymentServiceHandler(payment.NewPaymentService(db, auth), defaultInterceptor)
 		mux.Handle(path, handler)
@@ -121,6 +128,7 @@ func NewRegister(
 		path, handler = accounting_ifaceconnect.NewTagServiceHandler(tag.NewTagService(db, auth), defaultInterceptor)
 		mux.Handle(path, handler)
 		path, handler = accounting_ifaceconnect.NewTransferServiceHandler(transfer.NewTransferService(db, auth), defaultInterceptor)
+		mux.Handle(path, handler)
 	}
 
 }

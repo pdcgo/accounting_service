@@ -5,6 +5,7 @@ import (
 
 	"github.com/pdcgo/accounting_service/accounting_model"
 	"github.com/pdcgo/accounting_service/adjustment"
+	"github.com/pdcgo/accounting_service/ads_expense"
 	"github.com/pdcgo/shared/authorization"
 	"github.com/pdcgo/shared/db_models"
 	"github.com/pdcgo/shared/interfaces/authorization_iface"
@@ -34,8 +35,6 @@ var fullAccess = []*authorization_iface.RoleAddPermissionItem{
 	},
 }
 
-var accountingPermission authorization_iface.RoleAddPermissionPayload = authorization_iface.RoleAddPermissionPayload{}
-
 func defaultRootRolePermission() RoleMap {
 	roleMap := RoleMap{
 		db_models.RootTeamType: {},
@@ -45,12 +44,14 @@ func defaultRootRolePermission() RoleMap {
 				&accounting_model.ExpenseEntity{}: fullAccess,
 				&accounting_model.Payment{}:       fullAccess,
 				&adjustment.AdjustmentAccess{}:    fullAccess,
+				&ads_expense.AdsExpense{}:         fullAccess,
 			},
 			"admin": authorization_iface.RoleAddPermissionPayload{
 				&accounting_model.BankTransfer{}:  fullAccess,
 				&accounting_model.ExpenseEntity{}: fullAccess,
 				&accounting_model.Payment{}:       fullAccess,
 				&adjustment.AdjustmentAccess{}:    fullAccess,
+				&ads_expense.AdsExpense{}:         fullAccess,
 			},
 		},
 		db_models.SellingTeamType:   RoleItem{},
@@ -66,17 +67,24 @@ func defaultRolePermission() RoleMap {
 		db_models.AdminTeamType: RoleItem{
 			"owner": authorization_iface.RoleAddPermissionPayload{
 				&adjustment.AdjustmentAccess{}: fullAccess,
+				&ads_expense.AdsExpense{}:      fullAccess,
 			},
 			"admin": authorization_iface.RoleAddPermissionPayload{
 				&adjustment.AdjustmentAccess{}: fullAccess,
+				&ads_expense.AdsExpense{}:      fullAccess,
 			},
 		},
 		db_models.SellingTeamType: RoleItem{
 			"owner": authorization_iface.RoleAddPermissionPayload{
 				&adjustment.AdjustmentAccess{}: fullAccess,
+				&ads_expense.AdsExpense{}:      fullAccess,
 			},
 			"admin": authorization_iface.RoleAddPermissionPayload{
 				&adjustment.AdjustmentAccess{}: fullAccess,
+				&ads_expense.AdsExpense{}:      fullAccess,
+			},
+			"cs": authorization_iface.RoleAddPermissionPayload{
+				&ads_expense.AdsExpense{}: fullAccess,
 			},
 		},
 		db_models.WarehouseTeamType: RoleItem{
