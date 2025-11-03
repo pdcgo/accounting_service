@@ -123,8 +123,13 @@ func NewRegister(
 		mux.Handle(path, handler)
 		path, handler = accounting_ifaceconnect.NewCoreServiceHandler(core.NewCoreService(db, auth), defaultInterceptor)
 		mux.Handle(path, handler)
-		path, handler = accounting_ifaceconnect.NewAdsExpenseServiceHandler(ads_expense.NewAdsExpenseService(db, auth), defaultInterceptor)
+		path, handler = accounting_ifaceconnect.NewAdsExpenseServiceHandler(
+			ads_expense.NewAdsExpenseService(db, auth),
+			defaultInterceptor,
+			sourceInterceptor,
+		)
 		mux.Handle(path, handler)
+
 		path, handler = accounting_ifaceconnect.NewTagServiceHandler(tag.NewTagService(db, auth), defaultInterceptor)
 		mux.Handle(path, handler)
 		path, handler = accounting_ifaceconnect.NewTransferServiceHandler(transfer.NewTransferService(db, auth), defaultInterceptor)
