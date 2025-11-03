@@ -130,6 +130,7 @@ func (a *adsExpenseImpl) AdsExCreate(
 				TeamID: uint(pay.TeamId),
 			}, pay.Amount).
 			Transaction(&tran).
+			Commit().
 			Err()
 		if err != nil {
 			return err
