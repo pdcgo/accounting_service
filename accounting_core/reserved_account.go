@@ -98,6 +98,11 @@ func DefaultSeedAccount() []*Account {
 	return []*Account{
 		// revenue
 		{
+			AccountKey:  AdjRevenueAccount,
+			Coa:         REVENUE,
+			BalanceType: CreditBalance,
+		},
+		{
 			AccountKey:  ServiceRevenueAccount,
 			Coa:         REVENUE,
 			BalanceType: CreditBalance,
@@ -123,6 +128,11 @@ func DefaultSeedAccount() []*Account {
 			BalanceType: CreditBalance,
 		},
 		// asset
+		{
+			AccountKey:  AdjAssetAccount,
+			Coa:         ASSET,
+			BalanceType: DebitBalance,
+		},
 		{
 			AccountKey:  PendingPaymentPayAccount,
 			Coa:         ASSET,
@@ -197,6 +207,11 @@ func DefaultSeedAccount() []*Account {
 		},
 		// expense
 		{
+			AccountKey:  AdjExpenseAccount,
+			Coa:         EXPENSE,
+			BalanceType: DebitBalance,
+		},
+		{
 			AccountKey:  AdsExpenseAccount,
 			Coa:         EXPENSE,
 			BalanceType: DebitBalance,
@@ -238,6 +253,11 @@ func DefaultSeedAccount() []*Account {
 		},
 
 		// liability
+		{
+			AccountKey:  AdjLiabilityAccount,
+			Coa:         LIABILITY,
+			BalanceType: CreditBalance,
+		},
 		{
 			AccountKey:  PayableAccount,
 			Coa:         LIABILITY,
