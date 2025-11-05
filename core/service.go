@@ -144,4 +144,13 @@ var filterExtra = map[accounting_core.AccountKey]*accounting_iface.AccountFilter
 		Shop:      true,
 		CustomTag: true,
 	},
+	accounting_core.AdsExpenseAccount: {
+		Cs:        true,
+		Shop:      true,
+		CustomTag: true,
+	},
+	accounting_core.AdjLiabilityAccount: {
+		Team:      true,
+		CustomTag: true,
+	},
 }

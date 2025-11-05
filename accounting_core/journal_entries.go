@@ -10,7 +10,7 @@ import (
 	"gorm.io/gorm"
 )
 
-var precision = 5
+var Precision = 5
 
 func RoundUp(x float64, n int) float64 {
 	pow := math.Pow(10, float64(n))
@@ -210,14 +210,14 @@ func (c *createEntryImpl) Commit(opts ...CommitOption) CreateEntry {
 	}
 
 	// checking debit and credit balance
-	if RoundUp(debit, precision) != RoundUp(credit, precision) {
+	if RoundUp(debit, Precision) != RoundUp(credit, Precision) {
 		// log.Println(RoundUp(debit, precision), RoundUp(credit, precision))
 		// entries.PrintJournalEntries(c.tx)
 		return c.setErr(&ErrEntryInvalid{
 			Debit:     debit,
 			Credit:    credit,
 			List:      entries,
-			Precision: precision,
+			Precision: Precision,
 		})
 	}
 

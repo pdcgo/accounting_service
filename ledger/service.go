@@ -42,7 +42,7 @@ func (l *ledgerServiceImpl) EntryList(
 		return connect.NewResponse(&result), err
 	}
 
-	view := NewLedgerView(db)
+	view := NewLedgerView(db.Debug())
 	view.
 		createQuery().
 		TeamID(uint(pay.TeamId)).
@@ -163,6 +163,7 @@ func (c *ConnectStreamWriter) Write(p []byte) (n int, err error) {
 type LedgerView interface {
 	createQuery() LedgerView
 	TeamID(tid uint) LedgerView
+	AccountTeamID(tid uint64) LedgerView
 	AccountKey(acc_key string) LedgerView
 	TimeRange(trange *common.TimeFilterRange) LedgerView
 	Page(page *common.PageFilter, pageinfo *common.PageInfo) LedgerView
@@ -180,8 +181,25 @@ type ledgerViewImpl struct {
 	err   error
 }
 
+// AccountTeamID implements LedgerView.
+func (l *ledgerViewImpl) AccountTeamID(tid uint64) LedgerView {
+	if tid == 0 {
+		return l
+	}
+
+	l.query = l.
+		query.
+		Where("a.team_id = ?", tid)
+	return l
+
+}
+
 // Search implements LedgerView.
 func (l *ledgerViewImpl) Search(keyword string) LedgerView {
+	if keyword == "" {
+		return l
+	}
+
 	keyword = strings.ToLower(keyword)
 	l.query = l.
 		query.
@@ -351,17 +369,6 @@ func (l *ledgerViewImpl) selectFields() []string {
 		"je.desc",
 		"je.debit",
 		"je.credit",
-		`SUM(
-					case
-						when a.balance_type = 'd' then je.debit - je.credit
-						when a.balance_type = 'c' then je.credit - je.debit
-					end
-					
-				) OVER (
-					PARTITION BY je.account_id 
-					ORDER BY je.id
-					ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW
-				) AS balance`,
 	}
 }
 
