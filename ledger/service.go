@@ -203,7 +203,6 @@ type ledgerViewImpl struct {
 
 // Marketplace implements LedgerView.
 func (l *ledgerViewImpl) Marketplace(mpType common.MarketplaceType) LedgerView {
-
 	// get typelabel
 	var tlabel accounting_core.TypeLabel
 	err := l.

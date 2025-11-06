@@ -138,6 +138,12 @@ func (c *createTansactionImpl) AddShopID(shopID uint) CreateTransaction {
 
 	c.labelExtra.ShopID = shopID
 	return c.
+		AddTypeLabel([]*accounting_iface.TypeLabel{
+			{
+				Key:   accounting_iface.LabelKey_LABEL_KEY_MARKETPLACE,
+				Label: string(shop.MpType),
+			},
+		}).
 		AddTags([]string{string(shop.MpType)})
 
 }
