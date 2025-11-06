@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"connectrpc.com/connect"
+	"github.com/pdcgo/accounting_service/accounting_core"
 	"github.com/pdcgo/schema/services/accounting_iface/v1"
 	"github.com/pdcgo/schema/services/common/v1"
 	"github.com/pdcgo/shared/interfaces/authorization_iface"
@@ -42,13 +43,28 @@ func (l *ledgerServiceImpl) EntryList(
 		return connect.NewResponse(&result), err
 	}
 
-	view := NewLedgerView(db.Debug())
+	view := NewLedgerView(db)
 	view.
 		createQuery().
 		TeamID(uint(pay.TeamId)).
 		AccountKey(pay.AccountKey).
-		Search(pay.Keyword).
-		TimeRange(pay.TimeRange).
+		AccountTeamID(pay.AccountTeamId).
+		Search(pay.Keyword)
+
+	if pay.Marketplace != common.MarketplaceType_MARKETPLACE_TYPE_UNSPECIFIED {
+		view.Marketplace(pay.Marketplace)
+	}
+
+	if pay.ShopId != 0 {
+		view.ShopID(pay.ShopId)
+	}
+
+	err = view.Err()
+	if err != nil {
+		return connect.NewResponse(&result), err
+	}
+
+	view.TimeRange(pay.TimeRange).
 		Page(pay.Page, result.PageInfo).
 		Sort(pay.Sort)
 
@@ -164,6 +180,8 @@ type LedgerView interface {
 	createQuery() LedgerView
 	TeamID(tid uint) LedgerView
 	AccountTeamID(tid uint64) LedgerView
+	ShopID(sid uint64) LedgerView
+	Marketplace(mpType common.MarketplaceType) LedgerView
 	AccountKey(acc_key string) LedgerView
 	TimeRange(trange *common.TimeFilterRange) LedgerView
 	Page(page *common.PageFilter, pageinfo *common.PageInfo) LedgerView
@@ -179,6 +197,52 @@ type ledgerViewImpl struct {
 	db    *gorm.DB
 	query *gorm.DB
 	err   error
+
+	mpquery func(query *gorm.DB) *gorm.DB
+}
+
+// Marketplace implements LedgerView.
+func (l *ledgerViewImpl) Marketplace(mpType common.MarketplaceType) LedgerView {
+
+	// get typelabel
+	var tlabel accounting_core.TypeLabel
+	err := l.
+		db.
+		Model(&accounting_core.TypeLabel{}).
+		Where("key = ? and label = ?", accounting_iface.LabelKey_LABEL_KEY_MARKETPLACE, mpType).
+		Find(&tlabel).
+		Error
+
+	if err != nil {
+		return l.setErr(err)
+	}
+
+	if tlabel.ID == 0 {
+		return l.setErr(fmt.Errorf("label not found"))
+	}
+
+	l.mpquery = func(query *gorm.DB) *gorm.DB {
+		return query.
+			Joins("JOIN transaction_type_labels ttl ON ttl.transaction_id = je.transaction_id").
+			Where("ttl.type_label_id = ?", tlabel.ID)
+	}
+
+	return l
+}
+
+// ShopID implements LedgerView.
+func (l *ledgerViewImpl) ShopID(sid uint64) LedgerView {
+	if sid == 0 {
+		return l
+	}
+
+	l.mpquery = func(query *gorm.DB) *gorm.DB {
+		return query.
+			Joins("JOIN transaction_shops ts ON ts.transaction_id = je.transaction_id").
+			Where("ts.shop_id = ?", sid)
+	}
+	return l
+
 }
 
 // AccountTeamID implements LedgerView.
@@ -263,8 +327,12 @@ func (l *ledgerViewImpl) Page(page *common.PageFilter, pageinfo *common.PageInfo
 
 // Iterate implements LedgerView.
 func (l *ledgerViewImpl) Iterate(handle func(d *accounting_iface.EntryItem) error) error {
-	rows, err := l.
-		query.
+	query := l.query
+	if l.mpquery != nil {
+		query = l.mpquery(query)
+	}
+
+	rows, err := query.
 		Select(l.selectFields()).
 		Rows()
 	if err != nil {

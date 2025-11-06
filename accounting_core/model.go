@@ -1,8 +1,6 @@
 package accounting_core
 
 import (
-	"crypto/md5"
-	"encoding/hex"
 	"errors"
 	"fmt"
 	"math"
@@ -10,6 +8,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/pdcgo/schema/services/accounting_iface/v1"
 	"gorm.io/gorm"
 )
 
@@ -274,27 +273,7 @@ type Transaction struct {
 	Created time.Time `json:"created"`
 }
 
-type TransactionLabel struct {
-	ID            uint   `json:"id" gorm:"primarykey"`
-	TransactionID uint   `json:"transaction_id" gorm:"index:tx_labels,unique"`
-	LabelID       string `json:"label_id" gorm:"index:tx_labels,unique"`
-
-	Label       *Label       `json:"-"`
-	Transaction *Transaction `json:"-"`
-}
-
-type Label struct {
-	ID    string   `json:"id" gorm:"primarykey"`
-	Key   LabelKey `json:"key" gorm:"index:keyval,unique"`
-	Value string   `json:"value" gorm:"index:keyval,unique"`
-}
-
-func (l *Label) Hash() string {
-	sum := md5.Sum([]byte(string(l.Key) + l.Value))
-	hashid := hex.EncodeToString(sum[:])
-	l.ID = hashid
-	return hashid
-}
+// lawas
 
 type AccountingTag struct {
 	ID   uint   `json:"id" gorm:"primarykey"`
@@ -328,12 +307,10 @@ type TransactionSupplier struct {
 	SupplierID    uint `json:"supplier_id" gorm:"primaryKey"`
 }
 
-type TypeLabelKey string
-
 type TypeLabel struct {
-	ID    uint         `json:"id" gorm:"primarykey"`
-	Key   TypeLabelKey `json:"key" gorm:"index:keyval,unique"`
-	Value string       `json:"value" gorm:"index:keyval,unique"`
+	ID    uint                      `json:"id" gorm:"primarykey"`
+	Key   accounting_iface.LabelKey `json:"key" gorm:"index:keyval,unique"`
+	Label string                    `json:"label" gorm:"index:keyval,unique"`
 }
 
 type TransactionTypeLabel struct {

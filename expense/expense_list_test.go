@@ -24,8 +24,6 @@ func TestExpenseList(t *testing.T) {
 		err := db.AutoMigrate(
 			&accounting_model.Expense{},
 			&accounting_core.Transaction{},
-			&accounting_core.Label{},
-			&accounting_core.TransactionLabel{},
 			&accounting_core.Account{},
 			&accounting_core.JournalEntry{},
 		)

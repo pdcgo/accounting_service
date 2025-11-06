@@ -8,10 +8,53 @@ import (
 
 	"connectrpc.com/connect"
 	"github.com/pdcgo/accounting_service/accounting_core"
+	"github.com/pdcgo/schema/services/accounting_iface/v1"
 	"github.com/pdcgo/schema/services/report_iface/v1"
 	"github.com/pdcgo/shared/pkg/ware_cache"
 	"gorm.io/gorm"
 )
+
+func (a *accountReportImpl) getTypeLabel(ctx context.Context, label *accounting_iface.TypeLabel) (*accounting_core.TypeLabel, error) {
+	var err error
+	var dlabel accounting_core.TypeLabel
+	key := fmt.Sprintf("accounting/type_label/%d/%s", label.Key, label.Label)
+
+	err = a.cache.Get(ctx, key, &dlabel)
+	if err != nil {
+		if !errors.Is(err, ware_cache.ErrCacheMiss) {
+			return &dlabel, err
+		}
+		err = a.
+			db.
+			Model(&accounting_core.TypeLabel{}).
+			Where("key = ? and label = ?", label.Key, label.Label).
+			Find(&dlabel).
+			Error
+
+		if err != nil {
+			return &dlabel, err
+		}
+
+		if dlabel.ID == 0 {
+			return &dlabel, fmt.Errorf("TypeLabel not found %d/%s", label.Key, label.Label)
+		}
+
+		err = a.cache.Add(ctx, &ware_cache.CacheItem{
+			Key:        key,
+			Expiration: time.Minute * 15,
+			Data:       &dlabel,
+		})
+		if err != nil {
+			return &dlabel, err
+		}
+	}
+
+	if dlabel.ID == 0 {
+		return &dlabel, fmt.Errorf("something problem to get TypeLabel %d/%s", label.Key, label.Label)
+	}
+
+	return &dlabel, nil
+}
 
 func (a *accountReportImpl) getAccount(ctx context.Context, accID uint) (*accounting_core.Account, error) {
 	var err error
@@ -241,6 +284,40 @@ func (a *accountReportImpl) DailyUpdateBalance(
 						Where("account_id = ?", customDayBalance.AccountID).
 						Where("journal_team_id = ?", customDayBalance.JournalTeamID),
 					customDayBalance,
+				)
+
+				if err != nil {
+					return &connect.Response[report_iface.DailyUpdateBalanceResponse]{}, err
+				}
+			}
+		}
+
+		if labels.TypeLabels != nil {
+			for _, label := range labels.TypeLabels {
+				var dlabel *accounting_core.TypeLabel
+				dlabel, err = a.getTypeLabel(ctx, label)
+				if err != nil {
+					return &connect.Response[report_iface.DailyUpdateBalanceResponse]{}, err
+				}
+				typeDayBalance := &accounting_core.TypeLabelDailyBalance{
+					Day:           day,
+					LabelID:       dlabel.ID,
+					AccountID:     uint(entry.AccountId),
+					JournalTeamID: uint(entry.TeamId),
+					Debit:         debit,
+					Credit:        credit,
+					Balance:       balance,
+				}
+
+				err = a.updateDailyBalance(
+					a.
+						db.
+						Model(&accounting_core.CustomLabelDailyBalance{}).
+						Where("label_id = ?", typeDayBalance.LabelID).
+						Where("day = ?", typeDayBalance.Day).
+						Where("account_id = ?", typeDayBalance.AccountID).
+						Where("journal_team_id = ?", typeDayBalance.JournalTeamID),
+					typeDayBalance,
 				)
 
 				if err != nil {

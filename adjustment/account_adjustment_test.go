@@ -23,8 +23,6 @@ func TestAccountAdjustment(t *testing.T) {
 		err := db.AutoMigrate(
 			&accounting_core.Account{},
 			&accounting_core.Transaction{},
-			&accounting_core.Label{},
-			&accounting_core.TransactionLabel{},
 			&accounting_core.JournalEntry{},
 			&accounting_core.AccountingTag{},
 			&accounting_core.TransactionTag{},

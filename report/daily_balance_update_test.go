@@ -8,6 +8,7 @@ import (
 	"connectrpc.com/connect"
 	"github.com/pdcgo/accounting_service/accounting_core"
 	"github.com/pdcgo/accounting_service/accounting_mock"
+	"github.com/pdcgo/schema/services/accounting_iface/v1"
 	"github.com/pdcgo/schema/services/report_iface/v1"
 	"github.com/pdcgo/shared/authorization/authorization_mock"
 	"github.com/pdcgo/shared/pkg/moretest"
@@ -73,7 +74,14 @@ func TestAccountKeyDailyBalance(t *testing.T) {
 			t.Run("testing daily accountkey", func(t *testing.T) {
 				_, err := reportService.DailyUpdateBalance(t.Context(), &connect.Request[report_iface.DailyUpdateBalanceRequest]{
 					Msg: &report_iface.DailyUpdateBalanceRequest{
-						LabelExtra: &report_iface.TxLabelExtra{},
+						LabelExtra: &report_iface.TxLabelExtra{
+							TypeLabels: []*accounting_iface.TypeLabel{
+								{
+									Key:   accounting_iface.LabelKey_LABEL_KEY_MARKETPLACE,
+									Label: "shopee",
+								},
+							},
+						},
 						Entries: []*report_iface.EntryPayload{
 							{
 								Id:            1,

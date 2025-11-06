@@ -54,8 +54,6 @@ func NewMigrationHandler(
 			&accounting_core.Account{},
 			&accounting_core.JournalEntry{},
 			&accounting_core.Transaction{},
-			&accounting_core.Label{},
-			&accounting_core.TransactionLabel{},
 			&accounting_core.AccountDailyBalance{},
 			&accounting_core.AccountKeyDailyBalance{},
 			&accounting_core.TransactionShop{},
@@ -67,6 +65,9 @@ func NewMigrationHandler(
 			&accounting_core.ShopDailyBalance{},
 			&accounting_core.SupplierDailyBalance{},
 			&accounting_core.CustomLabelDailyBalance{},
+			&accounting_core.TypeLabel{},
+			&accounting_core.TransactionTypeLabel{},
+			&accounting_core.TypeLabelDailyBalance{},
 
 			&accounting_model.BankAccountV2{},
 			&accounting_model.BankAccountLabel{},

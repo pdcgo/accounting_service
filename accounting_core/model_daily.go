@@ -403,3 +403,69 @@ func (c *CustomLabelDailyBalance) Before(tx *gorm.DB, lock bool) *gorm.DB {
 func (c *CustomLabelDailyBalance) GetDebitCredit() (debit float64, credit float64, balance float64) {
 	return c.Debit, c.Credit, c.Balance
 }
+
+type TypeLabelDailyBalance struct {
+	ID            uint      `json:"id" gorm:"primarykey"`
+	Day           time.Time `json:"day" gorm:"index:type_label_daily_key_unique,unique"`
+	LabelID       uint      `json:"label_id" gorm:"index:type_label_daily_key_unique,unique"`
+	AccountID     uint      `json:"account_id" gorm:"index:type_label_daily_key_unique,unique"`
+	JournalTeamID uint      `json:"journal_team_id" gorm:"index:type_label_daily_key_unique,unique"`
+	Debit         float64   `json:"debit"`
+	Credit        float64   `json:"credit"`
+	Balance       float64   `json:"balance"`
+
+	Account *Account `gorm:"-"`
+}
+
+// AddBalance implements DailyBalance.
+func (t *TypeLabelDailyBalance) AddBalance(balance float64) {
+	t.Balance += balance
+}
+
+// After implements DailyBalance.
+func (t *TypeLabelDailyBalance) After(tx *gorm.DB, lock bool) *gorm.DB {
+	if lock {
+		tx = tx.
+			Clauses(
+				clause.Locking{
+					Strength: "UPDATE",
+				},
+			)
+	}
+
+	return tx.
+		Model(&TypeLabelDailyBalance{}).
+		Where("day > ?", t.Day).
+		Where("label_id = ?", t.LabelID).
+		Where("account_id = ?", t.AccountID).
+		Where("journal_team_id = ?", t.JournalTeamID)
+}
+
+// Before implements DailyBalance.
+func (t *TypeLabelDailyBalance) Before(tx *gorm.DB, lock bool) *gorm.DB {
+	if lock {
+		tx = tx.
+			Clauses(
+				clause.Locking{
+					Strength: "UPDATE",
+				},
+			)
+	}
+
+	return tx.
+		Model(&TypeLabelDailyBalance{}).
+		Where("day < ?", t.Day).
+		Where("label_id = ?", t.LabelID).
+		Where("account_id = ?", t.AccountID).
+		Where("journal_team_id = ?", t.JournalTeamID)
+}
+
+// Empty implements DailyBalance.
+func (t *TypeLabelDailyBalance) Empty() DailyBalance {
+	return &TypeLabelDailyBalance{}
+}
+
+// GetDebitCredit implements DailyBalance.
+func (t *TypeLabelDailyBalance) GetDebitCredit() (debit float64, credit float64, balance float64) {
+	return t.Debit, t.Credit, t.Balance
+}

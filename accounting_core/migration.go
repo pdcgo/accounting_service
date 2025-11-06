@@ -7,8 +7,6 @@ func GormAutoMigrate(db *gorm.DB) error {
 		&Account{},
 		&JournalEntry{},
 		&Transaction{},
-		&Label{},
-		&TransactionLabel{},
 		&AccountDailyBalance{},
 	)
 }

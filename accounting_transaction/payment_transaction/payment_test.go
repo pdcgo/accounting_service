@@ -19,8 +19,6 @@ func TestStockOps(t *testing.T) {
 		err := db.AutoMigrate(
 			&accounting_core.Transaction{},
 			&accounting_core.JournalEntry{},
-			&accounting_core.Label{},
-			&accounting_core.TransactionLabel{},
 			&accounting_core.AccountDailyBalance{},
 		)
 

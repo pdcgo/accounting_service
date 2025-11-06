@@ -1,8 +1,6 @@
 package order_transaction
 
 import (
-	"fmt"
-
 	"github.com/pdcgo/accounting_service/accounting_core"
 	"github.com/pdcgo/shared/interfaces/identity_iface"
 	"gorm.io/gorm"
@@ -58,24 +56,6 @@ func (o *orderTransactionImpl) CreateOrder(payload *CreateOrderPayload) error {
 		err = bookmng.
 			NewTransaction().
 			Create(&tran).
-			Labels([]*accounting_core.Label{
-				{
-					Key:   accounting_core.TeamIDLabel,
-					Value: fmt.Sprintf("%d", payload.TeamID),
-				},
-				{
-					Key:   accounting_core.WarehouseIDLabel,
-					Value: fmt.Sprintf("%d", payload.WarehouseID),
-				},
-				{
-					Key:   accounting_core.UserIDLabel,
-					Value: fmt.Sprintf("%d", payload.UserID),
-				},
-				{
-					Key:   accounting_core.ShopIDLabel,
-					Value: fmt.Sprintf("%d", payload.ShopID),
-				},
-			}).
 			Err()
 
 		entry := bookmng.NewCreateEntry(payload.TeamID, o.agent.GetUserID())

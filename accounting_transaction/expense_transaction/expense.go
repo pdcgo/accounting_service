@@ -47,16 +47,6 @@ func (e *expenseTransactonImpl) ExpenseCreate(payload *CreatePayload) error {
 		err = bookmng.
 			NewTransaction().
 			Create(&tran).
-			Labels([]*accounting_core.Label{
-				{
-					Key:   accounting_core.TeamIDLabel,
-					Value: fmt.Sprintf("%d", payload.TeamID),
-				},
-				{
-					Key:   accounting_core.FromLabel,
-					Value: fmt.Sprintf("%d", payload.ExpenseType),
-				},
-			}).
 			Err()
 
 		if err != nil {
