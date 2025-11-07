@@ -12,6 +12,7 @@ import (
 	"github.com/pdcgo/accounting_service/accounting_core"
 	"github.com/pdcgo/schema/services/accounting_iface/v1"
 	"github.com/pdcgo/schema/services/common/v1"
+	"github.com/pdcgo/shared/db_models"
 	"github.com/pdcgo/shared/interfaces/authorization_iface"
 	"gorm.io/gorm"
 )
@@ -204,11 +205,28 @@ type ledgerViewImpl struct {
 // Marketplace implements LedgerView.
 func (l *ledgerViewImpl) Marketplace(mpType common.MarketplaceType) LedgerView {
 	// get typelabel
+	var label db_models.MarketplaceType
+
+	switch mpType {
+	case common.MarketplaceType_MARKETPLACE_TYPE_SHOPEE:
+		label = db_models.MpShopee
+	case common.MarketplaceType_MARKETPLACE_TYPE_TOKOPEDIA:
+		label = db_models.MpTokopedia
+	case common.MarketplaceType_MARKETPLACE_TYPE_CUSTOM:
+		label = db_models.MpCustom
+	case common.MarketplaceType_MARKETPLACE_TYPE_LAZADA:
+		label = db_models.MpLazada
+	case common.MarketplaceType_MARKETPLACE_TYPE_TIKTOK:
+		label = db_models.MpTiktok
+	case common.MarketplaceType_MARKETPLACE_TYPE_MENGANTAR:
+		label = db_models.MpMengantar
+	}
+
 	var tlabel accounting_core.TypeLabel
 	err := l.
 		db.
 		Model(&accounting_core.TypeLabel{}).
-		Where("key = ? and label = ?", accounting_iface.LabelKey_LABEL_KEY_MARKETPLACE, mpType).
+		Where("key = ? and label = ?", accounting_iface.LabelKey_LABEL_KEY_MARKETPLACE, label).
 		Find(&tlabel).
 		Error
 
@@ -217,7 +235,7 @@ func (l *ledgerViewImpl) Marketplace(mpType common.MarketplaceType) LedgerView {
 	}
 
 	if tlabel.ID == 0 {
-		return l.setErr(fmt.Errorf("label not found"))
+		return l.setErr(fmt.Errorf("label value not found"))
 	}
 
 	l.mpquery = func(query *gorm.DB) *gorm.DB {
