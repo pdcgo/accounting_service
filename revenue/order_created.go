@@ -229,6 +229,26 @@ func (r *revenueServiceImpl) crossProductStock(
 	}
 
 	for _, bor := range pay.BorrowStock {
+		// sisi gudang
+		err = bookmng.
+			NewCreateEntry(uint(pay.WarehouseId), agent.GetUserID()).
+			From(&accounting_core.EntryAccountPayload{
+				Key:    accounting_core.StockReadyAccount,
+				TeamID: uint(bor.TeamId),
+			}, bor.Amount).
+			To(&accounting_core.EntryAccountPayload{
+				Key:    accounting_core.StockToBorrowCostAccount,
+				TeamID: uint(bor.TeamId),
+			}, bor.Amount).
+			Transaction(tran).
+			Commit().
+			Err()
+
+		if err != nil {
+			return err
+		}
+
+		// sisi dipinjami
 		err = bookmng.
 			NewCreateEntry(uint(bor.TeamId), agent.GetUserID()).
 			From(&accounting_core.EntryAccountPayload{
@@ -236,7 +256,7 @@ func (r *revenueServiceImpl) crossProductStock(
 				TeamID: uint(pay.WarehouseId),
 			}, bor.Amount).
 			To(&accounting_core.EntryAccountPayload{
-				Key:    accounting_core.StockBorrowCostAmount,
+				Key:    accounting_core.StockToBorrowCostAccount,
 				TeamID: uint(pay.WarehouseId),
 			}, bor.Amount).
 			To(&accounting_core.EntryAccountPayload{
@@ -255,10 +275,11 @@ func (r *revenueServiceImpl) crossProductStock(
 			return err
 		}
 
+		// sisi peminjam
 		err = bookmng.
 			NewCreateEntry(uint(pay.TeamId), agent.GetUserID()).
 			To(&accounting_core.EntryAccountPayload{
-				Key:    accounting_core.StockBorrowCostAmount,
+				Key:    accounting_core.StockBorrowCostAccount,
 				TeamID: uint(bor.TeamId),
 			}, bor.SellAmount).
 			To(&accounting_core.EntryAccountPayload{

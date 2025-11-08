@@ -100,7 +100,7 @@ var filterExtra = map[accounting_core.AccountKey]*accounting_iface.AccountFilter
 	accounting_core.StockBrokenAccount: {
 		Team: true,
 	},
-	accounting_core.StockBorrowCostAmount: {
+	accounting_core.StockBorrowCostAccount: {
 		Team:      true,
 		Shop:      true,
 		Supplier:  true,

@@ -11,6 +11,7 @@ import (
 	"github.com/pdcgo/schema/services/accounting_iface/v1"
 	"github.com/pdcgo/schema/services/report_iface/v1"
 	"github.com/pdcgo/shared/authorization/authorization_mock"
+	"github.com/pdcgo/shared/pkg/debugtool"
 	"github.com/pdcgo/shared/pkg/moretest"
 	"github.com/pdcgo/shared/pkg/moretest/moretest_mock"
 	"github.com/pdcgo/shared/pkg/ware_cache"
@@ -46,10 +47,26 @@ func TestAccountKeyDailyBalance(t *testing.T) {
 			&accounting_core.ShopDailyBalance{},
 			&accounting_core.SupplierDailyBalance{},
 			&accounting_core.CustomLabelDailyBalance{},
+			&accounting_core.TypeLabelDailyBalance{},
+			&accounting_core.TypeLabel{},
+			&accounting_core.TransactionTypeLabel{},
 		)
 
 		assert.Nil(t, err)
 
+		return nil
+	}
+
+	var seed moretest.SetupFunc = func(t *testing.T) func() error {
+		labels := []*accounting_iface.TypeLabel{
+			{
+				Key:   accounting_iface.LabelKey_LABEL_KEY_MARKETPLACE,
+				Label: "shopee",
+			},
+		}
+
+		err := db.Save(&labels).Error
+		assert.Nil(t, err)
 		return nil
 	}
 
@@ -62,6 +79,7 @@ func TestAccountKeyDailyBalance(t *testing.T) {
 			accounting_mock.PopulateAccountKey(&db, 1),
 			accounting_mock.PopulateAccountKey(&db, 2),
 			loadAccount(&db, 2, accounting_core.PayableAccount, &hutangAcc2),
+			seed,
 		},
 		func(t *testing.T) {
 
@@ -129,6 +147,8 @@ func TestAccountKeyDailyBalance(t *testing.T) {
 
 					assert.Nil(t, err)
 					assert.Len(t, dAccounts, 2)
+
+					debugtool.LogJson(dAccounts)
 					assert.NotEqual(t, 0, dAccounts[0].Balance)
 
 				})

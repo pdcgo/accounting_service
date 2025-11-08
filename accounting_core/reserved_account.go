@@ -56,7 +56,8 @@ const (
 const (
 	CodCostAccount            AccountKey = "cod_cost_account"
 	StockCostAccount          AccountKey = "stock_cost_account"
-	StockBorrowCostAmount     AccountKey = "stock_borrow_cost"
+	StockToBorrowCostAccount  AccountKey = "stock_to_borrow_cost"
+	StockBorrowCostAccount    AccountKey = "stock_borrow_cost"
 	StockBrokenCostAccount    AccountKey = "stock_broken_expense"
 	StockLostCostAccount      AccountKey = "stock_lost_expense"
 	WarehouseCostAccount      AccountKey = "warehouse_cost"
@@ -247,7 +248,12 @@ func DefaultSeedAccount() []*Account {
 			BalanceType: DebitBalance,
 		},
 		{
-			AccountKey:  StockBorrowCostAmount,
+			AccountKey:  StockBorrowCostAccount,
+			Coa:         EXPENSE,
+			BalanceType: DebitBalance,
+		},
+		{
+			AccountKey:  StockToBorrowCostAccount,
 			Coa:         EXPENSE,
 			BalanceType: DebitBalance,
 		},

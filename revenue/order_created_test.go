@@ -63,6 +63,8 @@ func TestOnOrder(t *testing.T) {
 			accounting_core.TransactionTag{},
 			accounting_core.TransactionShop{},
 			accounting_core.TransactionCustomerService{},
+			accounting_core.TypeLabel{},
+			accounting_core.TransactionTypeLabel{},
 			db_models.Marketplace{},
 		)
 		assert.Nil(t, err)
