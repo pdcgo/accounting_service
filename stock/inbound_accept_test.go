@@ -25,6 +25,9 @@ func TestInboundAccept(t *testing.T) {
 			&accounting_core.JournalEntry{},
 			&accounting_core.AccountDailyBalance{},
 			&accounting_core.Account{},
+			&accounting_core.TypeLabel{},
+			&accounting_core.TransactionTypeLabel{},
+			&accounting_core.TypeLabelDailyBalance{},
 		)
 		assert.Nil(t, err)
 		return nil

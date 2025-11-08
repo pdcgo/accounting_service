@@ -312,8 +312,8 @@ func (a *accountReportImpl) DailyUpdateBalance(
 				err = a.updateDailyBalance(
 					a.
 						db.
-						Model(&accounting_core.CustomLabelDailyBalance{}).
-						Where("custom_id = ?", typeDayBalance.LabelID).
+						Model(&accounting_core.TypeLabelDailyBalance{}).
+						Where("label_id = ?", typeDayBalance.LabelID).
 						Where("day = ?", typeDayBalance.Day).
 						Where("account_id = ?", typeDayBalance.AccountID).
 						Where("journal_team_id = ?", typeDayBalance.JournalTeamID),

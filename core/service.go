@@ -111,7 +111,11 @@ var filterExtra = map[accounting_core.AccountKey]*accounting_iface.AccountFilter
 		Team: true,
 	},
 	accounting_core.StockReadyAccount: {
-		Team: true,
+		Team:      true,
+		CustomTag: true,
+		AllowedLabelKey: []accounting_iface.LabelKey{
+			accounting_iface.LabelKey_LABEL_KEY_WAREHOUSE_TRANSACTION_TYPE,
+		},
 	},
 	accounting_core.WarehouseCostAccount: {
 		Team: true,
