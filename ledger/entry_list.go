@@ -352,6 +352,7 @@ func (l *ledgerViewImpl) selectFields() []string {
 	return []string{
 		"je.id",
 		"je.account_id",
+		"je.transaction_id",
 		"(EXTRACT(EPOCH FROM je.entry_time) * 1000000)::BIGINT AS entry_time",
 		"je.desc",
 		"je.debit",

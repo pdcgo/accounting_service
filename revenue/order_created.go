@@ -68,6 +68,9 @@ func (r *revenueServiceImpl) OnOrder(
 				Create(&tran).
 				AddShopID(uint(labelInfo.ShopId)).
 				AddCustomerServiceID(agent.IdentityID()).
+				// AddTypeLabel([]*accounting_iface.TypeLabel{
+
+				// }).
 				AddTags(labelInfo.Tags)
 
 			err = txcreate.

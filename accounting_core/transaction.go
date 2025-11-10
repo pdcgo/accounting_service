@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/pdcgo/schema/services/accounting_iface/v1"
+	"github.com/pdcgo/schema/services/common/v1"
 	"github.com/pdcgo/shared/db_models"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
@@ -137,11 +138,29 @@ func (c *createTansactionImpl) AddShopID(shopID uint) CreateTransaction {
 	}
 
 	c.labelExtra.ShopID = shopID
+
+	mpSource := common.MarketplaceType_MARKETPLACE_TYPE_CUSTOM
+	switch shop.MpType {
+	case db_models.MpTokopedia:
+		mpSource = common.MarketplaceType_MARKETPLACE_TYPE_TOKOPEDIA
+	case db_models.MpShopee:
+		mpSource = common.MarketplaceType_MARKETPLACE_TYPE_SHOPEE
+	case db_models.MpTiktok:
+		mpSource = common.MarketplaceType_MARKETPLACE_TYPE_TIKTOK
+	case db_models.MpMengantar:
+		mpSource = common.MarketplaceType_MARKETPLACE_TYPE_MENGANTAR
+	case db_models.MpLazada:
+		mpSource = common.MarketplaceType_MARKETPLACE_TYPE_LAZADA
+	case db_models.MpCustom:
+		mpSource = common.MarketplaceType_MARKETPLACE_TYPE_CUSTOM
+
+	}
+
 	return c.
 		AddTypeLabel([]*accounting_iface.TypeLabel{
 			{
 				Key:   accounting_iface.LabelKey_LABEL_KEY_MARKETPLACE,
-				Label: string(shop.MpType),
+				Label: common.MarketplaceType_name[int32(mpSource)],
 			},
 		}).
 		AddTags([]string{string(shop.MpType)})
