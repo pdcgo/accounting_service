@@ -6,7 +6,7 @@ require (
 	cloud.google.com/go/cloudtasks v1.13.6
 	connectrpc.com/connect v1.19.0
 	github.com/google/wire v0.7.0
-	github.com/pdcgo/schema v1.0.47
+	github.com/pdcgo/schema v1.0.48
 	github.com/pdcgo/shared v1.0.87
 	github.com/stretchr/testify v1.11.1
 	github.com/zeebo/assert v1.3.1

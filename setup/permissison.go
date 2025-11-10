@@ -68,20 +68,24 @@ func defaultRolePermission() RoleMap {
 			"owner": authorization_iface.RoleAddPermissionPayload{
 				&adjustment.AdjustmentAccess{}: fullAccess,
 				&ads_expense.AdsExpense{}:      fullAccess,
+				&accounting_model.Payment{}:    fullAccess,
 			},
 			"admin": authorization_iface.RoleAddPermissionPayload{
 				&adjustment.AdjustmentAccess{}: fullAccess,
 				&ads_expense.AdsExpense{}:      fullAccess,
+				&accounting_model.Payment{}:    fullAccess,
 			},
 		},
 		db_models.SellingTeamType: RoleItem{
 			"owner": authorization_iface.RoleAddPermissionPayload{
 				&adjustment.AdjustmentAccess{}: fullAccess,
 				&ads_expense.AdsExpense{}:      fullAccess,
+				&accounting_model.Payment{}:    fullAccess,
 			},
 			"admin": authorization_iface.RoleAddPermissionPayload{
 				&adjustment.AdjustmentAccess{}: fullAccess,
 				&ads_expense.AdsExpense{}:      fullAccess,
+				&accounting_model.Payment{}:    fullAccess,
 			},
 			"cs": authorization_iface.RoleAddPermissionPayload{
 				&ads_expense.AdsExpense{}: fullAccess,
@@ -90,6 +94,7 @@ func defaultRolePermission() RoleMap {
 		db_models.WarehouseTeamType: RoleItem{
 			"owner": authorization_iface.RoleAddPermissionPayload{
 				&adjustment.AdjustmentAccess{}: fullAccess,
+				&accounting_model.Payment{}:    fullAccess,
 			},
 			"admin": authorization_iface.RoleAddPermissionPayload{
 				&adjustment.AdjustmentAccess{}: fullAccess,
