@@ -9,6 +9,7 @@ import (
 
 	"connectrpc.com/connect"
 	"github.com/pdcgo/accounting_service/accounting_core"
+	"github.com/pdcgo/schema/services/accounting_iface/v1"
 	"github.com/pdcgo/schema/services/revenue_iface/v1"
 	"gorm.io/gorm"
 )
@@ -146,6 +147,12 @@ func (r *revenueProcessor) fund(fund *revenue_iface.RevenueStreamEventFund) erro
 			NewTransaction().
 			Create(&tran).
 			AddShopID(shopID).
+			AddTypeLabel([]*accounting_iface.TypeLabel{
+				{
+					Key:   accounting_iface.LabelKey_LABEL_KEY_REVENUE_SOURCE,
+					Label: revenue_iface.RevenueSource_name[int32(revenue_iface.RevenueSource_REVENUE_SOURCE_FUND)],
+				},
+			}).
 			Err()
 
 		if err != nil {
@@ -315,6 +322,12 @@ func (r *revenueProcessor) adjustment(adj *revenue_iface.RevenueStreamEventAdjus
 			Create(&tran).
 			AddShopID(shopID).
 			AddTags(adj.Tags).
+			AddTypeLabel([]*accounting_iface.TypeLabel{
+				{
+					Key:   accounting_iface.LabelKey_LABEL_KEY_REVENUE_SOURCE,
+					Label: revenue_iface.RevenueSource_name[int32(adj.Source)],
+				},
+			}).
 			Err()
 
 		if err != nil {

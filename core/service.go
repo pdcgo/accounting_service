@@ -84,6 +84,7 @@ var filterExtra = map[accounting_core.AccountKey]*accounting_iface.AccountFilter
 		Shop:      true,
 		CustomTag: true,
 	},
+
 	accounting_core.StockLostAccount: {
 		Team: true,
 	},
@@ -107,6 +108,14 @@ var filterExtra = map[accounting_core.AccountKey]*accounting_iface.AccountFilter
 		Cs:        true,
 		CustomTag: true,
 	},
+	accounting_core.StockToBorrowCostAccount: {
+		Team:      true,
+		Shop:      true,
+		Supplier:  true,
+		Cs:        true,
+		CustomTag: true,
+	},
+
 	accounting_core.StockPendingAccount: {
 		Team: true,
 	},

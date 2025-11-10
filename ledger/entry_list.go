@@ -10,7 +10,6 @@ import (
 	"github.com/pdcgo/accounting_service/accounting_core"
 	"github.com/pdcgo/schema/services/accounting_iface/v1"
 	"github.com/pdcgo/schema/services/common/v1"
-	"github.com/pdcgo/shared/db_models"
 	"gorm.io/gorm"
 )
 
@@ -107,22 +106,7 @@ func (l *ledgerViewImpl) SearchDescription(keyword string) LedgerView {
 // Marketplace implements LedgerView.
 func (l *ledgerViewImpl) Marketplace(mpType common.MarketplaceType) LedgerView {
 	// get typelabel
-	var label db_models.MarketplaceType
-
-	switch mpType {
-	case common.MarketplaceType_MARKETPLACE_TYPE_SHOPEE:
-		label = db_models.MpShopee
-	case common.MarketplaceType_MARKETPLACE_TYPE_TOKOPEDIA:
-		label = db_models.MpTokopedia
-	case common.MarketplaceType_MARKETPLACE_TYPE_CUSTOM:
-		label = db_models.MpCustom
-	case common.MarketplaceType_MARKETPLACE_TYPE_LAZADA:
-		label = db_models.MpLazada
-	case common.MarketplaceType_MARKETPLACE_TYPE_TIKTOK:
-		label = db_models.MpTiktok
-	case common.MarketplaceType_MARKETPLACE_TYPE_MENGANTAR:
-		label = db_models.MpMengantar
-	}
+	var label string = common.MarketplaceType_name[int32(mpType)]
 
 	var tlabel accounting_core.TypeLabel
 	err := l.
