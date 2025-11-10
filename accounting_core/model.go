@@ -309,8 +309,8 @@ type TransactionSupplier struct {
 
 type TypeLabel struct {
 	ID    uint                      `json:"id" gorm:"primarykey"`
-	Key   accounting_iface.LabelKey `json:"key" gorm:"index:keyval,unique"`
-	Label string                    `json:"label" gorm:"index:keyval,unique"`
+	Key   accounting_iface.LabelKey `json:"key" gorm:"index:label_unique_key,unique"`
+	Label string                    `json:"label" gorm:"index:label_unique_key,unique"`
 }
 
 type TransactionTypeLabel struct {
