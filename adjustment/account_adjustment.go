@@ -13,7 +13,6 @@ import (
 	"github.com/pdcgo/schema/services/common/v1"
 	"github.com/pdcgo/shared/authorization"
 	"github.com/pdcgo/shared/interfaces/authorization_iface"
-	"github.com/pdcgo/shared/pkg/debugtool"
 	"gorm.io/gorm"
 )
 
@@ -87,6 +86,8 @@ func (a *adjServiceImpl) AccountAdjustment(
 
 		}
 
+		checkPair = false
+
 		if checkPair {
 			if pay.RequestFrom != common.RequestFrom_REQUEST_FROM_ADMIN {
 				return nil, errors.New("adjustment multiple team needs admin")
@@ -96,8 +97,6 @@ func (a *adjServiceImpl) AccountAdjustment(
 			for _, adj := range adjTeam.Adjs {
 				bookeepingMap[adj.BookeepingId] = true
 			}
-
-			debugtool.LogJson(bookeepingMap)
 
 			for _, ads := range adjTeam.Adjs {
 				if !bookeepingMap[ads.TeamId] {
