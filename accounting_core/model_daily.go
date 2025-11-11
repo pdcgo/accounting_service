@@ -23,6 +23,12 @@ type AccountKeyDailyBalance struct {
 	Debit         float64    `json:"debit"`
 	Credit        float64    `json:"credit"`
 	Balance       float64    `json:"balance"`
+	StartBalance  float64    `json:"start_balance"`
+}
+
+// AddStartBalance implements DailyBalance.
+func (a *AccountKeyDailyBalance) AddStartBalance(start float64) {
+	a.StartBalance = start
 }
 
 // AddBalance implements DailyBalance.
@@ -84,8 +90,14 @@ type AccountDailyBalance struct {
 	Debit         float64   `json:"debit"`
 	Credit        float64   `json:"credit"`
 	Balance       float64   `json:"balance"`
+	StartBalance  float64   `json:"start_balance"`
 
 	Account *Account `gorm:"-"`
+}
+
+// AddStartBalance implements DailyBalance.
+func (a *AccountDailyBalance) AddStartBalance(start float64) {
+	a.StartBalance = start
 }
 
 // AddBalance implements DailyBalance.
@@ -149,8 +161,14 @@ type ShopDailyBalance struct {
 	Debit         float64   `json:"debit"`
 	Credit        float64   `json:"credit"`
 	Balance       float64   `json:"balance"`
+	StartBalance  float64   `json:"start_balance"`
 
 	Account *Account `gorm:"-"`
+}
+
+// AddStartBalance implements DailyBalance.
+func (s *ShopDailyBalance) AddStartBalance(start float64) {
+	s.StartBalance = start
 }
 
 // AddBalance implements DailyBalance.
@@ -215,8 +233,14 @@ type CsDailyBalance struct {
 	Debit         float64   `json:"debit"`
 	Credit        float64   `json:"credit"`
 	Balance       float64   `json:"balance"`
+	StartBalance  float64   `json:"start_balance"`
 
 	Account *Account `gorm:"-"`
+}
+
+// AddStartBalance implements DailyBalance.
+func (c *CsDailyBalance) AddStartBalance(start float64) {
+	c.StartBalance = start
 }
 
 // AddBalance implements DailyBalance.
@@ -281,8 +305,14 @@ type SupplierDailyBalance struct {
 	Debit         float64   `json:"debit"`
 	Credit        float64   `json:"credit"`
 	Balance       float64   `json:"balance"`
+	StartBalance  float64   `json:"start_balance"`
 
 	Account *Account `gorm:"-"`
+}
+
+// AddStartBalance implements DailyBalance.
+func (s *SupplierDailyBalance) AddStartBalance(start float64) {
+	s.StartBalance = start
 }
 
 // AddBalance implements DailyBalance.
@@ -347,8 +377,14 @@ type CustomLabelDailyBalance struct {
 	Debit         float64   `json:"debit"`
 	Credit        float64   `json:"credit"`
 	Balance       float64   `json:"balance"`
+	StartBalance  float64   `json:"start_balance"`
 
 	Account *Account `gorm:"-"`
+}
+
+// AddStartBalance implements DailyBalance.
+func (c *CustomLabelDailyBalance) AddStartBalance(start float64) {
+	c.StartBalance = start
 }
 
 // AddBalance implements DailyBalance.
@@ -413,8 +449,14 @@ type TypeLabelDailyBalance struct {
 	Debit         float64   `json:"debit"`
 	Credit        float64   `json:"credit"`
 	Balance       float64   `json:"balance"`
+	StartBalance  float64   `json:"start_balance"`
 
 	Account *Account `gorm:"-"`
+}
+
+// AddStartBalance implements DailyBalance.
+func (t *TypeLabelDailyBalance) AddStartBalance(start float64) {
+	t.StartBalance = start
 }
 
 // AddBalance implements DailyBalance.

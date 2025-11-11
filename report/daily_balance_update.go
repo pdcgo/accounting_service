@@ -354,7 +354,7 @@ func (a *accountReportImpl) updateDailyBalance(query *gorm.DB, daily accounting_
 
 		err = a.db.Transaction(func(tx *gorm.DB) error {
 			err = daily.
-				Before(a.db, true).
+				Before(tx, true).
 				Select([]string{
 					"balance",
 				}).
@@ -368,8 +368,8 @@ func (a *accountReportImpl) updateDailyBalance(query *gorm.DB, daily accounting_
 			}
 
 			daily.AddBalance(beforeBalance)
-			err = a.
-				db.
+			daily.AddStartBalance(beforeBalance)
+			err = tx.
 				Save(daily).
 				Error
 
@@ -379,6 +379,10 @@ func (a *accountReportImpl) updateDailyBalance(query *gorm.DB, daily accounting_
 
 			return nil
 		})
+
+		if err != nil {
+			return err
+		}
 
 		incBalance += beforeBalance
 	}
