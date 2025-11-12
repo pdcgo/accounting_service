@@ -2,6 +2,7 @@ package report
 
 import (
 	"context"
+	"fmt"
 
 	"connectrpc.com/connect"
 	"github.com/pdcgo/schema/services/common/v1"
@@ -163,6 +164,24 @@ func dailyBalanceDetailQ(db *gorm.DB, pay *report_iface.DailyBalanceDetailReques
 		)
 	}
 
-	return query.
-		Order("adb.day desc")
+	if pay.Sort != nil {
+		var sorttype string
+		switch pay.Sort.Type {
+		case common.SortType_SORT_TYPE_ASC:
+			sorttype = "asc"
+		case common.SortType_SORT_TYPE_DESC:
+			sorttype = "desc"
+		default:
+			sorttype = "desc"
+		}
+
+		query = query.
+			Order(fmt.Sprintf("adb.day %s", sorttype))
+
+	} else {
+		query = query.
+			Order("adb.day desc")
+	}
+
+	return query
 }

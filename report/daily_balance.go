@@ -2,6 +2,7 @@ package report
 
 import (
 	"context"
+	"fmt"
 
 	"connectrpc.com/connect"
 	"github.com/pdcgo/accounting_service/accounting_core"
@@ -74,8 +75,7 @@ func createDailyReportQ(db *gorm.DB, pay *report_iface.DailyBalanceRequest) *gor
 			"sum(adb.credit) as credit",
 			"sum(adb.balance) as balance",
 		}).
-		Group("adb.day").
-		Order("adb.day desc")
+		Group("adb.day")
 
 	if pay.TeamId != 0 {
 		query = query.
@@ -100,6 +100,25 @@ func createDailyReportQ(db *gorm.DB, pay *report_iface.DailyBalanceRequest) *gor
 		query = query.Where("adb.day > ?",
 			start,
 		)
+	}
+
+	if pay.Sort != nil {
+		var sorttype string
+		switch pay.Sort.Type {
+		case common.SortType_SORT_TYPE_ASC:
+			sorttype = "asc"
+		case common.SortType_SORT_TYPE_DESC:
+			sorttype = "desc"
+		default:
+			sorttype = "desc"
+		}
+
+		query = query.
+			Order(fmt.Sprintf("adb.day %s", sorttype))
+
+	} else {
+		query = query.
+			Order("adb.day desc")
 	}
 
 	return query
