@@ -3,6 +3,7 @@ package report
 import (
 	"context"
 	"fmt"
+	"math"
 
 	"connectrpc.com/connect"
 	"github.com/pdcgo/schema/services/common/v1"
@@ -62,10 +63,11 @@ func (a *accountReportImpl) DailyBalanceDetail(
 	if err != nil {
 		return connect.NewResponse(&result), err
 	}
-
-	var total int64 = int64(itemcount / pay.Page.Limit)
-	if total == 0 {
+	var total int64
+	if itemcount < pay.Page.Limit {
 		total = 1
+	} else {
+		total = int64(math.Ceil(float64(itemcount) / float64(pay.Page.Limit)))
 	}
 
 	result.PageInfo = &common.PageInfo{

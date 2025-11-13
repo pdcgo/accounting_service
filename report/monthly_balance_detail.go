@@ -2,6 +2,8 @@ package report
 
 import (
 	"context"
+	"fmt"
+	"math"
 
 	"connectrpc.com/connect"
 	"github.com/pdcgo/schema/services/common/v1"
@@ -62,9 +64,11 @@ func (a *accountReportImpl) MonthlyBalanceDetail(
 		return connect.NewResponse(&result), err
 	}
 
-	var total int64 = int64(itemcount / pay.Page.Limit)
-	if total == 0 {
+	var total int64
+	if itemcount < pay.Page.Limit {
 		total = 1
+	} else {
+		total = int64(math.Ceil(float64(itemcount) / float64(pay.Page.Limit)))
 	}
 
 	result.PageInfo = &common.PageInfo{
@@ -163,7 +167,27 @@ func monthlyBalanceDetailQ(db *gorm.DB, pay *report_iface.MonthlyBalanceDetailRe
 		)
 	}
 
-	return query.
-		Group("label_id, month").
-		Order("month desc")
+	query = query.
+		Group("label_id, month")
+
+	if pay.Sort != nil {
+		var sorttype string
+		switch pay.Sort.Type {
+		case common.SortType_SORT_TYPE_ASC:
+			sorttype = "asc"
+		case common.SortType_SORT_TYPE_DESC:
+			sorttype = "desc"
+		default:
+			sorttype = "desc"
+		}
+
+		query = query.
+			Order(fmt.Sprintf("month %s", sorttype))
+
+	} else {
+		query = query.
+			Order("month desc")
+	}
+
+	return query
 }

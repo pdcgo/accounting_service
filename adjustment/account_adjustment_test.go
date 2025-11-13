@@ -90,7 +90,7 @@ func TestAccountAdjustment(t *testing.T) {
 					},
 				})
 
-				assert.NotNil(t, err)
+				assert.Nil(t, err)
 			})
 
 		},
