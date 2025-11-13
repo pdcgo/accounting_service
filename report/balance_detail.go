@@ -76,6 +76,23 @@ func (b *balanceDetailViewImpl) Iterate(handle func(d *report_iface.BalanceDetai
 		Offset(int(offset)).
 		Limit(int(b.pay.Page.Limit))
 
+	if b.pay.Sort != nil {
+		psort := b.pay.Sort
+		qsort := "desc"
+		switch psort.Type {
+		case common.SortType_SORT_TYPE_ASC:
+			qsort = "asc"
+		case common.SortType_SORT_TYPE_DESC:
+			qsort = "desc"
+		}
+
+		switch psort.Field {
+		case report_iface.BalanceFieldSort_BALANCE_FIELD_SORT_BALANCE:
+			query = query.Order("bal.balance " + qsort)
+		}
+
+	}
+
 	rows, err := query.Rows()
 
 	if err != nil {

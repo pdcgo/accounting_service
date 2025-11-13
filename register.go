@@ -11,6 +11,7 @@ import (
 	"github.com/pdcgo/accounting_service/ledger"
 	"github.com/pdcgo/accounting_service/payment"
 	"github.com/pdcgo/accounting_service/report"
+	"github.com/pdcgo/accounting_service/report/report_balance"
 	"github.com/pdcgo/accounting_service/revenue"
 	"github.com/pdcgo/accounting_service/setup"
 	"github.com/pdcgo/accounting_service/statement"
@@ -64,9 +65,17 @@ func NewRegister(
 		mux.Handle(path, handler)
 		path, handler = stock_ifaceconnect.NewStockServiceHandler(stock.NewStockService(db, auth), defaultInterceptor)
 		mux.Handle(path, handler)
+
+		// report
 		path, handler = report_ifaceconnect.NewAccountReportServiceHandler(
 			report.NewAccountReportService(db, auth, cache),
 			defaultInterceptor)
+		mux.Handle(path, handler)
+		path, handler = report_ifaceconnect.NewBalanceServiceHandler(
+			report_balance.NewBalanceService(db, auth),
+			defaultInterceptor,
+			sourceInterceptor,
+		)
 		mux.Handle(path, handler)
 		path, handler = payment_ifaceconnect.NewPaymentServiceHandler(payment.NewPaymentService(db, auth), defaultInterceptor)
 		mux.Handle(path, handler)

@@ -5,6 +5,7 @@ import (
 
 	"connectrpc.com/connect"
 	"github.com/pdcgo/accounting_service/accounting_core"
+	"github.com/pdcgo/schema/services/common/v1"
 	"github.com/pdcgo/schema/services/report_iface/v1"
 	"gorm.io/gorm"
 )
@@ -54,6 +55,25 @@ func (b *balanceViewImpl) Iterate(handle func(d *report_iface.AccountBalanceItem
 		Table("(?) as base", baseQuery).
 		Joins("full outer join (?) as bal on bal.account_key = base.account_key", lbQuery).
 		Joins("full outer join (?) as start on start.account_key = base.account_key", sbQuery)
+
+	if b.pay.Sort != nil {
+		psort := b.pay.Sort
+		qsort := "desc"
+		switch psort.Type {
+		case common.SortType_SORT_TYPE_ASC:
+			qsort = "asc"
+		case common.SortType_SORT_TYPE_DESC:
+			qsort = "desc"
+		}
+
+		switch psort.Field {
+		case report_iface.BalanceFieldSort_BALANCE_FIELD_SORT_BALANCE:
+			query = query.Order("bal.balance " + qsort)
+		case report_iface.BalanceFieldSort_BALANCE_FIELD_SORT_ACCOUNT:
+			query = query.Order("base.account_key " + qsort)
+		}
+
+	}
 
 	rows, err := query.Rows()
 
