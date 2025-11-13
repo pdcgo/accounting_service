@@ -26,7 +26,12 @@ func (a *accountReportImpl) MonthlyBalance(
 
 	db := a.db.WithContext(ctx)
 
-	query := createMonthlyReportQ(db, pay)
+	view := monthlyViewImpl{
+		db:  db,
+		pay: pay,
+	}
+
+	query := view.baseQ()
 
 	page := pay.Page.Page
 	offset := (page - 1) * pay.Page.Limit
@@ -43,7 +48,7 @@ func (a *accountReportImpl) MonthlyBalance(
 	var itemcount int64
 
 	err = db.
-		Table("(?) as base", createMonthlyReportQ(db, pay)).
+		Table("(?) as base", view.baseQ()).
 		Select([]string{
 			"count(1)",
 		}).
@@ -69,14 +74,75 @@ func (a *accountReportImpl) MonthlyBalance(
 	return connect.NewResponse(&result), err
 }
 
-func createMonthlyReportQ(db *gorm.DB, pay *report_iface.MonthlyBalanceRequest) *gorm.DB {
-	query := db.
+type monthlyViewImpl struct {
+	db  *gorm.DB
+	pay *report_iface.MonthlyBalanceRequest
+}
+
+func (m *monthlyViewImpl) balanceQ() *gorm.DB {
+	pay := m.pay
+	keyBalanceQ := m.
+		db.
+		Table("account_key_daily_balances db").
+		Select(`
+		distinct on (
+			db.account_key,
+			date_trunc('month', db.day AT TIME ZONE 'Asia/Jakarta')
+		)
+		db.account_key,
+		date_trunc('month', db.day AT TIME ZONE 'Asia/Jakarta') as month,
+		db.balance,
+		db.start_balance
+	`).
+		Where("db.journal_team_id = ?", pay.TeamId).
+		Where("db.account_key = ?", pay.AccountKey)
+
+	trange := pay.TimeRange
+	if trange.EndDate.IsValid() {
+		end := accounting_core.ParseDate(trange.EndDate.AsTime())
+		keyBalanceQ = keyBalanceQ.Where("db.day <= ?",
+			end,
+		)
+	}
+
+	if trange.StartDate.IsValid() {
+		start := accounting_core.ParseDate(trange.StartDate.AsTime())
+		keyBalanceQ = keyBalanceQ.Where("db.day > ?",
+			start,
+		)
+	}
+
+	keyBalanceQ = keyBalanceQ.
+		Order(`
+		db.account_key,
+		month,
+		db.day desc
+	`)
+
+	bquery := m.
+		db.
+		Table("(?) as bal", keyBalanceQ).
+		Select([]string{
+			"(EXTRACT(EPOCH FROM bal.month) * 1000000)::BIGINT as month",
+			// "bal.month",
+			"sum(bal.balance) as balance",
+			"sum(bal.start_balance) as start_balance",
+		}).
+		Group("bal.month")
+
+	return bquery
+}
+
+func (m *monthlyViewImpl) debitCreditQ() *gorm.DB {
+	pay := m.pay
+
+	query := m.
+		db.
 		Table("account_key_daily_balances adb").
 		Select([]string{
 			"(EXTRACT(EPOCH FROM date_trunc('month', adb.day)) * 1000000)::BIGINT as month",
 			"sum(adb.debit) as debit",
 			"sum(adb.credit) as credit",
-			"sum(adb.balance) as balance",
 		}).
 		Group("month")
 
@@ -105,6 +171,28 @@ func createMonthlyReportQ(db *gorm.DB, pay *report_iface.MonthlyBalanceRequest) 
 		)
 	}
 
+	return query
+
+}
+
+func (m *monthlyViewImpl) baseQ() *gorm.DB {
+	pay := m.pay
+
+	debitCredit := m.debitCreditQ()
+	balance := m.balanceQ()
+
+	query := m.
+		db.
+		Table("(?) as dc", debitCredit).
+		Select([]string{
+			"dc.month",
+			"dc.debit",
+			"dc.credit",
+			"bal.balance",
+			"bal.start_balance",
+		}).
+		Joins("full outer join (?) as bal on bal.month = dc.month", balance)
+
 	if pay.Sort != nil {
 		var sorttype string
 		switch pay.Sort.Type {
@@ -117,12 +205,69 @@ func createMonthlyReportQ(db *gorm.DB, pay *report_iface.MonthlyBalanceRequest) 
 		}
 
 		query = query.
-			Order(fmt.Sprintf("month %s", sorttype))
+			Order(fmt.Sprintf("bal.month, dc.month %s", sorttype))
 
 	} else {
 		query = query.
-			Order("month desc")
+			Order("bal.month, dc.month desc")
 	}
 
 	return query
 }
+
+// func createMonthlyReportQ(db *gorm.DB, pay *report_iface.MonthlyBalanceRequest) *gorm.DB {
+// 	query := db.
+// 		Table("account_key_daily_balances adb").
+// 		Select([]string{
+// 			"(EXTRACT(EPOCH FROM date_trunc('month', adb.day)) * 1000000)::BIGINT as month",
+// 			"sum(adb.debit) as debit",
+// 			"sum(adb.credit) as credit",
+// 		}).
+// 		Group("month")
+
+// 	if pay.TeamId != 0 {
+// 		query = query.
+// 			Where("adb.journal_team_id = ?", pay.TeamId)
+// 	}
+
+// 	if pay.AccountKey != "" {
+// 		query = query.
+// 			Where("adb.account_key = ?", pay.AccountKey)
+// 	}
+
+// 	trange := pay.TimeRange
+// 	if trange.EndDate.IsValid() {
+// 		end := accounting_core.ParseDate(trange.EndDate.AsTime())
+// 		query = query.Where("adb.day <= ?",
+// 			end,
+// 		)
+// 	}
+
+// 	if trange.StartDate.IsValid() {
+// 		start := accounting_core.ParseDate(trange.StartDate.AsTime())
+// 		query = query.Where("adb.day > ?",
+// 			start,
+// 		)
+// 	}
+
+// 	if pay.Sort != nil {
+// 		var sorttype string
+// 		switch pay.Sort.Type {
+// 		case common.SortType_SORT_TYPE_ASC:
+// 			sorttype = "asc"
+// 		case common.SortType_SORT_TYPE_DESC:
+// 			sorttype = "desc"
+// 		default:
+// 			sorttype = "desc"
+// 		}
+
+// 		query = query.
+// 			Order(fmt.Sprintf("month %s", sorttype))
+
+// 	} else {
+// 		query = query.
+// 			Order("month desc")
+// 	}
+
+// 	return query
+// }
