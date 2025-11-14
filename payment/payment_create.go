@@ -19,6 +19,9 @@ func (p *paymentServiceImpl) PaymentCreate(
 ) (*connect.Response[payment_iface.PaymentCreateResponse], error) {
 	var err error
 	result := payment_iface.PaymentCreateResponse{}
+
+	return connect.NewResponse(&result), nil
+
 	db := p.db.WithContext(ctx)
 	pay := req.Msg
 

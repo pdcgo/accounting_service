@@ -25,6 +25,9 @@ func (p *paymentServiceImpl) PaymentReject(
 
 	db := p.db.WithContext(ctx)
 	result := payment_iface.PaymentRejectResponse{}
+
+	return &connect.Response[payment_iface.PaymentRejectResponse]{}, nil
+
 	pay := req.Msg
 
 	identity := p.

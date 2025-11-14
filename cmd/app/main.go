@@ -54,6 +54,13 @@ func NewApp(
 ) *App {
 	return &App{
 		Run: func() error {
+			cancel, err := custom_connect.InitTracer("accounting-service")
+			if err != nil {
+				return err
+			}
+
+			defer cancel(context.Background())
+
 			accounting_core.RegisterCustomHandler(
 				"task_daily_update",
 				accounting_core.NewDailyBalanceHandler(dispatcher),

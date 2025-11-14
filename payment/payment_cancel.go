@@ -21,6 +21,8 @@ func (p *paymentServiceImpl) PaymentCancel(
 ) (*connect.Response[payment_iface.PaymentCancelResponse], error) {
 	var err error
 
+	return connect.NewResponse(&payment_iface.PaymentCancelResponse{}), nil
+
 	db := p.db.WithContext(ctx)
 	result := payment_iface.PaymentCancelResponse{}
 	pay := req.Msg
