@@ -23,6 +23,7 @@ func (p *paymentServiceImpl) PaymentAccept(
 ) (*connect.Response[payment_iface.PaymentAcceptResponse], error) {
 	var err error
 	result := payment_iface.PaymentAcceptResponse{}
+
 	db := p.db.WithContext(ctx)
 	pay := req.Msg
 

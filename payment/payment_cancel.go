@@ -3,10 +3,8 @@ package payment
 import (
 	"context"
 	"errors"
-	"fmt"
 
 	"connectrpc.com/connect"
-	"github.com/pdcgo/accounting_service/accounting_core"
 	"github.com/pdcgo/accounting_service/accounting_model"
 	"github.com/pdcgo/schema/services/payment_iface/v1"
 	"github.com/pdcgo/shared/interfaces/authorization_iface"
@@ -20,8 +18,6 @@ func (p *paymentServiceImpl) PaymentCancel(
 	req *connect.Request[payment_iface.PaymentCancelRequest],
 ) (*connect.Response[payment_iface.PaymentCancelResponse], error) {
 	var err error
-
-	return connect.NewResponse(&payment_iface.PaymentCancelResponse{}), nil
 
 	db := p.db.WithContext(ctx)
 	result := payment_iface.PaymentCancelResponse{}
@@ -44,7 +40,7 @@ func (p *paymentServiceImpl) PaymentCancel(
 		return connect.NewResponse(&result), err
 	}
 
-	agent := identity.Identity()
+	// agent := identity.Identity()
 
 	err = db.Transaction(func(tx *gorm.DB) error {
 		var payment accounting_model.Payment
@@ -66,19 +62,19 @@ func (p *paymentServiceImpl) PaymentCancel(
 			return errors.New("payment not pending")
 		}
 
-		ref := accounting_core.NewRefID(&accounting_core.RefData{
-			RefType: accounting_core.PaymentRef,
-			ID:      uint(pay.PaymentId),
-		})
-		err = accounting_core.
-			NewTransactionMutation(tx).
-			ByRefID(ref, true).
-			RollbackEntry(agent.IdentityID(), fmt.Sprintf("cancel %s", ref)).
-			Err()
+		// ref := accounting_core.NewRefID(&accounting_core.RefData{
+		// 	RefType: accounting_core.PaymentRef,
+		// 	ID:      uint(pay.PaymentId),
+		// })
+		// err = accounting_core.
+		// 	NewTransactionMutation(tx).
+		// 	ByRefID(ref, true).
+		// 	RollbackEntry(agent.IdentityID(), fmt.Sprintf("cancel %s", ref)).
+		// 	Err()
 
-		if err != nil {
-			return err
-		}
+		// if err != nil {
+		// 	return err
+		// }
 
 		payment.Status = payment_iface.PaymentStatus_PAYMENT_STATUS_CANCELED
 		err = tx.Save(&payment).Error

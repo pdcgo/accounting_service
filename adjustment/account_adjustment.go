@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"connectrpc.com/connect"
+	"github.com/google/uuid"
 	"github.com/pdcgo/accounting_service/accounting_core"
 	"github.com/pdcgo/schema/services/accounting_iface/v1"
 	"github.com/pdcgo/schema/services/common/v1"
@@ -114,7 +115,8 @@ func (a *adjServiceImpl) AccountAdjustment(
 			// create transaction
 			ref := accounting_core.NewStringRefID(&accounting_core.StringRefData{
 				RefType: accounting_core.AdjustmentRef,
-				ID:      fmt.Sprintf("%d-%d", time.Now().Unix(), agent.IdentityID()),
+				ID:      uuid.New().String(),
+				// ID:      fmt.Sprintf("%d-%d", time.Now().Unix(), agent.IdentityID()),
 			})
 
 			tran := accounting_core.Transaction{
