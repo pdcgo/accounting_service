@@ -3,6 +3,7 @@ package accounting_core
 import (
 	"context"
 
+	"buf.build/go/protovalidate"
 	cloudtasks "cloud.google.com/go/cloudtasks/apiv2"
 	"cloud.google.com/go/cloudtasks/apiv2/cloudtaskspb"
 	"connectrpc.com/connect"
@@ -116,6 +117,11 @@ func (a *accReportDispatcher) DailyUpdateBalance(
 	ctx context.Context,
 	req *connect.Request[report_iface.DailyUpdateBalanceRequest],
 ) (*connect.Response[report_iface.DailyUpdateBalanceResponse], error) {
+	err := protovalidate.GlobalValidator.Validate(req.Msg)
+	if err != nil {
+		return &connect.Response[report_iface.DailyUpdateBalanceResponse]{}, err
+	}
+
 	content, err := protojson.Marshal(req.Msg)
 	if err != nil {
 		return &connect.Response[report_iface.DailyUpdateBalanceResponse]{}, err
