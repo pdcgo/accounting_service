@@ -24,6 +24,7 @@ func (r *revenueServiceImpl) RevenueStream(
 
 	res := connect.NewResponse(&revenue_iface.RevenueStreamResponse{})
 	processor := revenueProcessor{
+		ctx:  ctx,
 		db:   r.db,
 		init: &revenue_iface.RevenueStreamEventInit{},
 	}
@@ -81,6 +82,7 @@ func (r *revenueServiceImpl) RevenueStream(
 }
 
 type revenueProcessor struct {
+	ctx  context.Context
 	db   *gorm.DB
 	init *revenue_iface.RevenueStreamEventInit
 }
@@ -129,7 +131,7 @@ func (r *revenueProcessor) fund(fund *revenue_iface.RevenueStreamEventFund) erro
 		return nil
 	}
 
-	err = accounting_core.OpenTransaction(r.db, func(tx *gorm.DB, bookmng accounting_core.BookManage) error {
+	err = accounting_core.OpenTransaction(r.ctx, r.db, func(tx *gorm.DB, bookmng accounting_core.BookManage) error {
 		refID := accounting_core.NewStringRefID(&accounting_core.StringRefData{
 			RefType: accounting_core.OrderFundRef,
 			ID:      fund.OrderId,
@@ -229,7 +231,7 @@ func (r *revenueProcessor) withdrawal(wd *revenue_iface.RevenueStreamEventWithdr
 		return nil
 	}
 
-	err = accounting_core.OpenTransaction(r.db, func(tx *gorm.DB, bookmng accounting_core.BookManage) error {
+	err = accounting_core.OpenTransaction(r.ctx, r.db, func(tx *gorm.DB, bookmng accounting_core.BookManage) error {
 
 		tran := accounting_core.Transaction{
 			RefID:       refID,
@@ -307,7 +309,7 @@ func (r *revenueProcessor) adjustment(adj *revenue_iface.RevenueStreamEventAdjus
 		return nil
 	}
 
-	err = accounting_core.OpenTransaction(r.db, func(tx *gorm.DB, bookmng accounting_core.BookManage) error {
+	err = accounting_core.OpenTransaction(r.ctx, r.db, func(tx *gorm.DB, bookmng accounting_core.BookManage) error {
 
 		tran := accounting_core.Transaction{
 			RefID:       refID,

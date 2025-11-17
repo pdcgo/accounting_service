@@ -36,7 +36,7 @@ func (r *revenueServiceImpl) OnOrder(
 
 	switch pay.Event {
 	case revenue_iface.OrderEvent_ORDER_EVENT_CREATED:
-		err = accounting_core.OpenTransaction(db, func(tx *gorm.DB, bookmng accounting_core.BookManage) error {
+		err = accounting_core.OpenTransaction(ctx, db, func(tx *gorm.DB, bookmng accounting_core.BookManage) error {
 			// creating transaction
 			ref := accounting_core.NewRefID(&accounting_core.RefData{
 				RefType: accounting_core.OrderRef,

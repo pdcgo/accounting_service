@@ -65,7 +65,7 @@ func TestStockOps(t *testing.T) {
 		},
 		func(t *testing.T) {
 			agent := mock_identity.NewMockAgent(1, "test")
-			paymentOps := payment_transaction.NewPaymentTransaction(&db, agent)
+			paymentOps := payment_transaction.NewPaymentTransaction(t.Context(), &db, agent)
 
 			t.Run("testing payment", func(t *testing.T) {
 				err := paymentOps.Payment(&payment_transaction.PaymentPayload{

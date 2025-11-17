@@ -1,6 +1,7 @@
 package expense_transaction
 
 import (
+	"context"
 	"fmt"
 	"time"
 
@@ -23,6 +24,7 @@ type ExpenseTransaction interface {
 }
 
 type expenseTransactonImpl struct {
+	ctx   context.Context
 	agent identity_iface.Agent
 	tx    *gorm.DB
 }
@@ -43,7 +45,7 @@ func (e *expenseTransactonImpl) ExpenseCreate(payload *CreatePayload) error {
 		TeamID:      payload.TeamID,
 		CreatedByID: e.agent.GetUserID(),
 	}
-	err = accounting_core.OpenTransaction(e.tx, func(tx *gorm.DB, bookmng accounting_core.BookManage) error {
+	err = accounting_core.OpenTransaction(e.ctx, e.tx, func(tx *gorm.DB, bookmng accounting_core.BookManage) error {
 		err = bookmng.
 			NewTransaction().
 			Create(&tran).
@@ -77,8 +79,9 @@ func (e *expenseTransactonImpl) ExpenseCreate(payload *CreatePayload) error {
 	return err
 }
 
-func NewExpenseTransaction(tx *gorm.DB, agent identity_iface.Agent) ExpenseTransaction {
+func NewExpenseTransaction(ctx context.Context, tx *gorm.DB, agent identity_iface.Agent) ExpenseTransaction {
 	return &expenseTransactonImpl{
+		ctx:   ctx,
 		agent: agent,
 		tx:    tx,
 	}

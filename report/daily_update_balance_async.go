@@ -15,14 +15,17 @@ import (
 
 // DailyUpdateBalanceAsync implements report_ifaceconnect.AccountReportServiceHandler.
 func (a *accountReportImpl) DailyUpdateBalanceAsync(ctx context.Context, req *connect.Request[report_iface.DailyUpdateBalanceAsyncRequest]) (*connect.Response[report_iface.DailyUpdateBalanceAsyncResponse], error) {
-
 	content, err := protojson.Marshal(req.Msg.Req)
 	if err != nil {
 		return &connect.Response[report_iface.DailyUpdateBalanceAsyncResponse]{}, err
 	}
 
+	headers := req.Header()
+	hh := propagation.HeaderCarrier(headers)
+	otel.GetTextMapPropagator().Inject(ctx, hh)
+
 	reqheaders := make(map[string]string)
-	for k, v := range req.Header() {
+	for k, v := range headers {
 		if len(v) > 0 {
 			reqheaders[k] = v[0]
 		}
@@ -31,10 +34,6 @@ func (a *accountReportImpl) DailyUpdateBalanceAsync(ctx context.Context, req *co
 	// reqheaders["Content-Type"] = "application/grpc-web"
 	reqheaders["Content-Type"] = "application/json"
 	reqheaders["Connect-Protocol-Version"] = "1"
-
-	if err != nil {
-		return &connect.Response[report_iface.DailyUpdateBalanceAsyncResponse]{}, err
-	}
 
 	httpreq := &cloudtaskspb.Task_HttpRequest{
 		HttpRequest: &cloudtaskspb.HttpRequest{
@@ -51,7 +50,6 @@ func (a *accountReportImpl) DailyUpdateBalanceAsync(ctx context.Context, req *co
 			MessageType: httpreq,
 		},
 	}
-	otel.GetTextMapPropagator().Inject(ctx, propagation.HeaderCarrier(task.Task.GetHttpRequest().Headers))
 
 	err = a.dispather(ctx, &task)
 	return &connect.Response[report_iface.DailyUpdateBalanceAsyncResponse]{}, err

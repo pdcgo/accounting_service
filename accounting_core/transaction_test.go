@@ -37,7 +37,7 @@ func TestTransactionRollback(t *testing.T) {
 				ID:      1,
 			})
 
-			err := accounting_core.OpenTransaction(&db, func(tx *gorm.DB, bookmng accounting_core.BookManage) error {
+			err := accounting_core.OpenTransaction(t.Context(), &db, func(tx *gorm.DB, bookmng accounting_core.BookManage) error {
 				tran := accounting_core.Transaction{
 					TeamID:  1,
 					RefID:   ref,
@@ -76,9 +76,9 @@ func TestTransactionRollback(t *testing.T) {
 			assert.Nil(t, err)
 
 			rollbackFunc := func(t *testing.T) {
-				err := accounting_core.OpenTransaction(&db, func(tx *gorm.DB, bookmng accounting_core.BookManage) error {
+				err := accounting_core.OpenTransaction(t.Context(), &db, func(tx *gorm.DB, bookmng accounting_core.BookManage) error {
 					trmut := accounting_core.
-						NewTransactionMutation(tx).
+						NewTransactionMutation(t.Context(), tx).
 						ByRefID(ref, true)
 
 					err = trmut.

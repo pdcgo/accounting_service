@@ -1,6 +1,7 @@
 package accounting_core
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"math"
@@ -340,6 +341,7 @@ type TransactionMutation interface {
 }
 
 type transactionMutationImpl struct {
+	ctx  context.Context
 	tx   *gorm.DB
 	data *Transaction
 	err  error
@@ -458,7 +460,7 @@ func (t *transactionMutationImpl) RollbackEntry(userID uint, desc string) Transa
 	// accbalance, _ := entries.AccountBalance()
 	// debugtool.LogJson(accbalance)
 
-	err = OpenTransaction(t.tx, func(tx *gorm.DB, bookmng BookManage) error {
+	err = OpenTransaction(t.ctx, t.tx, func(tx *gorm.DB, bookmng BookManage) error {
 
 		teamEntries := map[uint]JournalEntriesList{}
 		teamBookEntry := map[uint]CreateEntry{}
@@ -538,8 +540,9 @@ func (t *transactionMutationImpl) setErr(err error) *transactionMutationImpl {
 	return t
 }
 
-func NewTransactionMutation(tx *gorm.DB) TransactionMutation {
+func NewTransactionMutation(ctx context.Context, tx *gorm.DB) TransactionMutation {
 	return &transactionMutationImpl{
-		tx: tx,
+		ctx: ctx,
+		tx:  tx,
 	}
 }

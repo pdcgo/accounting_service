@@ -71,7 +71,7 @@ func (e *expenseServiceImpl) ExpenseCreate(
 			}
 
 			err = expense_transaction.
-				NewExpenseTransaction(tx, identity.Identity()).
+				NewExpenseTransaction(ctx, tx, identity.Identity()).
 				ExpenseCreate(&expense_transaction.CreatePayload{
 					TeamID:      uint(pay.TeamId),
 					ExpenseKey:  accounting_core.AccountKey(pay.ExpenseKey),

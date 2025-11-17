@@ -48,7 +48,7 @@ func (r *revenueServiceImpl) Withdrawal(
 		return res, err
 	}
 
-	err = accounting_core.OpenTransaction(db, func(tx *gorm.DB, bookmng accounting_core.BookManage) error {
+	err = accounting_core.OpenTransaction(ctx, db, func(tx *gorm.DB, bookmng accounting_core.BookManage) error {
 		ref := accounting_core.NewRefID(&accounting_core.RefData{
 			RefType: accounting_core.WithdrawalRef,
 			ID:      uint(pay.ShopId),
@@ -57,7 +57,7 @@ func (r *revenueServiceImpl) Withdrawal(
 		var tran accounting_core.Transaction
 
 		txmut := accounting_core.
-			NewTransactionMutation(tx).
+			NewTransactionMutation(ctx, tx).
 			ByRefID(ref, true)
 
 		err = txmut.
@@ -154,7 +154,7 @@ func (r *revenueServiceImpl) OrderCancel(
 			ID:      uint(pay.OrderId),
 		})
 		return accounting_core.
-			NewTransactionMutation(tx).
+			NewTransactionMutation(ctx, tx).
 			ByRefID(accounting_core.RefID(ref), true).
 			RollbackEntry(agent.GetUserID(), fmt.Sprintf("cancelling order %s", ref)).
 			Err()

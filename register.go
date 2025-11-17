@@ -71,7 +71,13 @@ func NewRegister(
 
 		// report
 		path, handler = report_ifaceconnect.NewAccountReportServiceHandler(
-			report.NewAccountReportService(&cfg.DispatcherConfig, &cfg.AccountingService, db, auth, cache, dispather),
+			report.NewAccountReportService(
+				&cfg.DispatcherConfig,
+				&cfg.AccountingService,
+				db,
+				auth,
+				cache,
+				dispather),
 			defaultInterceptor)
 		mux.Handle(path, handler)
 		path, handler = report_ifaceconnect.NewBalanceServiceHandler(

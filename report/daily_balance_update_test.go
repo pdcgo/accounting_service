@@ -1,16 +1,20 @@
 package report
 
 import (
+	"context"
 	"encoding/json"
 	"testing"
 	"time"
 
+	"cloud.google.com/go/cloudtasks/apiv2/cloudtaskspb"
 	"connectrpc.com/connect"
+	"github.com/googleapis/gax-go/v2"
 	"github.com/pdcgo/accounting_service/accounting_core"
 	"github.com/pdcgo/accounting_service/accounting_mock"
 	"github.com/pdcgo/schema/services/accounting_iface/v1"
 	"github.com/pdcgo/schema/services/report_iface/v1"
 	"github.com/pdcgo/shared/authorization/authorization_mock"
+	"github.com/pdcgo/shared/configs"
 	"github.com/pdcgo/shared/pkg/debugtool"
 	"github.com/pdcgo/shared/pkg/moretest"
 	"github.com/pdcgo/shared/pkg/moretest/moretest_mock"
@@ -84,9 +88,14 @@ func TestAccountKeyDailyBalance(t *testing.T) {
 		func(t *testing.T) {
 
 			reportService := NewAccountReportService(
+				&configs.DispatcherConfig{},
+				&configs.AccountingService{},
 				&db,
 				&authorization_mock.EmptyAuthorizationMock{},
 				ware_cache.NewLocalCache(),
+				func(ctx context.Context, req *cloudtaskspb.CreateTaskRequest, opts ...gax.CallOption) error {
+					return nil
+				},
 			)
 
 			t.Run("testing daily accountkey", func(t *testing.T) {
@@ -214,9 +223,15 @@ func TestDailyUpdateBalance(t *testing.T) {
 		},
 		func(t *testing.T) {
 			reportService := NewAccountReportService(
+				&configs.DispatcherConfig{},
+				&configs.AccountingService{},
 				&db,
 				&authorization_mock.EmptyAuthorizationMock{},
 				ware_cache.NewLocalCache(),
+				func(ctx context.Context, req *cloudtaskspb.CreateTaskRequest, opts ...gax.CallOption) error {
+					return nil
+
+				},
 			)
 
 			t.Run("test normal update", func(t *testing.T) {
@@ -307,9 +322,15 @@ func TestDailyBalance(t *testing.T) {
 		},
 		func(t *testing.T) {
 			reportService := NewAccountReportService(
+				&configs.DispatcherConfig{},
+				&configs.AccountingService{},
 				&db,
 				&authorization_mock.EmptyAuthorizationMock{},
 				ware_cache.NewLocalCache(),
+				func(ctx context.Context, req *cloudtaskspb.CreateTaskRequest, opts ...gax.CallOption) error {
+					return nil
+
+				},
 			)
 
 			t.Run("testing updater daily", func(t *testing.T) {

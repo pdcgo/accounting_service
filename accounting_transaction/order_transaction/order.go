@@ -1,6 +1,8 @@
 package order_transaction
 
 import (
+	"context"
+
 	"github.com/pdcgo/accounting_service/accounting_core"
 	"github.com/pdcgo/shared/interfaces/identity_iface"
 	"gorm.io/gorm"
@@ -39,6 +41,7 @@ type OrderTransaction interface {
 }
 
 type orderTransactionImpl struct {
+	ctx   context.Context
 	agent identity_iface.Agent
 	tx    *gorm.DB
 }
@@ -52,7 +55,7 @@ func (o *orderTransactionImpl) AdjustmentOrder() error {
 func (o *orderTransactionImpl) CreateOrder(payload *CreateOrderPayload) error {
 	var tran accounting_core.Transaction
 	var err error
-	err = accounting_core.OpenTransaction(o.tx, func(tx *gorm.DB, bookmng accounting_core.BookManage) error {
+	err = accounting_core.OpenTransaction(o.ctx, o.tx, func(tx *gorm.DB, bookmng accounting_core.BookManage) error {
 		err = bookmng.
 			NewTransaction().
 			Create(&tran).
@@ -143,8 +146,9 @@ func (o *orderTransactionImpl) WithdrawalOrder() error {
 	panic("unimplemented")
 }
 
-func NewOrderTransaction(tx *gorm.DB, agent identity_iface.Agent) OrderTransaction {
+func NewOrderTransaction(ctx context.Context, tx *gorm.DB, agent identity_iface.Agent) OrderTransaction {
 	return &orderTransactionImpl{
+		ctx:   ctx,
 		agent: agent,
 		tx:    tx,
 	}

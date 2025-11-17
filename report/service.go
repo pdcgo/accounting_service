@@ -3,8 +3,9 @@ package report
 import (
 	"context"
 
-	"connectrpc.com/connect"
-	"github.com/pdcgo/schema/services/report_iface/v1"
+	"cloud.google.com/go/cloudtasks/apiv2/cloudtaskspb"
+	"github.com/googleapis/gax-go/v2"
+	"github.com/pdcgo/shared/configs"
 	"github.com/pdcgo/shared/interfaces/authorization_iface"
 	"github.com/pdcgo/shared/pkg/ware_cache"
 	"gorm.io/gorm"
@@ -17,11 +18,6 @@ type accountReportImpl struct {
 	auth      authorization_iface.Authorization
 	cache     ware_cache.Cache
 	dispather ReportDispatcher
-}
-
-// DailyUpdateBalanceAsync implements report_ifaceconnect.AccountReportServiceHandler.
-func (a *accountReportImpl) DailyUpdateBalanceAsync(context.Context, *connect.Request[report_iface.DailyUpdateBalanceAsyncRequest]) (*connect.Response[report_iface.DailyUpdateBalanceAsyncResponse], error) {
-	panic("unimplemented")
 }
 
 func NewAccountReportService(
