@@ -82,6 +82,11 @@ type accReportDispatcher struct {
 	host   string
 }
 
+// DailyUpdateBalanceAsync implements AccountReportServiceClientDispatcher.
+func (a *accReportDispatcher) DailyUpdateBalanceAsync(context.Context, *connect.Request[report_iface.DailyUpdateBalanceAsyncRequest]) (*connect.Response[report_iface.DailyUpdateBalanceAsyncResponse], error) {
+	panic("unimplemented")
+}
+
 // MonthlyBalance implements AccountReportServiceClientDispatcher.
 func (a *accReportDispatcher) MonthlyBalance(context.Context, *connect.Request[report_iface.MonthlyBalanceRequest]) (*connect.Response[report_iface.MonthlyBalanceResponse], error) {
 	panic("unimplemented")
