@@ -236,6 +236,73 @@ func (e *expenseServiceImpl) ExpenseTypeList(
 	switch data.Type {
 	case accounting_iface.ExpenseType_EXPENSE_TYPE_INTERNAL,
 		accounting_iface.ExpenseType_EXPENSE_TYPE_SELLING:
+		result.Msg.Data = []*common.KeyName{
+			{
+				Key:  string(accounting_core.ShopeepayAccount),
+				Name: "Top Up ShopeePay",
+			},
+			{
+				Key:  string(accounting_core.SalaryAccount),
+				Name: "Gaji",
+			},
+			{
+				Key:  string(accounting_core.KitchenExpenseAccount),
+				Name: "Dapur",
+			},
+			{
+				Key:  string(accounting_core.InternetConnectionAccount),
+				Name: "Internet",
+			},
+			{
+				Key:  string(accounting_core.ElectricityExpenseAccount),
+				Name: "Listrik",
+			},
+			{
+				Key:  string(accounting_core.EquipmentExpenseAccount),
+				Name: "Peralatan",
+			},
+			{
+				Key:  string(accounting_core.ToolExpenseAccount),
+				Name: "Tools",
+			},
+			{
+				Key:  string(accounting_core.BankFeeAccount),
+				Name: "Bank",
+			},
+			{
+				Key:  string(accounting_core.AdjExpenseAccount),
+				Name: "Penyesuaian",
+			},
+			{
+				Key:  string(accounting_core.PayableAccount),
+				Name: "Hutang",
+			},
+			{
+				Key:  string(accounting_core.ReceivableAccount),
+				Name: "Piutang",
+			},
+			// {
+			// 	Key:  "",
+			// 	Name: "Bonus",
+			// },
+			// {
+			// 	Key:  "",
+			// 	Name: "Konten",
+			// },
+			// {
+			// 	Key:  "",
+			// 	Name: "Iuran",
+			// },
+			// {
+			// 	Key:  "",
+			// 	Name: "Prive",
+			// },
+			{
+				Key:  string(accounting_core.OtherExpenseAccount),
+				Name: "Lain-Lain",
+			},
+		}
+
 		return &result, nil
 	case accounting_iface.ExpenseType_EXPENSE_TYPE_WAREHOUSE:
 		result.Msg.Data = []*common.KeyName{

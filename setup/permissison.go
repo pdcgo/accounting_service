@@ -66,26 +66,30 @@ func defaultRolePermission() RoleMap {
 		db_models.RootTeamType: {},
 		db_models.AdminTeamType: RoleItem{
 			"owner": authorization_iface.RoleAddPermissionPayload{
-				&adjustment.AdjustmentAccess{}: fullAccess,
-				&ads_expense.AdsExpense{}:      fullAccess,
-				&accounting_model.Payment{}:    fullAccess,
+				&adjustment.AdjustmentAccess{}:    fullAccess,
+				&ads_expense.AdsExpense{}:         fullAccess,
+				&accounting_model.Payment{}:       fullAccess,
+				&accounting_model.ExpenseEntity{}: fullAccess,
 			},
 			"admin": authorization_iface.RoleAddPermissionPayload{
-				&adjustment.AdjustmentAccess{}: fullAccess,
-				&ads_expense.AdsExpense{}:      fullAccess,
-				&accounting_model.Payment{}:    fullAccess,
+				&adjustment.AdjustmentAccess{}:    fullAccess,
+				&ads_expense.AdsExpense{}:         fullAccess,
+				&accounting_model.Payment{}:       fullAccess,
+				&accounting_model.ExpenseEntity{}: fullAccess,
 			},
 		},
 		db_models.SellingTeamType: RoleItem{
 			"owner": authorization_iface.RoleAddPermissionPayload{
-				&adjustment.AdjustmentAccess{}: fullAccess,
-				&ads_expense.AdsExpense{}:      fullAccess,
-				&accounting_model.Payment{}:    fullAccess,
+				&adjustment.AdjustmentAccess{}:    fullAccess,
+				&ads_expense.AdsExpense{}:         fullAccess,
+				&accounting_model.Payment{}:       fullAccess,
+				&accounting_model.ExpenseEntity{}: fullAccess,
 			},
 			"admin": authorization_iface.RoleAddPermissionPayload{
-				&adjustment.AdjustmentAccess{}: fullAccess,
-				&ads_expense.AdsExpense{}:      fullAccess,
-				&accounting_model.Payment{}:    fullAccess,
+				&adjustment.AdjustmentAccess{}:    fullAccess,
+				&ads_expense.AdsExpense{}:         fullAccess,
+				&accounting_model.Payment{}:       fullAccess,
+				&accounting_model.ExpenseEntity{}: fullAccess,
 			},
 			"cs": authorization_iface.RoleAddPermissionPayload{
 				&ads_expense.AdsExpense{}: fullAccess,
@@ -93,11 +97,13 @@ func defaultRolePermission() RoleMap {
 		},
 		db_models.WarehouseTeamType: RoleItem{
 			"owner": authorization_iface.RoleAddPermissionPayload{
-				&adjustment.AdjustmentAccess{}: fullAccess,
-				&accounting_model.Payment{}:    fullAccess,
+				&adjustment.AdjustmentAccess{}:    fullAccess,
+				&accounting_model.Payment{}:       fullAccess,
+				&accounting_model.ExpenseEntity{}: fullAccess,
 			},
 			"admin": authorization_iface.RoleAddPermissionPayload{
-				&adjustment.AdjustmentAccess{}: fullAccess,
+				&adjustment.AdjustmentAccess{}:    fullAccess,
+				&accounting_model.ExpenseEntity{}: fullAccess,
 			},
 		},
 	}
