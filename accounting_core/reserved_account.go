@@ -54,26 +54,29 @@ const (
 
 // expense
 const (
-	CodCostAccount            AccountKey = "cod_cost_account"
-	StockCostAccount          AccountKey = "stock_cost_account"
-	StockToBorrowCostAccount  AccountKey = "stock_to_borrow_cost"
-	StockBorrowCostAccount    AccountKey = "stock_borrow_cost"
-	StockBrokenCostAccount    AccountKey = "stock_broken_expense"
-	StockLostCostAccount      AccountKey = "stock_lost_expense"
-	WarehouseCostAccount      AccountKey = "warehouse_cost"
-	SalaryAccount             AccountKey = "salary"
-	InternetConnectionAccount AccountKey = "internet_connection"
-	PackingExpenseAccount     AccountKey = "packing_cost"
-	ElectricityExpenseAccount AccountKey = "electricity"
-	KitchenExpenseAccount     AccountKey = "kitchen_expense"
-	EquipmentExpenseAccount   AccountKey = "equipment_expense"
-	ToolExpenseAccount        AccountKey = "tool_expense"
-	TransportExpenseAccount   AccountKey = "transport"
-	OwnerAccommodationAccount AccountKey = "owner_accomodation"
-	ServerExpenseAccount      AccountKey = "server"
-	ShippingExpenseAccount    AccountKey = "shipping_expense"
-	AdsExpenseAccount         AccountKey = "ads_expense"
-	AdjExpenseAccount         AccountKey = "adj_expense"
+	CodCostAccount             AccountKey = "cod_cost_account"
+	StockCostAccount           AccountKey = "stock_cost_account"
+	StockToBorrowCostAccount   AccountKey = "stock_to_borrow_cost"
+	StockBorrowCostAccount     AccountKey = "stock_borrow_cost"
+	StockBrokenCostAccount     AccountKey = "stock_broken_expense"
+	StockLostCostAccount       AccountKey = "stock_lost_expense"
+	WarehouseCostAccount       AccountKey = "warehouse_cost"
+	SalaryAccount              AccountKey = "salary"
+	InternetConnectionAccount  AccountKey = "internet_connection"
+	PackingExpenseAccount      AccountKey = "packing_cost"
+	ElectricityExpenseAccount  AccountKey = "electricity"
+	KitchenExpenseAccount      AccountKey = "kitchen_expense"
+	EquipmentExpenseAccount    AccountKey = "equipment_expense"
+	ToolExpenseAccount         AccountKey = "tool_expense"
+	TransportExpenseAccount    AccountKey = "transport"
+	OwnerAccommodationAccount  AccountKey = "owner_accomodation"
+	ServerExpenseAccount       AccountKey = "server"
+	ShippingExpenseAccount     AccountKey = "shipping_expense"
+	AdsExpenseAccount          AccountKey = "ads_expense"
+	AdjExpenseAccount          AccountKey = "adj_expense"
+	BonusesExpenseAccount      AccountKey = "bonuses_expense"
+	ContentMediaExpenseAccount AccountKey = "content_media_expense"
+
 	// ongkir ?
 	// om + harum ?
 
@@ -217,6 +220,17 @@ func DefaultSeedAccount() []*Account {
 			Coa:         EXPENSE,
 			BalanceType: DebitBalance,
 		},
+		{
+			AccountKey:  BonusesExpenseAccount,
+			Coa:         EXPENSE,
+			BalanceType: DebitBalance,
+		},
+		{
+			AccountKey:  ContentMediaExpenseAccount,
+			Coa:         EXPENSE,
+			BalanceType: DebitBalance,
+		},
+
 		{
 			AccountKey:  CodCostAccount,
 			Coa:         EXPENSE,
