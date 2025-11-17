@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"time"
 
 	"connectrpc.com/connect"
 	"github.com/pdcgo/accounting_service/accounting_core"
@@ -76,17 +77,22 @@ func (p *paymentServiceImpl) PaymentAccept(
 			ID:      uint(pay.PaymentId),
 		})
 
-		txmut := accounting_core.
-			NewTransactionMutation(tx).
-			ByRefID(ref, true)
-		err = txmut.
+		trans := &accounting_core.Transaction{
+			RefID:       ref,
+			TeamID:      payment.FromTeamID,
+			CreatedByID: agent.IdentityID(),
+			Desc:        fmt.Sprintf("payment %s", ref),
+			Created:     time.Now(),
+		}
+
+		err = bookmng.
+			NewTransaction().
+			Create(trans).
 			Err()
 
 		if err != nil {
 			return err
 		}
-
-		trans := txmut.Data()
 
 		desc := accounting_core.EntryDescOption(fmt.Sprintf("accept payment %s", ref))
 

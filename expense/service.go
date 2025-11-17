@@ -273,22 +273,7 @@ func (e *expenseServiceImpl) ExpenseTypeList(
 				Key:  string(accounting_core.AdjExpenseAccount),
 				Name: "Penyesuaian",
 			},
-			{
-				Key:  string(accounting_core.PayableAccount),
-				Name: "Hutang",
-			},
-			{
-				Key:  string(accounting_core.ReceivableAccount),
-				Name: "Piutang",
-			},
-			// {
-			// 	Key:  "",
-			// 	Name: "Bonus",
-			// },
-			// {
-			// 	Key:  "",
-			// 	Name: "Konten",
-			// },
+
 			// {
 			// 	Key:  "",
 			// 	Name: "Iuran",
