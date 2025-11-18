@@ -26,7 +26,7 @@ const (
 	CashAccount                  AccountKey = "cash"
 	ShopeepayAccount             AccountKey = "shopeepay"
 	SellingEstReceivableAccount  AccountKey = "selling_est_receivable"
-	SellingAdjReceivableAccount  AccountKey = "selling_adj_receivable"
+	SellingAdjReceivableAccount  AccountKey = "selling_adj_receivable" // mungkin deprecated
 	SellingReceivableAccount     AccountKey = "selling_receivable"
 	StockPendingAccount          AccountKey = "stock_pending"
 	StockTransferAccount         AccountKey = "stock_transfer"
@@ -54,29 +54,29 @@ const (
 
 // expense
 const (
-	CodCostAccount             AccountKey = "cod_cost_account"
-	StockCostAccount           AccountKey = "stock_cost_account"
-	StockToBorrowCostAccount   AccountKey = "stock_to_borrow_cost"
-	StockBorrowCostAccount     AccountKey = "stock_borrow_cost"
-	StockBrokenCostAccount     AccountKey = "stock_broken_expense"
-	StockLostCostAccount       AccountKey = "stock_lost_expense"
-	WarehouseCostAccount       AccountKey = "warehouse_cost"
-	SalaryAccount              AccountKey = "salary"
-	InternetConnectionAccount  AccountKey = "internet_connection"
-	PackingExpenseAccount      AccountKey = "packing_cost"
-	ElectricityExpenseAccount  AccountKey = "electricity"
-	KitchenExpenseAccount      AccountKey = "kitchen_expense"
-	EquipmentExpenseAccount    AccountKey = "equipment_expense"
-	ToolExpenseAccount         AccountKey = "tool_expense"
-	TransportExpenseAccount    AccountKey = "transport"
-	OwnerAccommodationAccount  AccountKey = "owner_accomodation"
-	ServerExpenseAccount       AccountKey = "server"
-	ShippingExpenseAccount     AccountKey = "shipping_expense"
-	AdsExpenseAccount          AccountKey = "ads_expense"
-	AdjExpenseAccount          AccountKey = "adj_expense"
-	BonusesExpenseAccount      AccountKey = "bonuses_expense"
-	ContentMediaExpenseAccount AccountKey = "content_media_expense"
-
+	CodCostAccount              AccountKey = "cod_cost_account"
+	StockCostAccount            AccountKey = "stock_cost_account"
+	StockToBorrowCostAccount    AccountKey = "stock_to_borrow_cost"
+	StockBorrowCostAccount      AccountKey = "stock_borrow_cost"
+	StockBrokenCostAccount      AccountKey = "stock_broken_expense"
+	StockLostCostAccount        AccountKey = "stock_lost_expense"
+	WarehouseCostAccount        AccountKey = "warehouse_cost"
+	SalaryAccount               AccountKey = "salary"
+	InternetConnectionAccount   AccountKey = "internet_connection"
+	PackingExpenseAccount       AccountKey = "packing_cost"
+	ElectricityExpenseAccount   AccountKey = "electricity"
+	KitchenExpenseAccount       AccountKey = "kitchen_expense"
+	EquipmentExpenseAccount     AccountKey = "equipment_expense"
+	ToolExpenseAccount          AccountKey = "tool_expense"
+	TransportExpenseAccount     AccountKey = "transport"
+	OwnerAccommodationAccount   AccountKey = "owner_accomodation"
+	ServerExpenseAccount        AccountKey = "server"
+	ShippingExpenseAccount      AccountKey = "shipping_expense"
+	AdsExpenseAccount           AccountKey = "ads_expense"
+	AdjExpenseAccount           AccountKey = "adj_expense"
+	BonusesExpenseAccount       AccountKey = "bonuses_expense"
+	ContentMediaExpenseAccount  AccountKey = "content_media_expense"
+	SellingReturnExpenseAccount AccountKey = "return_expense"
 	// ongkir ?
 	// om + harum ?
 
@@ -88,6 +88,7 @@ const (
 	BorrowStockRevenueAccount     AccountKey = "borrow_stock_revenue"
 	SalesRevenueAdjustmentAccount AccountKey = "sales_revenue_adjustment"
 	SalesRevenueAccount           AccountKey = "sales_revenue"
+	OtherRevenueAccount           AccountKey = "other_revenue"
 	SalesReturnRevenueAccount     AccountKey = "sales_return_revenue"
 	AdjRevenueAccount             AccountKey = "adj_revenue"
 )
@@ -128,6 +129,11 @@ func DefaultSeedAccount() []*Account {
 		},
 		{
 			AccountKey:  BorrowStockRevenueAccount,
+			Coa:         REVENUE,
+			BalanceType: CreditBalance,
+		},
+		{
+			AccountKey:  OtherRevenueAccount,
 			Coa:         REVENUE,
 			BalanceType: CreditBalance,
 		},
@@ -268,6 +274,11 @@ func DefaultSeedAccount() []*Account {
 		},
 		{
 			AccountKey:  StockToBorrowCostAccount,
+			Coa:         EXPENSE,
+			BalanceType: DebitBalance,
+		},
+		{
+			AccountKey:  SellingReturnExpenseAccount,
 			Coa:         EXPENSE,
 			BalanceType: DebitBalance,
 		},

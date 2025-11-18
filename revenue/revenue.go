@@ -112,6 +112,14 @@ func (r *revenueProcessor) checkTxExist(refID accounting_core.RefID) (bool, erro
 
 func (r *revenueProcessor) fund(fund *revenue_iface.RevenueStreamEventFund) error {
 	var err error
+
+	extAmountR := accounting_core.RoundUp(fund.EstAmount, accounting_core.Precision)
+	amountR := accounting_core.RoundUp(fund.Amount, accounting_core.Precision)
+
+	if extAmountR == amountR {
+		return nil
+	}
+
 	init := r.init
 	var shopID uint = uint(init.ShopId)
 	var teamID uint = uint(init.TeamId)
@@ -142,7 +150,7 @@ func (r *revenueProcessor) fund(fund *revenue_iface.RevenueStreamEventFund) erro
 			Desc:        fund.Desc,
 			TeamID:      teamID,
 			CreatedByID: userID,
-			Created:     fund.At.AsTime(),
+			Created:     time.Now(),
 		}
 
 		err = bookmng.
@@ -164,20 +172,69 @@ func (r *revenueProcessor) fund(fund *revenue_iface.RevenueStreamEventFund) erro
 		entry := bookmng.
 			NewCreateEntry(teamID, userID)
 
-		entry.
-			From(&accounting_core.EntryAccountPayload{
-				Key:    accounting_core.SellingEstReceivableAccount,
-				TeamID: teamID,
-			}, fund.EstAmount).
-			To(&accounting_core.EntryAccountPayload{
-				Key:    accounting_core.SellingReceivableAccount,
-				TeamID: teamID,
-			}, fund.Amount)
+		// jika terjadi return
+		if fund.Amount < 0 {
+			absAmount := math.Abs(fund.Amount)
+			if fund.EstAmount == 0 {
+				entry.
+					To(&accounting_core.EntryAccountPayload{
+						Key:    accounting_core.SellingReturnExpenseAccount,
+						TeamID: teamID,
+					}, absAmount).
+					From(&accounting_core.EntryAccountPayload{
+						Key:    accounting_core.SellingAdjReceivableAccount,
+						TeamID: teamID,
+					}, absAmount)
 
-		if fund.EstAmount != fund.Amount {
+			} else {
+				diffAmount := fund.EstAmount - absAmount
+
+				entry.
+					To(&accounting_core.EntryAccountPayload{
+						Key:    accounting_core.SellingReturnExpenseAccount,
+						TeamID: teamID,
+					}, absAmount).
+					From(&accounting_core.EntryAccountPayload{
+						Key:    accounting_core.SellingReceivableAccount,
+						TeamID: teamID,
+					}, absAmount)
+
+				if diffAmount > 0 {
+					entry.
+						From(&accounting_core.EntryAccountPayload{
+							Key:    accounting_core.SellingReceivableAccount,
+							TeamID: teamID,
+						}, diffAmount).
+						To(&accounting_core.EntryAccountPayload{
+							Key:    accounting_core.SellingAdjReceivableAccount,
+							TeamID: teamID,
+						}, diffAmount)
+
+				}
+
+				if diffAmount < 0 {
+					entry.
+						To(&accounting_core.EntryAccountPayload{
+							Key:    accounting_core.SellingReceivableAccount,
+							TeamID: teamID,
+						}, math.Abs(diffAmount)).
+						From(&accounting_core.EntryAccountPayload{
+							Key:    accounting_core.SellingAdjReceivableAccount,
+							TeamID: teamID,
+						}, math.Abs(diffAmount))
+				}
+			}
+		}
+
+		if fund.Amount > 0 {
 			diffAmount := fund.EstAmount - fund.Amount
+
 			if diffAmount > 0 {
 				entry.
+					From(&accounting_core.EntryAccountPayload{
+						Key:    accounting_core.SellingReceivableAccount,
+						TeamID: teamID,
+					}, diffAmount).
 					To(&accounting_core.EntryAccountPayload{
 						Key:    accounting_core.SellingAdjReceivableAccount,
 						TeamID: teamID,
@@ -186,19 +243,20 @@ func (r *revenueProcessor) fund(fund *revenue_iface.RevenueStreamEventFund) erro
 
 			if diffAmount < 0 {
 				entry.
+					To(&accounting_core.EntryAccountPayload{
+						Key:    accounting_core.SellingReceivableAccount,
+						TeamID: teamID,
+					}, math.Abs(diffAmount)).
 					From(&accounting_core.EntryAccountPayload{
 						Key:    accounting_core.SellingAdjReceivableAccount,
 						TeamID: teamID,
 					}, math.Abs(diffAmount))
-				// To(&accounting_core.EntryAccountPayload{
-				// 	Key:    accounting_core.SellingReceivableAccount,
-				// 	TeamID: teamID,
-				// }, math.Abs(diffAmount))
 			}
 		}
+
 		err = entry.
 			Transaction(&tran).
-			Commit(accounting_core.CustomTimeOption(fund.At.AsTime())).
+			Commit().
 			Err()
 
 		if err != nil {
@@ -238,7 +296,7 @@ func (r *revenueProcessor) withdrawal(wd *revenue_iface.RevenueStreamEventWithdr
 			TeamID:      uint(init.TeamId),
 			CreatedByID: uint(init.UserId),
 			Desc:        wd.Desc,
-			Created:     wd.At.AsTime(),
+			Created:     time.Now(),
 		}
 		err = bookmng.
 			NewTransaction().
@@ -265,7 +323,7 @@ func (r *revenueProcessor) withdrawal(wd *revenue_iface.RevenueStreamEventWithdr
 				TeamID: teamID,
 			}, math.Abs(wd.Amount)).
 			Transaction(&tran).
-			Commit(accounting_core.CustomTimeOption(wd.At.AsTime())).
+			Commit().
 			Err()
 
 		return err
@@ -316,7 +374,7 @@ func (r *revenueProcessor) adjustment(adj *revenue_iface.RevenueStreamEventAdjus
 			Desc:        adj.Desc,
 			TeamID:      teamID,
 			CreatedByID: userID,
-			Created:     adj.At.AsTime(),
+			Created:     time.Now(),
 		}
 
 		err = bookmng.
@@ -341,8 +399,8 @@ func (r *revenueProcessor) adjustment(adj *revenue_iface.RevenueStreamEventAdjus
 
 		if adj.Amount > 0 {
 			entry.
-				From(&accounting_core.EntryAccountPayload{
-					Key:    accounting_core.SellingEstReceivableAccount,
+				To(&accounting_core.EntryAccountPayload{
+					Key:    accounting_core.OtherRevenueAccount,
 					TeamID: teamID,
 				}, adj.Amount).
 				To(&accounting_core.EntryAccountPayload{
@@ -350,21 +408,24 @@ func (r *revenueProcessor) adjustment(adj *revenue_iface.RevenueStreamEventAdjus
 					TeamID: teamID,
 				}, adj.Amount)
 
-		} else if adj.Amount < 0 {
+		}
+
+		if adj.Amount < 0 {
 			entry.
+				From(&accounting_core.EntryAccountPayload{
+					Key:    accounting_core.OtherRevenueAccount,
+					TeamID: teamID,
+				}, adj.Amount).
 				From(&accounting_core.EntryAccountPayload{
 					Key:    accounting_core.SellingReceivableAccount,
 					TeamID: teamID,
-				}, math.Abs(adj.Amount)).
-				To(&accounting_core.EntryAccountPayload{
-					Key:    accounting_core.SellingAdjReceivableAccount,
-					TeamID: teamID,
-				}, math.Abs(adj.Amount))
+				}, adj.Amount)
+
 		}
 
 		err = entry.
 			Transaction(&tran).
-			Commit(accounting_core.CustomTimeOption(adj.At.AsTime())).
+			Commit().
 			Err()
 
 		return err
