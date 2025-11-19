@@ -131,18 +131,18 @@ func (s *stockServiceImpl) InboundUpdate(
 
 		if pay.ShippingFee != 0 {
 			entry.To(&accounting_core.EntryAccountPayload{
-				Key:    accounting_core.StockPendingFeeAccount,
+				Key:    accounting_core.StockPendingAccount,
 				TeamID: uint(pay.WarehouseId),
 			}, pay.ShippingFee)
 
 			totalPayment += pay.ShippingFee
 
 		} else {
-			ch, _ := oldentries.AccountBalanceKey(accounting_core.StockPendingFeeAccount)
+			ch, _ := oldentries.AccountBalanceKey(accounting_core.StockPendingAccount)
 			c := ch.Change()
 			if c != 0 {
 				entry.To(&accounting_core.EntryAccountPayload{
-					Key:    accounting_core.StockPendingFeeAccount,
+					Key:    accounting_core.StockPendingAccount,
 					TeamID: uint(pay.WarehouseId),
 				}, c)
 

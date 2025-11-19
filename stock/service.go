@@ -171,7 +171,7 @@ func (s *stockServiceImpl) InboundCreate(
 		if pay.ShippingFee > 0 {
 			entry.
 				To(&accounting_core.EntryAccountPayload{
-					Key:    accounting_core.StockPendingFeeAccount,
+					Key:    accounting_core.StockPendingAccount,
 					TeamID: uint(pay.WarehouseId),
 				}, pay.ShippingFee)
 		}

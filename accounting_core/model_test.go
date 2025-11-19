@@ -185,7 +185,7 @@ func TestModelJournalEntrieeList(t *testing.T) {
 			TransactionID: 7,
 			CreatedByID:   1,
 			EntryTime:     time.Now(),
-			Debit:         36_000,
+			Debit:         46_000,
 			Account: &accounting_core.Account{
 				ID:          102,
 				AccountKey:  accounting_core.StockPendingAccount,
@@ -194,22 +194,22 @@ func TestModelJournalEntrieeList(t *testing.T) {
 				BalanceType: accounting_core.DebitBalance,
 			},
 		},
-		{
-			ID:            19,
-			AccountID:     106,
-			TeamID:        5,
-			TransactionID: 7,
-			CreatedByID:   1,
-			EntryTime:     time.Now(),
-			Debit:         10_000,
-			Account: &accounting_core.Account{
-				ID:          102,
-				AccountKey:  accounting_core.StockPendingFeeAccount,
-				TeamID:      4,
-				Coa:         10,
-				BalanceType: accounting_core.DebitBalance,
-			},
-		},
+		// {
+		// 	ID:            19,
+		// 	AccountID:     106,
+		// 	TeamID:        5,
+		// 	TransactionID: 7,
+		// 	CreatedByID:   1,
+		// 	EntryTime:     time.Now(),
+		// 	Debit:         10_000,
+		// 	Account: &accounting_core.Account{
+		// 		ID:          102,
+		// 		AccountKey:  accounting_core.StockPendingFeeAccount,
+		// 		TeamID:      4,
+		// 		Coa:         10,
+		// 		BalanceType: accounting_core.DebitBalance,
+		// 	},
+		// },
 	}
 
 	_, err := entries.AccountBalance()

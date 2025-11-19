@@ -112,13 +112,13 @@ func (i *inboundAccept) accept() (*stock_iface.InboundAcceptResponse, error) {
 		if pay.ShippingFee != 0 {
 			entryWare.
 				From(&accounting_core.EntryAccountPayload{
-					Key:    accounting_core.StockPendingFeeAccount,
+					Key:    accounting_core.StockPendingAccount,
 					TeamID: uint(pay.TeamId),
 				}, pay.ShippingFee)
 
 			entrySel.
 				From(&accounting_core.EntryAccountPayload{
-					Key:    accounting_core.StockPendingFeeAccount,
+					Key:    accounting_core.StockPendingAccount,
 					TeamID: uint(pay.WarehouseId),
 				}, pay.ShippingFee)
 		}
