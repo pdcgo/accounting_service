@@ -11,6 +11,7 @@ import (
 )
 
 var Precision = 5
+var TestPrecision = 3
 
 func RoundUp(x float64, n int) float64 {
 	pow := math.Pow(10, float64(n))
