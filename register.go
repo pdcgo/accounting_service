@@ -23,6 +23,7 @@ import (
 	"github.com/pdcgo/schema/services/report_iface/v1/report_ifaceconnect"
 	"github.com/pdcgo/schema/services/revenue_iface/v1/revenue_ifaceconnect"
 	"github.com/pdcgo/schema/services/stock_iface/v1/stock_ifaceconnect"
+	"github.com/pdcgo/shared/configs"
 	"github.com/pdcgo/shared/custom_connect"
 	"github.com/pdcgo/shared/interfaces/authorization_iface"
 	"github.com/pdcgo/shared/pkg/ware_cache"
@@ -32,11 +33,13 @@ import (
 type RegisterHandler func()
 
 func NewRegister(
+	cfg *configs.AppConfig,
 	db *gorm.DB,
 	auth authorization_iface.Authorization,
 	mux *http.ServeMux,
 	defaultInterceptor custom_connect.DefaultInterceptor,
 	cache ware_cache.Cache,
+	dispather report.ReportDispatcher,
 ) RegisterHandler {
 
 	return func() {
@@ -68,7 +71,13 @@ func NewRegister(
 
 		// report
 		path, handler = report_ifaceconnect.NewAccountReportServiceHandler(
-			report.NewAccountReportService(db, auth, cache),
+			report.NewAccountReportService(
+				&cfg.DispatcherConfig,
+				&cfg.AccountingService,
+				db,
+				auth,
+				cache,
+				dispather),
 			defaultInterceptor)
 		mux.Handle(path, handler)
 		path, handler = report_ifaceconnect.NewBalanceServiceHandler(

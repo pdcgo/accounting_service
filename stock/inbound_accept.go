@@ -49,7 +49,7 @@ func (i *inboundAccept) accept() (*stock_iface.InboundAcceptResponse, error) {
 	result := stock_iface.InboundAcceptResponse{}
 
 	db := i.s.db.WithContext(i.ctx)
-	err = accounting_core.OpenTransaction(db, func(tx *gorm.DB, bookmng accounting_core.BookManage) error {
+	err = accounting_core.OpenTransaction(i.ctx, db, func(tx *gorm.DB, bookmng accounting_core.BookManage) error {
 		var ref accounting_core.RefID
 
 		switch pay.Source {

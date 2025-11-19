@@ -1,6 +1,8 @@
 package payment_transaction
 
 import (
+	"context"
+
 	"github.com/pdcgo/accounting_service/accounting_core"
 	"github.com/pdcgo/shared/interfaces/identity_iface"
 	"gorm.io/gorm"
@@ -21,13 +23,14 @@ type PaymentTransaction interface {
 }
 
 type paymentPaymentTransactionImpl struct {
+	ctx   context.Context
 	agent identity_iface.Agent
 	tx    *gorm.DB
 }
 
 // Payment implements PaymentTransaction.
 func (p *paymentPaymentTransactionImpl) Payment(payment *PaymentPayload) error {
-	return accounting_core.OpenTransaction(p.tx, func(tx *gorm.DB, bookmng accounting_core.BookManage) error {
+	return accounting_core.OpenTransaction(p.ctx, p.tx, func(tx *gorm.DB, bookmng accounting_core.BookManage) error {
 		var err error
 		var tran accounting_core.Transaction
 
@@ -80,8 +83,9 @@ func (p *paymentPaymentTransactionImpl) Payment(payment *PaymentPayload) error {
 	})
 }
 
-func NewPaymentTransaction(tx *gorm.DB, agent identity_iface.Agent) PaymentTransaction {
+func NewPaymentTransaction(ctx context.Context, tx *gorm.DB, agent identity_iface.Agent) PaymentTransaction {
 	return &paymentPaymentTransactionImpl{
+		ctx:   ctx,
 		tx:    tx,
 		agent: agent,
 	}

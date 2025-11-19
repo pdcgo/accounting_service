@@ -39,7 +39,7 @@ func (s *stockServiceImpl) TransferToWarehouse(
 	teamProduct := map[uint64]TransferItemList{}
 
 	db := s.db.WithContext(ctx)
-	err = accounting_core.OpenTransaction(db, func(tx *gorm.DB, bookmng accounting_core.BookManage) error {
+	err = accounting_core.OpenTransaction(ctx, db, func(tx *gorm.DB, bookmng accounting_core.BookManage) error {
 		for _, d := range pay.Products {
 			data := d
 			if teamProduct[d.TeamId] == nil {
@@ -154,7 +154,7 @@ func (s *stockServiceImpl) TransferToWarehouseCancel(
 			ID:      uint(pay.ExtTxId),
 		})
 		err = accounting_core.
-			NewTransactionMutation(tx).
+			NewTransactionMutation(ctx, tx).
 			ByRefID(ref, true).
 			RollbackEntry(agent.IdentityID(), fmt.Sprintf("cancel transfer %s", ref)).
 			Err()
@@ -191,7 +191,7 @@ func (s *stockServiceImpl) TransferToWarehouseAccept(
 
 	teamEntries := map[uint64]accounting_core.CreateEntry{}
 	teamProduct := map[uint64]TransferItemList{}
-	err = accounting_core.OpenTransaction(db, func(tx *gorm.DB, bookmng accounting_core.BookManage) error {
+	err = accounting_core.OpenTransaction(ctx, db, func(tx *gorm.DB, bookmng accounting_core.BookManage) error {
 		for _, d := range pay.Products {
 			data := d
 			if teamProduct[d.TeamId] == nil {

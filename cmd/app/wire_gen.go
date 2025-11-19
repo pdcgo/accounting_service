@@ -8,7 +8,7 @@ package main
 
 import (
 	"github.com/pdcgo/accounting_service"
-	"github.com/pdcgo/accounting_service/accounting_core"
+	"github.com/pdcgo/accounting_service/report"
 	"github.com/pdcgo/shared/configs"
 	"github.com/pdcgo/shared/custom_connect"
 	"net/http"
@@ -35,12 +35,17 @@ func InitializeApp() (*App, error) {
 	if err != nil {
 		return nil, err
 	}
-	registerHandler := accounting_service.NewRegister(db, authorization, serveMux, defaultInterceptor, cache)
 	client, err := NewCloudTaskClient()
 	if err != nil {
 		return nil, err
 	}
-	accountReportServiceClientDispatcher := accounting_core.NewAccountReportServiceClientDispatcher(client, appConfig)
-	app := NewApp(serveMux, registerHandler, accountReportServiceClientDispatcher)
+	reportDispatcher := report.NewCloudTaskReportDispatcher(client)
+	registerHandler := accounting_service.NewRegister(appConfig, db, authorization, serveMux, defaultInterceptor, cache, reportDispatcher)
+	defaultClientInterceptor, err := custom_connect.NewDefaultClientInterceptor()
+	if err != nil {
+		return nil, err
+	}
+	accountReportServiceClient := NewAccountReportServiceClient(appConfig, defaultClientInterceptor)
+	app := NewApp(serveMux, registerHandler, accountReportServiceClient)
 	return app, nil
 }

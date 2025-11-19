@@ -60,7 +60,7 @@ func TestJournalEntries(t *testing.T) {
 		},
 		func(t *testing.T) {
 
-			err := accounting_core.OpenTransaction(&db, func(tx *gorm.DB, bookmng accounting_core.BookManage) error {
+			err := accounting_core.OpenTransaction(t.Context(), &db, func(tx *gorm.DB, bookmng accounting_core.BookManage) error {
 				tran := accounting_core.Transaction{
 					ID: 1,
 					RefID: accounting_core.NewRefID(&accounting_core.RefData{
@@ -114,7 +114,7 @@ func TestJournalEntries(t *testing.T) {
 
 			t.Run("test rollback entry", func(t *testing.T) {
 				err = accounting_core.
-					NewTransactionMutation(&db).
+					NewTransactionMutation(t.Context(), &db).
 					ByRefID(accounting_core.NewRefID(
 						&accounting_core.RefData{
 							RefType: accounting_core.OrderRef,

@@ -35,7 +35,7 @@ func (s *stockServiceImpl) InboundUpdate(
 		return connect.NewResponse(&result), err
 	}
 	db := s.db.WithContext(ctx)
-	err = accounting_core.OpenTransaction(db, func(tx *gorm.DB, bookmng accounting_core.BookManage) error {
+	err = accounting_core.OpenTransaction(ctx, db, func(tx *gorm.DB, bookmng accounting_core.BookManage) error {
 		var ref accounting_core.RefID
 		switch pay.Source {
 		case stock_iface.InboundSource_INBOUND_SOURCE_RESTOCK:
@@ -53,7 +53,7 @@ func (s *stockServiceImpl) InboundUpdate(
 		}
 
 		txmut := accounting_core.
-			NewTransactionMutation(tx).
+			NewTransactionMutation(ctx, tx).
 			ByRefID(ref, true)
 
 		err = txmut.Err()

@@ -26,7 +26,7 @@ func (i *stockAdjustment) adjustment() (*stock_iface.StockAdjustmentResponse, er
 	db := i.s.db.WithContext(i.ctx)
 	pay := i.req.Msg
 
-	err = accounting_core.OpenTransaction(db, func(tx *gorm.DB, bookmng accounting_core.BookManage) error {
+	err = accounting_core.OpenTransaction(i.ctx, db, func(tx *gorm.DB, bookmng accounting_core.BookManage) error {
 		ref := accounting_core.NewRefID(&accounting_core.RefData{
 			RefType: accounting_core.StockAdjustmentRef,
 			ID:      uint(pay.ExtTxId),

@@ -66,7 +66,7 @@ func (a *adsExpenseImpl) AdsExCreate(
 	}
 
 	db := a.db.WithContext(ctx)
-	err = accounting_core.OpenTransaction(db, func(tx *gorm.DB, bookmng accounting_core.BookManage) error {
+	err = accounting_core.OpenTransaction(ctx, db, func(tx *gorm.DB, bookmng accounting_core.BookManage) error {
 		ref := accounting_core.NewStringRefID(&accounting_core.StringRefData{
 			RefType: accounting_core.AdsPaymentRef,
 			ID:      fmt.Sprintf("%d_%d", pay.ShopId, time.Now().Unix()),

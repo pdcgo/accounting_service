@@ -52,7 +52,7 @@ func (p *paymentServiceImpl) PaymentAccept(
 		return connect.NewResponse(&result), err
 	}
 
-	err = accounting_core.OpenTransaction(db, func(tx *gorm.DB, bookmng accounting_core.BookManage) error {
+	err = accounting_core.OpenTransaction(ctx, db, func(tx *gorm.DB, bookmng accounting_core.BookManage) error {
 		var payment accounting_model.Payment
 		err = tx.
 			Clauses(clause.Locking{

@@ -248,7 +248,7 @@ func (a *accountServiceImpl) AccountBalanceInit(
 		return connect.NewResponse(&result), err
 	}
 
-	err = accounting_core.OpenTransaction(db, func(tx *gorm.DB, bookmng accounting_core.BookManage) error {
+	err = accounting_core.OpenTransaction(ctx, db, func(tx *gorm.DB, bookmng accounting_core.BookManage) error {
 		var account accounting_model.BankAccountV2
 		trans := accounting_core.Transaction{
 			CreatedByID: agent.GetUserID(),
@@ -341,7 +341,7 @@ func (a *accountServiceImpl) TransferCreate(
 		return connect.NewResponse(&result), err
 	}
 	db := a.db.WithContext(ctx)
-	accounting_core.OpenTransaction(db, func(tx *gorm.DB, bookmng accounting_core.BookManage) error {
+	err = accounting_core.OpenTransaction(ctx, db, func(tx *gorm.DB, bookmng accounting_core.BookManage) error {
 		var facc accounting_model.BankAccountV2
 		var tacc accounting_model.BankAccountV2
 		txclause := func() *gorm.DB {

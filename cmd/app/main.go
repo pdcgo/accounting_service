@@ -8,8 +8,10 @@ import (
 	"os"
 
 	cloudtasks "cloud.google.com/go/cloudtasks/apiv2"
+	"connectrpc.com/connect"
 	"github.com/pdcgo/accounting_service"
 	"github.com/pdcgo/accounting_service/accounting_core"
+	"github.com/pdcgo/schema/services/report_iface/v1/report_ifaceconnect"
 	"github.com/pdcgo/shared/authorization"
 	"github.com/pdcgo/shared/configs"
 	"github.com/pdcgo/shared/custom_connect"
@@ -28,6 +30,18 @@ func NewCache(cfg *configs.AppConfig) (ware_cache.Cache, error) {
 
 func NewCloudTaskClient() (*cloudtasks.Client, error) {
 	return cloudtasks.NewClient(context.Background())
+}
+
+func NewAccountReportServiceClient(
+	cfg *configs.AppConfig,
+	defaultInterceptor custom_connect.DefaultClientInterceptor,
+) report_ifaceconnect.AccountReportServiceClient {
+	return report_ifaceconnect.NewAccountReportServiceClient(
+		http.DefaultClient,
+		cfg.AccountingService.Endpoint,
+		connect.WithGRPC(),
+		defaultInterceptor,
+	)
 }
 
 func NewAuthorization(
@@ -49,7 +63,8 @@ type App struct {
 func NewApp(
 	mux *http.ServeMux,
 	accountingRegister accounting_service.RegisterHandler,
-	dispatcher accounting_core.AccountReportServiceClientDispatcher,
+	reportClient report_ifaceconnect.AccountReportServiceClient,
+	// cache ware_cache.Cache
 	// auth authorization_iface.Authorization,
 ) *App {
 	return &App{
@@ -63,7 +78,7 @@ func NewApp(
 
 			accounting_core.RegisterCustomHandler(
 				"task_daily_update",
-				accounting_core.NewDailyBalanceHandler(dispatcher),
+				accounting_core.NewDailyBalanceHandler(reportClient),
 			)
 
 			accountingRegister()
