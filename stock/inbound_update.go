@@ -83,14 +83,25 @@ func (s *stockServiceImpl) InboundUpdate(
 		}
 
 		// create resetting entry
-		entry := bookmng.NewCreateEntry(uint(pay.TeamId), agent.IdentityID())
+
 		mapBalance, err := oldentries.AccountBalance()
 		if err != nil {
 			return err
 		}
 
+		entry := bookmng.NewCreateEntry(uint(pay.TeamId), agent.IdentityID())
 		entry.
-			Rollback(mapBalance)
+			Rollback(mapBalance).
+			Transaction(txdata).
+			Desc(fmt.Sprintf("update %s", txdata.Desc)).
+			Commit().
+			Err()
+
+		if err != nil {
+			return err
+		}
+
+		entry = bookmng.NewCreateEntry(uint(pay.TeamId), agent.IdentityID())
 
 		var totalPayment float64
 
@@ -157,7 +168,7 @@ func (s *stockServiceImpl) InboundUpdate(
 
 		err = entry.
 			Transaction(txdata).
-			Desc(fmt.Sprintf("update %s", txdata.RefID)).
+			Desc(fmt.Sprintf("update %s", txdata.Desc)).
 			Commit().
 			Err()
 

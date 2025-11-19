@@ -135,6 +135,7 @@ func OpenTransaction(ctx context.Context, tx *gorm.DB, handle func(tx *gorm.DB, 
 
 		for _, entry := range hdlr.entries {
 			if entry.ID == 0 {
+				// hdlr.entries.PrintJournalEntries(tx)
 				return fmt.Errorf("theres entry not save desc %s", entry.Desc)
 			}
 		}
