@@ -89,7 +89,7 @@ func (l *ledgerServiceImpl) TransactionDetail(
 			Desc:        tran.Desc,
 			Created:     timestamppb.New(tran.Created),
 		},
-		Books: []*accounting_iface.BookEntryGroupItem{},
+		Books: list.toGroupProto(),
 	}
 
 	return connect.NewResponse(&result), nil
