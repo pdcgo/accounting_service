@@ -11,12 +11,22 @@ import (
 
 type EntryItemList []*accounting_core.JournalEntry
 
-func (lst EntryItemList) toProto() []*accounting_iface.EntryItem {
-	result := []*accounting_iface.EntryItem{}
+func (lst EntryItemList) toGroupProto() []*accounting_iface.BookEntryGroupItem {
+	mapresult := map[uint64]*accounting_iface.BookEntryGroupItem{}
+	result := []*accounting_iface.BookEntryGroupItem{}
 	for _, item := range lst {
 		acc := item.Account
-		result = append(result, &accounting_iface.EntryItem{
+
+		if mapresult[uint64(item.TeamID)] == nil {
+			mapresult[uint64(item.TeamID)] = &accounting_iface.BookEntryGroupItem{
+				TeamId:  uint64(item.TeamID),
+				Entries: []*accounting_iface.EntryItem{},
+			}
+		}
+
+		mapresult[uint64(item.TeamID)].Entries = append(mapresult[uint64(item.TeamID)].Entries, &accounting_iface.EntryItem{
 			Id:        uint64(item.ID),
+			TeamId:    uint64(item.TeamID),
 			AccountId: uint64(item.AccountID),
 			EntryTime: item.EntryTime.UnixMicro(),
 			Desc:      item.Desc,
@@ -30,6 +40,12 @@ func (lst EntryItemList) toProto() []*accounting_iface.EntryItem {
 			},
 		})
 	}
+
+	for _, d := range mapresult {
+		v := d
+		result = append(result, v)
+	}
+
 	return result
 }
 
@@ -73,7 +89,7 @@ func (l *ledgerServiceImpl) TransactionDetail(
 			Desc:        tran.Desc,
 			Created:     timestamppb.New(tran.Created),
 		},
-		Entries: list.toProto(),
+		Books: []*accounting_iface.BookEntryGroupItem{},
 	}
 
 	return connect.NewResponse(&result), nil
