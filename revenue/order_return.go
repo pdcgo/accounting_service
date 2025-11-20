@@ -38,6 +38,10 @@ func (r *revenueServiceImpl) OrderReturn(
 		return connect.NewResponse(&result), err
 	}
 
+	// order label
+	orderInfo := pay.OrderInfo
+	descLabel := fmt.Sprintf("resi: %s orderid: %s", orderInfo.Receipt, orderInfo.ExternalOrderId)
+
 	db := r.db.WithContext(ctx)
 	err = accounting_core.OpenTransaction(ctx, db, func(tx *gorm.DB, bookmng accounting_core.BookManage) error {
 		ref := accounting_core.NewRefID(&accounting_core.RefData{
@@ -48,14 +52,18 @@ func (r *revenueServiceImpl) OrderReturn(
 			RefID:       ref,
 			TeamID:      uint(pay.TeamId),
 			CreatedByID: agent.IdentityID(),
-			Desc:        fmt.Sprintf("returning order %s", ref),
+			Desc:        fmt.Sprintf("returning order %s %s", ref, descLabel),
 			Created:     time.Now(),
 		}
 
 		err = bookmng.
 			NewTransaction().
 			Create(&tran).
+			AddCustomerServiceID(uint(pay.LabelInfo.CsId)).
+			AddShopID(uint(pay.LabelInfo.ShopId)).
+			AddTypeLabel(pay.LabelInfo.TypeLabels).
 			Err()
+
 		if err != nil {
 			return err
 		}
@@ -64,11 +72,11 @@ func (r *revenueServiceImpl) OrderReturn(
 		entry := bookmng.
 			NewCreateEntry(uint(pay.TeamId), agent.IdentityID()).
 			From(&accounting_core.EntryAccountPayload{
-				Key:    accounting_core.SalesRevenueAccount,
+				Key:    accounting_core.SellingReceivableAccount,
 				TeamID: uint(pay.TeamId),
 			}, pay.OrderAmount).
 			To(&accounting_core.EntryAccountPayload{
-				Key:    accounting_core.SalesReturnRevenueAccount,
+				Key:    accounting_core.SellingReturnExpenseAccount,
 				TeamID: uint(pay.TeamId),
 			}, pay.OrderAmount).
 			From(&accounting_core.EntryAccountPayload{

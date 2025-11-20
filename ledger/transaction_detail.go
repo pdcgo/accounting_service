@@ -14,6 +14,7 @@ type EntryItemList []*accounting_core.JournalEntry
 func (lst EntryItemList) toProto() []*accounting_iface.EntryItem {
 	result := []*accounting_iface.EntryItem{}
 	for _, item := range lst {
+		acc := item.Account
 		result = append(result, &accounting_iface.EntryItem{
 			Id:        uint64(item.ID),
 			AccountId: uint64(item.AccountID),
@@ -21,6 +22,12 @@ func (lst EntryItemList) toProto() []*accounting_iface.EntryItem {
 			Desc:      item.Desc,
 			Debit:     item.Debit,
 			Credit:    item.Credit,
+			Account: &accounting_iface.EntryAccount{
+				Id:         uint64(acc.ID),
+				TeamId:     uint64(acc.TeamID),
+				AccountKey: string(acc.AccountKey),
+				Name:       acc.Name,
+			},
 		})
 	}
 	return result
@@ -49,6 +56,7 @@ func (l *ledgerServiceImpl) TransactionDetail(
 	err = db.
 		Model(&accounting_core.JournalEntry{}).
 		Where("transaction_id = ?", tran.ID).
+		Preload("Account").
 		Find(&list).
 		Error
 
