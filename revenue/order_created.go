@@ -252,24 +252,25 @@ func (r *revenueServiceImpl) crossProductStock(
 		}
 
 		// sisi dipinjami
+		descDipinjami := accounting_core.EntryDescOption(fmt.Sprintf("cross %s", tran.Desc))
 		err = bookmng.
 			NewCreateEntry(uint(bor.TeamId), agent.GetUserID()).
 			From(&accounting_core.EntryAccountPayload{
 				Key:    accounting_core.StockReadyAccount,
 				TeamID: uint(pay.WarehouseId),
-			}, bor.Amount).
+			}, bor.Amount, descDipinjami).
 			To(&accounting_core.EntryAccountPayload{
 				Key:    accounting_core.StockToBorrowCostAccount,
 				TeamID: uint(pay.WarehouseId),
-			}, bor.Amount).
+			}, bor.Amount, descDipinjami).
 			To(&accounting_core.EntryAccountPayload{
 				Key:    accounting_core.BorrowStockRevenueAccount,
 				TeamID: uint(pay.TeamId),
-			}, bor.SellAmount).
+			}, bor.SellAmount, descDipinjami).
 			To(&accounting_core.EntryAccountPayload{
 				Key:    accounting_core.ReceivableAccount,
 				TeamID: uint(pay.TeamId),
-			}, bor.SellAmount).
+			}, bor.SellAmount, descDipinjami).
 			Transaction(tran).
 			Commit().
 			Err()
