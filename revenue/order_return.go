@@ -7,7 +7,9 @@ import (
 
 	"connectrpc.com/connect"
 	"github.com/pdcgo/accounting_service/accounting_core"
+	"github.com/pdcgo/schema/services/common/v1"
 	"github.com/pdcgo/schema/services/revenue_iface/v1"
+	"github.com/pdcgo/shared/authorization"
 	"github.com/pdcgo/shared/db_models"
 	"github.com/pdcgo/shared/interfaces/authorization_iface"
 	"gorm.io/gorm"
@@ -23,12 +25,24 @@ func (r *revenueServiceImpl) OrderReturn(
 	result := revenue_iface.OrderReturnResponse{}
 	pay := req.Msg
 
+	var domainCheck uint
+	switch pay.RequestFrom {
+	case common.RequestFrom_REQUEST_FROM_ADMIN:
+		domainCheck = authorization.RootDomain
+	case common.RequestFrom_REQUEST_FROM_SELLING:
+		domainCheck = uint(pay.TeamId)
+	case common.RequestFrom_REQUEST_FROM_WAREHOUSE:
+		domainCheck = uint(pay.WarehouseId)
+	default:
+		domainCheck = uint(pay.TeamId)
+	}
+
 	identity := r.auth.AuthIdentityFromHeader(req.Header())
 	agent := identity.Identity()
 	identity.
 		HasPermission(authorization_iface.CheckPermissionGroup{
 			&db_models.Order{}: &authorization_iface.CheckPermission{
-				DomainID: uint(pay.TeamId),
+				DomainID: domainCheck,
 				Actions:  []authorization_iface.Action{authorization_iface.Update},
 			},
 		})
