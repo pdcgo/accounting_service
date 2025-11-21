@@ -481,8 +481,10 @@ func (a *accountServiceImpl) AccountTypeList(
 		WithContext(ctx).
 		Table("account_types").
 		Select([]string{
+			"id",
 			"key",
 			"name",
+			"type",
 		}).
 		Find(&result.Data).
 		Error

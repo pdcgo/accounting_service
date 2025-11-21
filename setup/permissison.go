@@ -45,6 +45,7 @@ func defaultRootRolePermission() RoleMap {
 				&accounting_model.Payment{}:       fullAccess,
 				&adjustment.AdjustmentAccess{}:    fullAccess,
 				&ads_expense.AdsExpense{}:         fullAccess,
+				&accounting_model.BankAccountV2{}: fullAccess,
 			},
 			"admin": authorization_iface.RoleAddPermissionPayload{
 				&accounting_model.BankTransfer{}:  fullAccess,
@@ -52,6 +53,7 @@ func defaultRootRolePermission() RoleMap {
 				&accounting_model.Payment{}:       fullAccess,
 				&adjustment.AdjustmentAccess{}:    fullAccess,
 				&ads_expense.AdsExpense{}:         fullAccess,
+				&accounting_model.BankAccountV2{}: fullAccess,
 			},
 		},
 		db_models.SellingTeamType:   RoleItem{},
@@ -70,12 +72,14 @@ func defaultRolePermission() RoleMap {
 				&ads_expense.AdsExpense{}:         fullAccess,
 				&accounting_model.Payment{}:       fullAccess,
 				&accounting_model.ExpenseEntity{}: fullAccess,
+				&accounting_model.BankAccountV2{}: fullAccess,
 			},
 			"admin": authorization_iface.RoleAddPermissionPayload{
 				&adjustment.AdjustmentAccess{}:    fullAccess,
 				&ads_expense.AdsExpense{}:         fullAccess,
 				&accounting_model.Payment{}:       fullAccess,
 				&accounting_model.ExpenseEntity{}: fullAccess,
+				&accounting_model.BankAccountV2{}: fullAccess,
 			},
 		},
 		db_models.SellingTeamType: RoleItem{
@@ -84,12 +88,14 @@ func defaultRolePermission() RoleMap {
 				&ads_expense.AdsExpense{}:         fullAccess,
 				&accounting_model.Payment{}:       fullAccess,
 				&accounting_model.ExpenseEntity{}: fullAccess,
+				&accounting_model.BankAccountV2{}: fullAccess,
 			},
 			"admin": authorization_iface.RoleAddPermissionPayload{
 				&adjustment.AdjustmentAccess{}:    fullAccess,
 				&ads_expense.AdsExpense{}:         fullAccess,
 				&accounting_model.Payment{}:       fullAccess,
 				&accounting_model.ExpenseEntity{}: fullAccess,
+				&accounting_model.BankAccountV2{}: fullAccess,
 			},
 			"cs": authorization_iface.RoleAddPermissionPayload{
 				&ads_expense.AdsExpense{}: fullAccess,
