@@ -73,6 +73,7 @@ func defaultRolePermission() RoleMap {
 				&accounting_model.Payment{}:       fullAccess,
 				&accounting_model.ExpenseEntity{}: fullAccess,
 				&accounting_model.BankAccountV2{}: fullAccess,
+				&accounting_model.BankTransfer{}:  fullAccess,
 			},
 			"admin": authorization_iface.RoleAddPermissionPayload{
 				&adjustment.AdjustmentAccess{}:    fullAccess,
@@ -80,6 +81,7 @@ func defaultRolePermission() RoleMap {
 				&accounting_model.Payment{}:       fullAccess,
 				&accounting_model.ExpenseEntity{}: fullAccess,
 				&accounting_model.BankAccountV2{}: fullAccess,
+				&accounting_model.BankTransfer{}:  fullAccess,
 			},
 		},
 		db_models.SellingTeamType: RoleItem{
@@ -89,6 +91,7 @@ func defaultRolePermission() RoleMap {
 				&accounting_model.Payment{}:       fullAccess,
 				&accounting_model.ExpenseEntity{}: fullAccess,
 				&accounting_model.BankAccountV2{}: fullAccess,
+				&accounting_model.BankTransfer{}:  fullAccess,
 			},
 			"admin": authorization_iface.RoleAddPermissionPayload{
 				&adjustment.AdjustmentAccess{}:    fullAccess,
@@ -96,6 +99,7 @@ func defaultRolePermission() RoleMap {
 				&accounting_model.Payment{}:       fullAccess,
 				&accounting_model.ExpenseEntity{}: fullAccess,
 				&accounting_model.BankAccountV2{}: fullAccess,
+				&accounting_model.BankTransfer{}:  fullAccess,
 			},
 			"cs": authorization_iface.RoleAddPermissionPayload{
 				&ads_expense.AdsExpense{}: fullAccess,
