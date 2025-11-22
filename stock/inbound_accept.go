@@ -53,11 +53,19 @@ func (i *inboundAccept) accept() (*stock_iface.InboundAcceptResponse, error) {
 		var ref accounting_core.RefID
 
 		switch pay.Source {
-		case stock_iface.InboundSource_INBOUND_SOURCE_TRANSFER,
-			stock_iface.InboundSource_INBOUND_SOURCE_RESTOCK,
-			stock_iface.InboundSource_INBOUND_SOURCE_RETURN:
+		case stock_iface.InboundSource_INBOUND_SOURCE_RESTOCK:
 			ref = accounting_core.NewRefID(&accounting_core.RefData{
 				RefType: accounting_core.StockAcceptRef,
+				ID:      uint(pay.ExtTxId),
+			})
+		case stock_iface.InboundSource_INBOUND_SOURCE_RETURN:
+			ref = accounting_core.NewRefID(&accounting_core.RefData{
+				RefType: accounting_core.StockReturnAcceptRef,
+				ID:      uint(pay.ExtTxId),
+			})
+		case stock_iface.InboundSource_INBOUND_SOURCE_TRANSFER:
+			ref = accounting_core.NewRefID(&accounting_core.RefData{
+				RefType: accounting_core.StockTransferAcceptRef,
 				ID:      uint(pay.ExtTxId),
 			})
 		default:
@@ -70,10 +78,10 @@ func (i *inboundAccept) accept() (*stock_iface.InboundAcceptResponse, error) {
 		if pay.Extras != nil {
 			extra = pay.Extras
 			if extra.Receipt != "" {
-				desc = fmt.Sprintf("stock diterima dengan resi %s", extra.Receipt)
+				desc += fmt.Sprintf(" dengan resi %s", extra.Receipt)
 			}
 			if extra.ExternalOrderId != "" {
-				desc = fmt.Sprintf("stock diterima dengan orderid %s", extra.ExternalOrderId)
+				desc += fmt.Sprintf(" dengan orderid %s", extra.ExternalOrderId)
 			}
 		}
 

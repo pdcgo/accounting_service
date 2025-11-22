@@ -91,6 +91,86 @@ func TestInboundAccept(t *testing.T) {
 
 				assert.Nil(t, err)
 			})
+
+			t.Run("testing jika ada yang broken inciden 22-11-2025", func(t *testing.T) {
+				_, err := srv.InboundAccept(t.Context(), &connect.Request[stock_iface.InboundAcceptRequest]{
+					Msg: &stock_iface.InboundAcceptRequest{
+						TeamId:      51,
+						WarehouseId: 67,
+
+						Source: stock_iface.InboundSource_INBOUND_SOURCE_RESTOCK,
+						Brokens: []*stock_iface.VariantProblemItem{
+
+							{
+								Reason:    "problem broken_s on transaction 774925",
+								VariantId: 9402,
+								Count:     5,
+								ItemPrice: 30000.695652173912,
+							},
+						},
+						Extras: &stock_iface.StockInfoExtra{
+							Receipt:     "G1 Aprilabu20Bora60Sailor80Cargodusty15B.pink20Puff150Rantaihtm20JodaHtm20SsnCho150Htm40",
+							CreatedById: 536,
+						},
+						ShippingFee: 100,
+						ExtTxId:     774925,
+						Accepts: []*stock_iface.VariantItem{
+							{
+								VariantId: 13553,
+								ItemPrice: 27000.695652173912,
+								Count:     20,
+							},
+							{
+								VariantId: 13856,
+								ItemPrice: 25000.695652173912,
+								Count:     60,
+							},
+							{
+								VariantId: 6761,
+								ItemPrice: 25000.695652173912,
+								Count:     80,
+							},
+							{
+								VariantId: 20466,
+								ItemPrice: 26000.695652173912,
+								Count:     15,
+							},
+							{
+								VariantId: 5055,
+								ItemPrice: 27500.695652173912,
+								Count:     20,
+							},
+							{
+								VariantId: 9402,
+								ItemPrice: 30000.695652173912,
+								Count:     145,
+							},
+							{
+								VariantId: 17267,
+								ItemPrice: 32000.695652173912,
+								Count:     20,
+							},
+							{
+								VariantId: 838,
+								ItemPrice: 26000.695652173912,
+								Count:     20,
+							},
+							{
+								VariantId: 6689,
+								ItemPrice: 30000.695652173912,
+								Count:     150,
+							},
+							{
+								VariantId: 2762,
+								ItemPrice: 30000.695652173912,
+								Count:     40,
+							},
+						},
+					},
+				})
+
+				assert.Nil(t, err)
+			})
 		},
 	)
 

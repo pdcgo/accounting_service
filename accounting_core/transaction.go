@@ -379,7 +379,8 @@ func (t *transactionMutationImpl) CheckEntry() TransactionMutation {
 		credit += balance.Credit
 	}
 
-	if debit != credit {
+	if !CompareFloatSafe(debit, credit, PrecisionEpsilon) {
+		// fmt.Printf("debit: %.3f credit: %.3f \n", RoundUp(debit, 10), RoundUp(credit, 10))
 		return t.setErr(&ErrEntryInvalid{
 			Debit:  debit,
 			Credit: credit,

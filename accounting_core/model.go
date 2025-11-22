@@ -222,6 +222,7 @@ const (
 	StockTransferRef       RefType = "stock_transfer"
 	StockTransferAcceptRef RefType = "stock_transfer_accept"
 	StockReturnRef         RefType = "stock_return"
+	StockReturnAcceptRef   RefType = "stock_return_accept"
 	StockAdjustmentRef     RefType = "stock_adjustment"
 	ExpenseRef             RefType = "expense"
 	RestockRef             RefType = "restock"

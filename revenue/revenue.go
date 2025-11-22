@@ -113,10 +113,7 @@ func (r *revenueProcessor) checkTxExist(refID accounting_core.RefID) (bool, erro
 func (r *revenueProcessor) fund(fund *revenue_iface.RevenueStreamEventFund) error {
 	var err error
 
-	extAmountR := accounting_core.RoundUp(fund.EstAmount, accounting_core.Precision)
-	amountR := accounting_core.RoundUp(fund.Amount, accounting_core.Precision)
-
-	if extAmountR == amountR {
+	if accounting_core.CompareFloatSafe(fund.EstAmount, fund.Amount, accounting_core.PrecisionEpsilon) {
 		return nil
 	}
 

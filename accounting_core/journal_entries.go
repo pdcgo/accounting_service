@@ -10,7 +10,7 @@ import (
 	"gorm.io/gorm"
 )
 
-var Precision = 5
+// var Precision = 5
 var TestPrecision = 3
 
 func RoundUp(x float64, n int) float64 {
@@ -19,13 +19,21 @@ func RoundUp(x float64, n int) float64 {
 	return result
 }
 
+var PrecisionEpsilon = 0.0001
+
+func CompareFloatSafe(a, b, epsilon float64) bool {
+	// log.Println("asdasdasd", a, b, epsilon, math.Abs(a-b))
+	// log.Printf("%.10f \n", math.Abs(a-b))
+	return math.Abs(a-b) < epsilon
+}
+
 var ErrEmptyEntry = errors.New("entry empty")
 
 type ErrEntryInvalid struct {
 	Debit     float64            `json:"debit"`
 	Credit    float64            `json:"credit"`
 	List      JournalEntriesList `json:"list"`
-	Precision int                `json:"precision"`
+	Precision float64            `json:"precision"`
 }
 
 // Error implements error.
@@ -211,14 +219,14 @@ func (c *createEntryImpl) Commit(opts ...CommitOption) CreateEntry {
 	}
 
 	// checking debit and credit balance
-	if RoundUp(debit, Precision) != RoundUp(credit, Precision) {
-		// log.Println(RoundUp(debit, precision), RoundUp(credit, precision))
+	if !CompareFloatSafe(debit, credit, PrecisionEpsilon) {
+		// fmt.Printf("debit: %.3f credit: %.3f \n", RoundUp(debit, TestPrecision), RoundUp(credit, TestPrecision))
 		// entries.PrintJournalEntries(c.tx)
 		return c.setErr(&ErrEntryInvalid{
 			Debit:     debit,
 			Credit:    credit,
 			List:      entries,
-			Precision: Precision,
+			Precision: PrecisionEpsilon,
 		})
 	}
 
