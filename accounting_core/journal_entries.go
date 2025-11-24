@@ -231,7 +231,7 @@ func (c *createEntryImpl) Commit(opts ...CommitOption) CreateEntry {
 	}
 
 	if len(entries) == 0 {
-		return c.setErr(fmt.Errorf("empty entry on book", c.teamID))
+		return c.setErr(fmt.Errorf("empty entry on book %d", c.teamID))
 	}
 
 	err := c.tx.Save(&entries).Error
