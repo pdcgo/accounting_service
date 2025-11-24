@@ -405,8 +405,8 @@ func (a *accountServiceImpl) TransferCreate(
 			Amount:        pay.Amount,
 			FeeAmount:     pay.FeeAmount,
 			Desc:          pay.Desc,
-			TransferAt:    time.UnixMicro(pay.TransferAt).Local(),
-			Created:       time.Now(),
+			// TransferAt:    time.UnixMicro(pay.TransferAt).Local(),
+			Created: time.Now(),
 		}
 
 		err = tx.Save(&hist).Error

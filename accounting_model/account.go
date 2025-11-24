@@ -40,16 +40,16 @@ type BankAccountLabel struct {
 }
 
 type BankTransferHistory struct {
-	ID            uint      `json:"id" gorm:"primarykey"`
-	TxID          uint      `json:"tx_id"`
-	TeamID        uint      `json:"team_id"`
-	FromAccountID uint      `json:"from_account_id"`
-	ToAccountID   uint      `json:"to_account_id"`
-	TransferAt    time.Time `json:"transfer_at"`
-	Amount        float64   `json:"amount"`
-	FeeAmount     float64   `json:"fee_amount"`
-	Desc          string    `json:"desc"`
-	Created       time.Time `json:"created"`
+	ID            uint `json:"id" gorm:"primarykey"`
+	TxID          uint `json:"tx_id"`
+	TeamID        uint `json:"team_id"`
+	FromAccountID uint `json:"from_account_id"`
+	ToAccountID   uint `json:"to_account_id"`
+	// TransferAt    time.Time `json:"transfer_at"`
+	Amount    float64   `json:"amount"`
+	FeeAmount float64   `json:"fee_amount"`
+	Desc      string    `json:"desc"`
+	Created   time.Time `json:"created"`
 
 	FromAccount *BankAccountV2
 	ToAccount   *BankAccountV2
