@@ -230,6 +230,7 @@ const (
 	AdminAdjustmentRef     RefType = "admin_adjustment"
 	AdsPaymentRef          RefType = "ads_payment"
 	AdjustmentRef          RefType = "common_adjustment"
+	TransferRef            RefType = "transfer"
 )
 
 type RefData struct {
