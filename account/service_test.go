@@ -1,4 +1,4 @@
-package accounting_service_test
+package account_test
 
 import (
 	"context"
@@ -7,7 +7,7 @@ import (
 
 	"connectrpc.com/connect"
 	"github.com/google/uuid"
-	"github.com/pdcgo/accounting_service"
+	"github.com/pdcgo/accounting_service/account"
 	"github.com/pdcgo/accounting_service/accounting_model"
 	"github.com/pdcgo/schema/services/accounting_iface/v1"
 	"github.com/pdcgo/schema/services/common/v1"
@@ -77,7 +77,7 @@ func TestCreateAccount(t *testing.T) {
 			},
 		},
 		func(t *testing.T) {
-			service := accounting_service.NewAccountService(&db, &authMock{})
+			service := account.NewAccountService(&db, &authMock{})
 			numberID := uuid.New().String()
 			req := connect.NewRequest(&accounting_iface.AccountCreateRequest{
 				TeamId:        1,

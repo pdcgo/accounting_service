@@ -9,6 +9,7 @@ import (
 	"github.com/pdcgo/schema/services/accounting_iface/v1"
 	"github.com/pdcgo/schema/services/common/v1"
 	"github.com/pdcgo/schema/services/stock_iface/v1"
+	"github.com/pdcgo/shared/db_models"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
 )
@@ -113,6 +114,67 @@ func NewMigrationHandler(
 			}
 		}
 
+		slog.Info("seeding, account Type")
+		err = SeedAccountType(db)
+		if err != nil {
+			slog.Error("seed account type", slog.Any("error", err))
+		}
+
+		// seeding account type
+		// account_types := []accounting_model.AccountType{
+		// 	{
+
 		return nil
 	}
+}
+
+func SeedAccountType(db *gorm.DB) error {
+	accounts := []*db_models.AccountType{
+		{
+			ID:   1,
+			Key:  "bni",
+			Name: "BNI",
+			Type: db_models.BankTypeAccount,
+		},
+		{
+			ID:   2,
+			Key:  "bri",
+			Name: "BRI",
+			Type: db_models.BankTypeAccount,
+		},
+		{
+			ID:   3,
+			Key:  "bca",
+			Name: "BCA",
+			Type: db_models.BankTypeAccount,
+		},
+		{
+			ID:   4,
+			Key:  "mandiri",
+			Name: "Mandiri",
+			Type: db_models.BankTypeAccount,
+		},
+		{
+			ID:   5,
+			Key:  "jago",
+			Name: "Jago",
+			Type: db_models.BankTypeAccount,
+		},
+		{
+			ID:   6,
+			Key:  "seabank",
+			Name: "Seabank",
+			Type: db_models.BankTypeAccount,
+		},
+		{
+			ID:   7,
+			Key:  "shopeepay",
+			Name: "ShopeePay",
+			Type: db_models.ShopeeTypeAccount,
+		},
+	}
+
+	err := db.Save(&accounts).Error
+
+	return err
 }

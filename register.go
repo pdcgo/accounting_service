@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"connectrpc.com/connect"
+	"github.com/pdcgo/accounting_service/account"
 	"github.com/pdcgo/accounting_service/adjustment"
 	"github.com/pdcgo/accounting_service/ads_expense"
 	"github.com/pdcgo/accounting_service/core"
@@ -46,7 +47,7 @@ func NewRegister(
 
 		sourceInterceptor := connect.WithInterceptors(&custom_connect.RequestSourceIntercept{})
 
-		path, handler := accounting_ifaceconnect.NewAccountServiceHandler(NewAccountService(db, auth), defaultInterceptor)
+		path, handler := accounting_ifaceconnect.NewAccountServiceHandler(account.NewAccountService(db, auth), defaultInterceptor)
 		mux.Handle(path, handler)
 
 		path, handler = accounting_ifaceconnect.NewExpenseServiceHandler(
