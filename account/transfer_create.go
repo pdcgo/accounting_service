@@ -126,6 +126,8 @@ func (a *accountServiceImpl) TransferCreate(
 			return err
 		}
 
+		entryopt := accounting_core.IncludeDebitCreditEqual()
+
 		// book from
 		entry := bookmng.
 			NewCreateEntry(uint(pay.TeamId), agent.GetUserID()).
@@ -147,7 +149,7 @@ func (a *accountServiceImpl) TransferCreate(
 		}
 		err = entry.
 			Transaction(&trans).
-			Commit().
+			Commit(entryopt).
 			Err()
 		if err != nil {
 			return err
@@ -167,7 +169,7 @@ func (a *accountServiceImpl) TransferCreate(
 
 		err = entry.
 			Transaction(&trans).
-			Commit().
+			Commit(entryopt).
 			Err()
 		if err != nil {
 			return err

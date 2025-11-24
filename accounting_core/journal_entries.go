@@ -56,18 +56,29 @@ func EntryDescOption(desc string) EntryOption {
 	}
 }
 
-type CommitOption func(entry *JournalEntry) error
+type commitCfg struct {
+	includeDebitCreditEqual bool
+}
+
+type CommitOption func(cfg *commitCfg, entry *JournalEntry) error
 
 func RollbackOption() CommitOption {
-	return func(entry *JournalEntry) error {
+	return func(cfg *commitCfg, entry *JournalEntry) error {
 		entry.Rollback = true
 		return nil
 	}
 }
 
 func CustomTimeOption(t time.Time) CommitOption {
-	return func(entry *JournalEntry) error {
+	return func(cfg *commitCfg, entry *JournalEntry) error {
 		entry.EntryTime = t
+		return nil
+	}
+}
+
+func IncludeDebitCreditEqual() CommitOption {
+	return func(cfg *commitCfg, entry *JournalEntry) error {
+		cfg.includeDebitCreditEqual = true
 		return nil
 	}
 }
@@ -183,9 +194,11 @@ func (c *createEntryImpl) Commit(opts ...CommitOption) CreateEntry {
 			entry.EntryTime = time.Now()
 		}
 
+		cfg := &commitCfg{}
+
 		// options commit
 		for _, opt := range opts {
-			err := opt(entry)
+			err := opt(cfg, entry)
 			if err != nil {
 				return c.setErr(err)
 			}
@@ -197,13 +210,15 @@ func (c *createEntryImpl) Commit(opts ...CommitOption) CreateEntry {
 		debit += entry.Debit
 		credit += entry.Credit
 
-		if entry.Debit == entry.Credit {
-			continue
-			// return c.setErr(&ErrEntryInvalid{
-			// 	Debit:  debit,
-			// 	Credit: credit,
-			// 	List:   entries,
-			// })
+		if !cfg.includeDebitCreditEqual {
+			if entry.Debit == entry.Credit {
+				continue
+				// return c.setErr(&ErrEntryInvalid{
+				// 	Debit:  debit,
+				// 	Credit: credit,
+				// 	List:   entries,
+				// })
+			}
 		}
 
 		if entry.Debit > 0 && entry.Credit > 0 {
