@@ -10,6 +10,7 @@ import (
 	"github.com/pdcgo/accounting_service/accounting_model"
 	"github.com/pdcgo/schema/services/accounting_iface/v1"
 	"github.com/pdcgo/schema/services/common/v1"
+	"github.com/pdcgo/shared/custom_connect"
 	"github.com/pdcgo/shared/interfaces/authorization_iface"
 	"gorm.io/gorm"
 )
@@ -28,6 +29,7 @@ func (a *accountServiceImpl) AccountMutationList(
 		PageInfo: &common.PageInfo{},
 	}
 
+	source := custom_connect.GetRequestSource(ctx)
 	pay := req.Msg
 
 	if pay.Page == nil {
@@ -50,7 +52,7 @@ func (a *accountServiceImpl) AccountMutationList(
 	err = identity.
 		HasPermission(authorization_iface.CheckPermissionGroup{
 			&accounting_model.BankTransfer{}: &authorization_iface.CheckPermission{
-				DomainID: uint(pay.TeamId),
+				DomainID: uint(source.TeamId),
 				Actions:  []authorization_iface.Action{authorization_iface.Read},
 			},
 		}).

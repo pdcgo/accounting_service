@@ -12,6 +12,7 @@ import (
 	"github.com/pdcgo/schema/services/accounting_iface/v1"
 	"github.com/pdcgo/schema/services/common/v1"
 	"github.com/pdcgo/shared/authorization"
+	"github.com/pdcgo/shared/custom_connect"
 	"github.com/pdcgo/shared/interfaces/authorization_iface"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
@@ -224,6 +225,7 @@ func (a *accountServiceImpl) AccountList(
 		Data: []*accounting_iface.AccountItem{},
 	}
 
+	source := custom_connect.GetRequestSource(ctx)
 	pay := req.Msg
 	identity := a.
 		auth.
@@ -231,7 +233,7 @@ func (a *accountServiceImpl) AccountList(
 	err = identity.
 		HasPermission(authorization_iface.CheckPermissionGroup{
 			&accounting_model.BankAccountV2{}: &authorization_iface.CheckPermission{
-				DomainID: uint(pay.TeamId),
+				DomainID: uint(source.TeamId),
 				Actions:  []authorization_iface.Action{authorization_iface.Create},
 			},
 		}).

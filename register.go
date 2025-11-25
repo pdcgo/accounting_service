@@ -47,7 +47,11 @@ func NewRegister(
 
 		sourceInterceptor := connect.WithInterceptors(&custom_connect.RequestSourceIntercept{})
 
-		path, handler := accounting_ifaceconnect.NewAccountServiceHandler(account.NewAccountService(db, auth), defaultInterceptor)
+		path, handler := accounting_ifaceconnect.NewAccountServiceHandler(
+			account.NewAccountService(db, auth),
+			defaultInterceptor,
+			sourceInterceptor,
+		)
 		mux.Handle(path, handler)
 
 		path, handler = accounting_ifaceconnect.NewExpenseServiceHandler(
