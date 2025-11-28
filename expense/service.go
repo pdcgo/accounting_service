@@ -44,7 +44,10 @@ func (e *expenseServiceImpl) ExpenseTimeMetric(
 
 	var domainID uint
 
-	source := custom_connect.GetRequestSource(ctx)
+	source, err := custom_connect.GetRequestSource(ctx)
+	if err != nil {
+		return nil, err
+	}
 	switch source.RequestFrom {
 	case access_iface.RequestFrom_REQUEST_FROM_ADMIN:
 		domainID = authorization.RootDomain
@@ -155,7 +158,10 @@ func (e *expenseServiceImpl) ExpenseOverviewMetric(
 
 	var domainID uint
 
-	source := custom_connect.GetRequestSource(ctx)
+	source, err := custom_connect.GetRequestSource(ctx)
+	if err != nil {
+		return nil, err
+	}
 	switch source.RequestFrom {
 	case access_iface.RequestFrom_REQUEST_FROM_ADMIN:
 		domainID = authorization.RootDomain

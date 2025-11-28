@@ -43,7 +43,11 @@ func (a *adsExpenseImpl) AdsExCreate(
 		AuthIdentityFromHeader(req.Header())
 	agent := identity.Identity()
 
-	source := custom_connect.GetRequestSource(ctx)
+	source, err := custom_connect.GetRequestSource(ctx)
+	if err != nil {
+		return nil, err
+	}
+
 	var domainID uint
 	switch source.RequestFrom {
 	case access_iface.RequestFrom_REQUEST_FROM_ADMIN:

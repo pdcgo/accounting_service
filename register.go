@@ -45,7 +45,7 @@ func NewRegister(
 
 	return func() {
 
-		sourceInterceptor := connect.WithInterceptors(&custom_connect.RequestSourceIntercept{})
+		sourceInterceptor := connect.WithInterceptors(&custom_connect.RequestSourceInterceptor{})
 
 		path, handler := accounting_ifaceconnect.NewAccountServiceHandler(
 			account.NewAccountService(db, auth),

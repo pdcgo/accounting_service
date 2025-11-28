@@ -225,7 +225,11 @@ func (a *accountServiceImpl) AccountList(
 		Data: []*accounting_iface.AccountItem{},
 	}
 
-	source := custom_connect.GetRequestSource(ctx)
+	source, err := custom_connect.GetRequestSource(ctx)
+	if err != nil {
+		return nil, err
+	}
+
 	pay := req.Msg
 	identity := a.
 		auth.

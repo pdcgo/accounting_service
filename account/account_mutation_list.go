@@ -29,7 +29,11 @@ func (a *accountServiceImpl) AccountMutationList(
 		PageInfo: &common.PageInfo{},
 	}
 
-	source := custom_connect.GetRequestSource(ctx)
+	source, err := custom_connect.GetRequestSource(ctx)
+	if err != nil {
+		return nil, err
+	}
+
 	pay := req.Msg
 
 	if pay.Page == nil {
