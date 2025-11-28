@@ -16,6 +16,7 @@ type BankAccountV2 struct {
 	Disabled      bool      `json:"disabled"`
 	Deleted       bool      `json:"deleted"`
 	CreatedAt     time.Time `json:"created_at"`
+	DeletedAt     time.Time `json:"deleted_at"`
 
 	AccountType db_models.AccountType `json:"account_type"`
 }

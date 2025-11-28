@@ -49,6 +49,7 @@ func (a *accountServiceImpl) AccountCreate(
 				CreatedAt:     time.Now(),
 			}
 			err = tx.Save(&acc).Error
+			res.Msg.Id = uint64(acc.ID)
 			if err != nil {
 				if errors.Is(err, gorm.ErrDuplicatedKey) {
 					return errors.New("account duplicated")

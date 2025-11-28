@@ -3,6 +3,8 @@ package account
 import (
 	"context"
 	"errors"
+	"log"
+	"strconv"
 	"strings"
 	"time"
 
@@ -187,6 +189,8 @@ func (a *accountServiceImpl) AccountDelete(
 		return res, err
 	}
 
+	now := time.Now()
+	ts := strconv.FormatInt(now.UnixMilli(), 10)
 	err = a.
 		db.
 		WithContext(ctx).
@@ -196,10 +200,13 @@ func (a *accountServiceImpl) AccountDelete(
 					Model(&accounting_model.BankAccountV2{}).
 					Where("id = ?", acc).
 					Updates(map[string]interface{}{
-						"deleted":   true,
-						"number_id": gorm.Expr("number_id || ?", "_deleted"),
+						"deleted":    true,
+						"number_id":  gorm.Expr("number_id || ? || ?", "_"+ts, "_deleted"),
+						"deleted_at": now,
 					}).
 					Error
+
+				log.Println(err)
 				if err != nil {
 					return err
 				}
@@ -250,6 +257,7 @@ func (a *accountServiceImpl) AccountList(
 	db := a.db.WithContext(ctx)
 	query := db.
 		Table("bank_account_v2 bav").
+		Not("bav.deleted = ?", true).
 		Joins("join account_types at2 on at2.id = bav.account_type_id").
 		Select([]string{
 			"bav.id",
@@ -310,10 +318,44 @@ func (a *accountServiceImpl) AccountUpdate(
 	ctx context.Context,
 	req *connect.Request[accounting_iface.AccountUpdateRequest],
 ) (*connect.Response[accounting_iface.AccountUpdateResponse], error) {
-	// var err error
+	var err error
 	result := accounting_iface.AccountUpdateResponse{}
 
-	return connect.NewResponse(&result), errors.New("not_implemented")
+	source, err := custom_connect.GetRequestSource(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	pay := req.Msg
+	identity := a.
+		auth.
+		AuthIdentityFromHeader(req.Header())
+	err = identity.
+		HasPermission(authorization_iface.CheckPermissionGroup{
+			&accounting_model.BankAccountV2{}: &authorization_iface.CheckPermission{
+				DomainID: uint(source.TeamId),
+				Actions:  []authorization_iface.Action{authorization_iface.Update},
+			},
+		}).
+		Err()
+
+	if err != nil {
+		return connect.NewResponse(&result), err
+	}
+
+	db := a.db.WithContext(ctx)
+	err = db.
+		Where(&accounting_model.BankAccountV2{}).
+		Where("id = ?", pay.Id).
+		Updates(&accounting_model.BankAccountV2{
+			Name:     pay.Name,
+			NumberID: pay.NumberId,
+		}).
+		Error
+
+	// unimplemented labels
+
+	return connect.NewResponse(&result), err
 }
 
 // LabelList implements accounting_ifaceconnect.AccountServiceHandler.
