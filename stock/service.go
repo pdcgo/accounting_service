@@ -15,6 +15,11 @@ type stockServiceImpl struct {
 	auth authorization_iface.Authorization
 }
 
+// StockProblemCreate implements stock_ifaceconnect.StockServiceHandler.
+func (s *stockServiceImpl) StockProblemCreate(context.Context, *connect.Request[stock_iface.StockProblemCreateRequest]) (*connect.Response[stock_iface.StockProblemCreateResponse], error) {
+	panic("use stock endpoint")
+}
+
 // InboundAccept implements stock_ifaceconnect.StockServiceHandler.
 func (s *stockServiceImpl) InboundAccept(
 	ctx context.Context,
