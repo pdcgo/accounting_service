@@ -139,6 +139,8 @@ func (s *stockServiceImpl) InboundCreate(
 			Transaction(&tran).
 			Commit().
 			Err()
+
+		result.TransactionId = uint64(tran.ID)
 		return err
 	})
 

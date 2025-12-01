@@ -90,11 +90,11 @@ func (s *stockServiceImpl) InboundUpdate(
 		}
 
 		entry := bookmng.NewCreateEntry(uint(pay.TeamId), agent.IdentityID())
-		entry.
+		err = entry.
 			Rollback(mapBalance).
-			Transaction(txdata).
 			Desc(fmt.Sprintf("update %s", txdata.Desc)).
-			Commit().
+			Transaction(txdata).
+			Commit(accounting_core.RollbackOption()).
 			Err()
 
 		if err != nil {
