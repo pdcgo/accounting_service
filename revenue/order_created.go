@@ -2,11 +2,13 @@ package revenue
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"time"
 
 	"connectrpc.com/connect"
 	"github.com/pdcgo/accounting_service/accounting_core"
+	"github.com/pdcgo/schema/services/common/v1"
 	"github.com/pdcgo/schema/services/revenue_iface/v1"
 	"github.com/pdcgo/shared/interfaces/authorization_iface"
 	"gorm.io/gorm"
@@ -100,6 +102,12 @@ func (r *revenueServiceImpl) OnOrder(
 
 			// revenue order
 			err = r.revenueOrder(bookmng, agent, pay, &tran)
+			if err != nil {
+				return err
+			}
+
+			// additional cost
+			err = r.additionalAmount(bookmng, agent, pay, &tran)
 			if err != nil {
 				return err
 			}
@@ -321,6 +329,92 @@ func (r *revenueServiceImpl) revenueOrder(
 			Key:    accounting_core.SellingReceivableAccount,
 			TeamID: uint(pay.TeamId),
 		}, pay.OrderAmount).
+		Transaction(tran).
+		Commit().
+		Err()
+
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (r *revenueServiceImpl) additionalAmount(
+	bookmng accounting_core.BookManage,
+	agent authorization_iface.Identity,
+	pay *revenue_iface.OnOrderRequest,
+	tran *accounting_core.Transaction,
+) error {
+	var err error
+
+	entry := bookmng.
+		NewCreateEntry(uint(pay.TeamId), agent.GetUserID())
+
+	var desc string
+
+	switch additional := pay.AdditionalAmount.(type) {
+	case *revenue_iface.OnOrderRequest_FakeOrderAmount:
+		msg := additional.FakeOrderAmount
+		switch msg.PaymentMethod {
+		case common.PaymentMethod_PAYMENT_METHOD_CASH:
+			entry.
+				From(&accounting_core.EntryAccountPayload{
+					Key:    accounting_core.CashAccount,
+					TeamID: uint(pay.TeamId),
+				}, msg.Amount)
+		case common.PaymentMethod_PAYMENT_METHOD_SHOPEEPAY:
+			entry.
+				From(&accounting_core.EntryAccountPayload{
+					Key:    accounting_core.ShopeepayAccount,
+					TeamID: uint(pay.TeamId),
+				}, msg.Amount)
+		default:
+			return errors.New("payment method not supported")
+		}
+
+		entry.
+			To(&accounting_core.EntryAccountPayload{
+				Key:    accounting_core.FakeOrderAccount,
+				TeamID: uint(pay.TeamId),
+			}, msg.Amount)
+
+		desc = fmt.Sprintf("custom cost fake %s", tran.Desc)
+
+	case *revenue_iface.OnOrderRequest_SupplierAmount:
+		msg := additional.SupplierAmount
+		switch msg.PaymentMethod {
+		case common.PaymentMethod_PAYMENT_METHOD_CASH:
+			entry.
+				From(&accounting_core.EntryAccountPayload{
+					Key:    accounting_core.CashAccount,
+					TeamID: uint(pay.TeamId),
+				}, msg.Amount)
+		case common.PaymentMethod_PAYMENT_METHOD_SHOPEEPAY:
+			entry.
+				From(&accounting_core.EntryAccountPayload{
+					Key:    accounting_core.ShopeepayAccount,
+					TeamID: uint(pay.TeamId),
+				}, msg.Amount)
+
+		default:
+			return errors.New("payment method not supported")
+		}
+
+		entry.
+			To(&accounting_core.EntryAccountPayload{
+				Key:    accounting_core.StockCostAccount,
+				TeamID: uint(pay.TeamId),
+			}, msg.Amount)
+
+		desc = fmt.Sprintf("custom cost supplier %s", tran.Desc)
+
+	default:
+		return errors.New("additional amount not supported")
+	}
+
+	err = entry.
+		Desc(desc).
 		Transaction(tran).
 		Commit().
 		Err()
