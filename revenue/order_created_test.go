@@ -230,8 +230,8 @@ func TestOnOrderCustom(t *testing.T) {
 							},
 						},
 						OrderAmount: 100,
-						AdditionalAmount: &revenue_iface.OnOrderRequest_FakeOrderAmount{
-							FakeOrderAmount: &revenue_iface.FakeOrderAmount{
+						AdditionalPayment: &revenue_iface.OnOrderRequest_FakeOrderPayment{
+							FakeOrderPayment: &revenue_iface.FakeOrderPayment{
 								PaymentMethod: common.PaymentMethod_PAYMENT_METHOD_CASH,
 								Amount:        12000,
 							},

@@ -70,9 +70,7 @@ func (r *revenueServiceImpl) OnOrder(
 				Create(&tran).
 				AddShopID(uint(labelInfo.ShopId)).
 				AddCustomerServiceID(agent.IdentityID()).
-				// AddTypeLabel([]*accounting_iface.TypeLabel{
-
-				// }).
+				AddTypeLabel(pay.LabelInfo.TypeLabels).
 				AddTags(labelInfo.Tags)
 
 			err = txcreate.
@@ -318,23 +316,53 @@ func (r *revenueServiceImpl) revenueOrder(
 	tran *accounting_core.Transaction,
 ) error {
 	// var err error
+	if pay.IsCustomOrder {
+		if pay.OrderInfo.ParentExternalOrderId == 0 { // fake order
+			return nil
+		}
 
-	err := bookmng.
-		NewCreateEntry(uint(pay.TeamId), agent.GetUserID()).
-		To(&accounting_core.EntryAccountPayload{
-			Key:    accounting_core.SalesRevenueAccount,
-			TeamID: uint(pay.TeamId),
-		}, pay.OrderAmount).
-		To(&accounting_core.EntryAccountPayload{
-			Key:    accounting_core.SellingReceivableAccount,
-			TeamID: uint(pay.TeamId),
-		}, pay.OrderAmount).
-		Transaction(tran).
-		Commit().
-		Err()
+		switch payment := pay.AdditionalPayment.(type) {
+		case *revenue_iface.OnOrderRequest_FakeOrderPayment:
+			err := bookmng.
+				NewCreateEntry(uint(pay.TeamId), agent.GetUserID()).
+				To(&accounting_core.EntryAccountPayload{
+					Key:    accounting_core.SalesRevenueAccount,
+					TeamID: uint(pay.TeamId),
+				}, payment.FakeOrderPayment.Amount).
+				To(&accounting_core.EntryAccountPayload{
+					Key:    accounting_core.SellingReceivableAccount,
+					TeamID: uint(pay.TeamId),
+				}, payment.FakeOrderPayment.Amount).
+				Transaction(tran).
+				Commit().
+				Err()
 
-	if err != nil {
-		return err
+			if err != nil {
+				return err
+			}
+		default:
+			return errors.New("supplier source payment on fake order not supported")
+
+		}
+
+	} else {
+		err := bookmng.
+			NewCreateEntry(uint(pay.TeamId), agent.GetUserID()).
+			To(&accounting_core.EntryAccountPayload{
+				Key:    accounting_core.SalesRevenueAccount,
+				TeamID: uint(pay.TeamId),
+			}, pay.OrderAmount).
+			To(&accounting_core.EntryAccountPayload{
+				Key:    accounting_core.SellingReceivableAccount,
+				TeamID: uint(pay.TeamId),
+			}, pay.OrderAmount).
+			Transaction(tran).
+			Commit().
+			Err()
+
+		if err != nil {
+			return err
+		}
 	}
 
 	return nil
@@ -353,9 +381,9 @@ func (r *revenueServiceImpl) additionalAmount(
 
 	var desc string
 
-	switch additional := pay.AdditionalAmount.(type) {
-	case *revenue_iface.OnOrderRequest_FakeOrderAmount:
-		msg := additional.FakeOrderAmount
+	switch additional := pay.AdditionalPayment.(type) {
+	case *revenue_iface.OnOrderRequest_FakeOrderPayment:
+		msg := additional.FakeOrderPayment
 		switch msg.PaymentMethod {
 		case common.PaymentMethod_PAYMENT_METHOD_CASH:
 			entry.
@@ -381,8 +409,8 @@ func (r *revenueServiceImpl) additionalAmount(
 
 		desc = fmt.Sprintf("custom cost fake %s", tran.Desc)
 
-	case *revenue_iface.OnOrderRequest_SupplierAmount:
-		msg := additional.SupplierAmount
+	case *revenue_iface.OnOrderRequest_SupplierPayment:
+		msg := additional.SupplierPayment
 		switch msg.PaymentMethod {
 		case common.PaymentMethod_PAYMENT_METHOD_CASH:
 			entry.
@@ -410,7 +438,9 @@ func (r *revenueServiceImpl) additionalAmount(
 		desc = fmt.Sprintf("custom cost supplier %s", tran.Desc)
 
 	default:
-		return errors.New("additional amount not supported")
+		// karena entry empty
+		return nil
+
 	}
 
 	err = entry.
