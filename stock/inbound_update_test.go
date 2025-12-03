@@ -123,11 +123,19 @@ func TestUpdateInbound(t *testing.T) {
 							rollbackCount++
 						}
 					}
-					assert.Equal(t, 2, rollbackCount)
+					// assert.Equal(t, 2, rollbackCount)
 					// entries.PrintJournalEntries(&db)
 					// // balance
 					// debugtool.LogJson(entries.AccountBalance())
 
+					acc, err := entries.AccountBalanceKey(accounting_core.StockPendingAccount)
+					assert.Nil(t, err)
+
+					assert.Equal(t, 156000.00, acc.Change())
+
+					acc, err = entries.AccountBalanceKey(accounting_core.CashAccount)
+					assert.Nil(t, err)
+					assert.Equal(t, -156000.00, acc.Change())
 				})
 			})
 

@@ -77,7 +77,7 @@ const (
 	BonusesExpenseAccount       AccountKey = "bonuses_expense"
 	ContentMediaExpenseAccount  AccountKey = "content_media_expense"
 	SellingReturnExpenseAccount AccountKey = "return_expense"
-	FakeOrderAccount            AccountKey = "fake_order"
+	FakeOrderExpenseAccount     AccountKey = "fake_order_expense"
 	// ongkir ?
 	// om + harum ?
 
@@ -223,7 +223,7 @@ func DefaultSeedAccount() []*Account {
 			BalanceType: DebitBalance,
 		},
 		{
-			AccountKey:  FakeOrderAccount,
+			AccountKey:  FakeOrderExpenseAccount,
 			Coa:         EXPENSE,
 			BalanceType: DebitBalance,
 		},

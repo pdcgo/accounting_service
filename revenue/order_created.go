@@ -183,6 +183,10 @@ func (r *revenueServiceImpl) createWarehouseFee(
 
 	var err error
 
+	if pay.WarehouseFee == 0 {
+		return nil
+	}
+
 	// sisi gudang
 	err = bookmng.
 		NewCreateEntry(uint(pay.WarehouseId), agent.GetUserID()).
@@ -340,8 +344,8 @@ func (r *revenueServiceImpl) revenueOrder(
 			if err != nil {
 				return err
 			}
-		default:
-			return errors.New("supplier source payment on fake order not supported")
+		case *revenue_iface.OnOrderRequest_SupplierPayment:
+			return nil
 
 		}
 
@@ -403,7 +407,7 @@ func (r *revenueServiceImpl) additionalAmount(
 
 		entry.
 			To(&accounting_core.EntryAccountPayload{
-				Key:    accounting_core.FakeOrderAccount,
+				Key:    accounting_core.FakeOrderExpenseAccount,
 				TeamID: uint(pay.TeamId),
 			}, msg.Amount)
 

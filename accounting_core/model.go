@@ -131,6 +131,15 @@ func (entries JournalEntriesList) AccountBalanceKey(key AccountKey) (*ChangeBala
 	return &res, fmt.Errorf("account not found %s", key)
 }
 
+func (entries JournalEntriesList) DebitCredit() (float64, float64) {
+	var debit, credit float64
+	for _, e := range entries {
+		debit += e.Debit
+		credit += e.Credit
+	}
+	return debit, credit
+}
+
 func (entries JournalEntriesList) PrintJournalEntries(db *gorm.DB) error {
 	var err error
 	var debit, credit float64
