@@ -3,6 +3,7 @@ package accounting_model
 import (
 	"time"
 
+	"github.com/pdcgo/schema/services/accounting_iface/v1"
 	"github.com/pdcgo/shared/db_models"
 )
 
@@ -47,10 +48,11 @@ type BankTransferHistory struct {
 	FromAccountID uint `json:"from_account_id"`
 	ToAccountID   uint `json:"to_account_id"`
 	// TransferAt    time.Time `json:"transfer_at"`
-	Amount    float64   `json:"amount"`
-	FeeAmount float64   `json:"fee_amount"`
-	Desc      string    `json:"desc"`
-	Created   time.Time `json:"created"`
+	Amount    float64                          `json:"amount"`
+	FeeAmount float64                          `json:"fee_amount"`
+	Desc      string                           `json:"desc"`
+	Purpose   accounting_iface.MutationPurpose `json:"purpose"`
+	Created   time.Time                        `json:"created"`
 
 	FromAccount *BankAccountV2
 	ToAccount   *BankAccountV2

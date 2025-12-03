@@ -85,6 +85,7 @@ func (a *accountServiceImpl) TransferCreate(
 			// TxID:          trans.ID,
 			Amount:    pay.Amount,
 			FeeAmount: pay.FeeAmount,
+			Purpose:   pay.Purpose,
 			Desc:      pay.Desc,
 			// TransferAt:    time.UnixMicro(pay.TransferAt).Local(),
 			Created: time.Now(),

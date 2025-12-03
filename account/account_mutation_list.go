@@ -77,6 +77,7 @@ func (a *accountServiceImpl) AccountMutationList(
 				"bth.to_account_id",
 				"bth.amount",
 				"bth.fee_amount",
+				"bth.purpose",
 				"bth.desc",
 				"(EXTRACT(EPOCH FROM bth.transfer_at) * 1000000)::BIGINT AS transfer_at",
 				"(EXTRACT(EPOCH FROM bth.created) * 1000000)::BIGINT AS created",
