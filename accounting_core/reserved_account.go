@@ -43,7 +43,9 @@ const (
 
 // Equity
 const (
-	AdjEquityAccount AccountKey = "adj_equity"
+	AdjEquityAccount    AccountKey = "adj_equity"
+	OwnerCapitalAccount AccountKey = "owner_capital"
+	Prive               AccountKey = "prive"
 )
 
 // liability
@@ -300,6 +302,8 @@ func DefaultSeedAccount() []*Account {
 			Coa:         LIABILITY,
 			BalanceType: CreditBalance,
 		},
+
+		// equity
 
 		// general
 		{

@@ -144,7 +144,7 @@ func (r *revenueProcessor) fund(fund *revenue_iface.RevenueStreamEventFund) erro
 
 		tran := accounting_core.Transaction{
 			RefID:       refID,
-			Desc:        fund.Desc,
+			Desc:        fmt.Sprintf("%s %s", refID, fund.Desc),
 			TeamID:      teamID,
 			CreatedByID: userID,
 			Created:     time.Now(),
@@ -292,7 +292,7 @@ func (r *revenueProcessor) withdrawal(wd *revenue_iface.RevenueStreamEventWithdr
 			RefID:       refID,
 			TeamID:      uint(init.TeamId),
 			CreatedByID: uint(init.UserId),
-			Desc:        wd.Desc,
+			Desc:        fmt.Sprintf("%s %s", refID, wd.Desc),
 			Created:     time.Now(),
 		}
 		err = bookmng.
@@ -368,7 +368,7 @@ func (r *revenueProcessor) adjustment(adj *revenue_iface.RevenueStreamEventAdjus
 
 		tran := accounting_core.Transaction{
 			RefID:       refID,
-			Desc:        adj.Desc,
+			Desc:        fmt.Sprintf("%s %s", refID, adj.Desc),
 			TeamID:      teamID,
 			CreatedByID: userID,
 			Created:     time.Now(),
