@@ -7,6 +7,7 @@ import (
 	"github.com/pdcgo/accounting_service/accounting_core"
 	"github.com/pdcgo/accounting_service/accounting_mock"
 	"github.com/pdcgo/accounting_service/stock"
+	"github.com/pdcgo/schema/services/common/v1"
 	"github.com/pdcgo/schema/services/stock_iface/v1"
 	"github.com/pdcgo/shared/authorization/authorization_mock"
 	"github.com/pdcgo/shared/pkg/moretest"
@@ -54,7 +55,7 @@ func TestInboundAccept(t *testing.T) {
 					TeamId:      51,
 					WarehouseId: 67,
 
-					Source:      stock_iface.InboundSource_INBOUND_SOURCE_RESTOCK,
+					Source:      common.InboundSource_INBOUND_SOURCE_RESTOCK,
 					ShippingFee: 20000,
 					ExtTxId:     575611,
 					Accepts: []*stock_iface.VariantItem{
@@ -76,7 +77,7 @@ func TestInboundAccept(t *testing.T) {
 						TeamId:      51,
 						WarehouseId: 67,
 
-						Source:      stock_iface.InboundSource_INBOUND_SOURCE_RESTOCK,
+						Source:      common.InboundSource_INBOUND_SOURCE_RESTOCK,
 						ShippingFee: 61000,
 						ExtTxId:     575612,
 						Accepts: []*stock_iface.VariantItem{
@@ -98,7 +99,7 @@ func TestInboundAccept(t *testing.T) {
 						TeamId:      51,
 						WarehouseId: 67,
 
-						Source: stock_iface.InboundSource_INBOUND_SOURCE_RESTOCK,
+						Source: common.InboundSource_INBOUND_SOURCE_RESTOCK,
 						Brokens: []*stock_iface.VariantProblemItem{
 
 							{

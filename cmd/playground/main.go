@@ -5,6 +5,7 @@ import (
 
 	taskspb "cloud.google.com/go/cloudtasks/apiv2/cloudtaskspb"
 	"connectrpc.com/connect"
+	"github.com/pdcgo/schema/services/common/v1"
 	"github.com/pdcgo/schema/services/stock_iface/v1"
 	"github.com/pdcgo/schema/services/stock_iface/v1/stock_ifaceconnect"
 	"google.golang.org/protobuf/proto"
@@ -16,7 +17,7 @@ func main() {
 		TeamId:        99,
 		WarehouseId:   99,
 		ExtTxId:       1,
-		Source:        stock_iface.InboundSource_INBOUND_SOURCE_RESTOCK,
+		Source:        common.InboundSource_INBOUND_SOURCE_RESTOCK,
 		PaymentMethod: stock_iface.PaymentMethod_PAYMENT_METHOD_CASH,
 		ShippingFee:   1233,
 		Products: []*stock_iface.VariantItem{

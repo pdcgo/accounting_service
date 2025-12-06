@@ -44,13 +44,19 @@ func (l *ledgerServiceImpl) EntryList(
 		AccountTeamID(pay.AccountTeamId).
 		Search(pay.Keyword)
 
-	if pay.Marketplace != common.MarketplaceType_MARKETPLACE_TYPE_UNSPECIFIED {
-		view.Marketplace(pay.Marketplace)
-	}
-
 	if pay.ShopId != 0 {
 		view.ShopID(pay.ShopId)
+	} else {
+		if pay.Marketplace != common.MarketplaceType_MARKETPLACE_TYPE_UNSPECIFIED {
+			pay.Label = append(pay.Label, &accounting_iface.TypeLabelFilter{
+				Label: &accounting_iface.TypeLabelFilter_Marketplace{
+					Marketplace: pay.Marketplace,
+				},
+			})
+		}
 	}
+
+	view.TypeLabel(pay.Label)
 
 	err = view.Err()
 	if err != nil {
@@ -75,11 +81,12 @@ type LedgerView interface {
 	TeamID(tid uint) LedgerView
 	AccountTeamID(tid uint64) LedgerView
 	ShopID(sid uint64) LedgerView
-	Marketplace(mpType common.MarketplaceType) LedgerView
+	// Marketplace(mpType common.MarketplaceType) LedgerView
 	AccountKey(acc_key string) LedgerView
 	TimeRange(trange *common.TimeFilterRange) LedgerView
 	Page(page *common.PageFilter, pageinfo *common.PageInfo) LedgerView
 	Search(keyword string) LedgerView
+	TypeLabel(labels []*accounting_iface.TypeLabelFilter) LedgerView
 	Count(c *int64) LedgerView
 	Sort(sortpay *accounting_iface.EntryListSort) LedgerView
 	Iterate(handle func(d *accounting_iface.EntryItem) error) error
@@ -92,7 +99,63 @@ type ledgerViewImpl struct {
 	query *gorm.DB
 	err   error
 
-	mpquery func(query *gorm.DB) *gorm.DB
+	mpquery        func(query *gorm.DB) *gorm.DB
+	typelabelquery func(query *gorm.DB) *gorm.DB
+}
+
+// TypeLabel implements LedgerView.
+func (l *ledgerViewImpl) TypeLabel(labels []*accounting_iface.TypeLabelFilter) LedgerView {
+	if labels == nil {
+		return l
+	}
+
+	if len(labels) == 0 {
+		return l
+	}
+
+	var keys []accounting_iface.LabelKey
+	var labelVals []string
+	for _, label := range labels {
+		switch val := label.Label.(type) {
+		case *accounting_iface.TypeLabelFilter_Marketplace:
+			keys = append(keys, accounting_iface.LabelKey_LABEL_KEY_MARKETPLACE)
+			labelVals = append(labelVals, common.MarketplaceType_name[int32(val.Marketplace)])
+		case *accounting_iface.TypeLabelFilter_OrderType:
+			keys = append(keys, accounting_iface.LabelKey_LABEL_KEY_ORDER_TYPE)
+			labelVals = append(labelVals, accounting_iface.OrderType_name[int32(val.OrderType)])
+		case *accounting_iface.TypeLabelFilter_RevenueSource:
+			keys = append(keys, accounting_iface.LabelKey_LABEL_KEY_REVENUE_SOURCE)
+			labelVals = append(labelVals, accounting_iface.RevenueSource_name[int32(val.RevenueSource)])
+		case *accounting_iface.TypeLabelFilter_TransferPurpose:
+			keys = append(keys, accounting_iface.LabelKey_LABEL_KEY_TRANSFER_PURPOSE)
+			labelVals = append(labelVals, accounting_iface.MutationPurpose_name[int32(val.TransferPurpose)])
+		case *accounting_iface.TypeLabelFilter_WarehouseTransactionType:
+			keys = append(keys, accounting_iface.LabelKey_LABEL_KEY_WAREHOUSE_TRANSACTION_TYPE)
+			labelVals = append(labelVals, common.InboundSource_name[int32(val.WarehouseTransactionType)])
+		}
+	}
+
+	tlabelIDs := []uint64{}
+
+	err := l.
+		db.
+		Model(&accounting_core.TypeLabel{}).
+		Select("id").
+		Where("key in ? and label in ?", keys, labelVals).
+		Find(&tlabelIDs).
+		Error
+
+	if err != nil {
+		return l.setErr(err)
+	}
+
+	l.typelabelquery = func(query *gorm.DB) *gorm.DB {
+		return query.
+			Joins("JOIN transaction_type_labels ttl ON ttl.transaction_id = je.transaction_id").
+			Where("ttl.type_label_id in ?", tlabelIDs)
+	}
+
+	return l
 }
 
 // SearchDescription implements LedgerView.
@@ -100,36 +163,6 @@ func (l *ledgerViewImpl) SearchDescription(keyword string) LedgerView {
 	l.query = l.
 		query.
 		Where("je.desc ilike ?", "%"+keyword+"%")
-	return l
-}
-
-// Marketplace implements LedgerView.
-func (l *ledgerViewImpl) Marketplace(mpType common.MarketplaceType) LedgerView {
-	// get typelabel
-	var label string = common.MarketplaceType_name[int32(mpType)]
-
-	var tlabel accounting_core.TypeLabel
-	err := l.
-		db.
-		Model(&accounting_core.TypeLabel{}).
-		Where("key = ? and label = ?", accounting_iface.LabelKey_LABEL_KEY_MARKETPLACE, label).
-		Find(&tlabel).
-		Error
-
-	if err != nil {
-		return l.setErr(err)
-	}
-
-	if tlabel.ID == 0 {
-		return l.setErr(fmt.Errorf("label value not found"))
-	}
-
-	l.mpquery = func(query *gorm.DB) *gorm.DB {
-		return query.
-			Joins("JOIN transaction_type_labels ttl ON ttl.transaction_id = je.transaction_id").
-			Where("ttl.type_label_id = ?", tlabel.ID)
-	}
-
 	return l
 }
 
@@ -231,6 +264,9 @@ func (l *ledgerViewImpl) Page(page *common.PageFilter, pageinfo *common.PageInfo
 // Iterate implements LedgerView.
 func (l *ledgerViewImpl) Iterate(handle func(d *accounting_iface.EntryItem) error) error {
 	query := l.query
+	if l.typelabelquery != nil {
+		query = l.typelabelquery(query)
+	}
 	if l.mpquery != nil {
 		query = l.mpquery(query)
 	}

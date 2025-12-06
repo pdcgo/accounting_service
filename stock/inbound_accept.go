@@ -8,6 +8,7 @@ import (
 	"connectrpc.com/connect"
 	"github.com/pdcgo/accounting_service/accounting_core"
 	"github.com/pdcgo/schema/services/accounting_iface/v1"
+	"github.com/pdcgo/schema/services/common/v1"
 	"github.com/pdcgo/schema/services/stock_iface/v1"
 	"github.com/pdcgo/shared/interfaces/authorization_iface"
 	"gorm.io/gorm"
@@ -53,17 +54,17 @@ func (i *inboundAccept) accept() (*stock_iface.InboundAcceptResponse, error) {
 		var ref accounting_core.RefID
 
 		switch pay.Source {
-		case stock_iface.InboundSource_INBOUND_SOURCE_RESTOCK:
+		case common.InboundSource_INBOUND_SOURCE_RESTOCK:
 			ref = accounting_core.NewRefID(&accounting_core.RefData{
 				RefType: accounting_core.StockAcceptRef,
 				ID:      uint(pay.ExtTxId),
 			})
-		case stock_iface.InboundSource_INBOUND_SOURCE_RETURN:
+		case common.InboundSource_INBOUND_SOURCE_RETURN:
 			ref = accounting_core.NewRefID(&accounting_core.RefData{
 				RefType: accounting_core.StockReturnAcceptRef,
 				ID:      uint(pay.ExtTxId),
 			})
-		case stock_iface.InboundSource_INBOUND_SOURCE_TRANSFER:
+		case common.InboundSource_INBOUND_SOURCE_TRANSFER:
 			ref = accounting_core.NewRefID(&accounting_core.RefData{
 				RefType: accounting_core.StockTransferAcceptRef,
 				ID:      uint(pay.ExtTxId),
@@ -100,7 +101,7 @@ func (i *inboundAccept) accept() (*stock_iface.InboundAcceptResponse, error) {
 			AddTypeLabel([]*accounting_iface.TypeLabel{
 				{
 					Key:   accounting_iface.LabelKey_LABEL_KEY_WAREHOUSE_TRANSACTION_TYPE,
-					Label: stock_iface.InboundSource_name[int32(pay.Source)],
+					Label: common.InboundSource_name[int32(pay.Source)],
 				},
 			}).
 			Err()

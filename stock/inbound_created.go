@@ -8,6 +8,7 @@ import (
 	"connectrpc.com/connect"
 	"github.com/pdcgo/accounting_service/accounting_core"
 	"github.com/pdcgo/schema/services/accounting_iface/v1"
+	"github.com/pdcgo/schema/services/common/v1"
 	"github.com/pdcgo/schema/services/stock_iface/v1"
 	"github.com/pdcgo/shared/db_models"
 	"github.com/pdcgo/shared/interfaces/authorization_iface"
@@ -74,7 +75,7 @@ func (s *stockServiceImpl) InboundCreate(
 				[]*accounting_iface.TypeLabel{
 					{
 						Key:   accounting_iface.LabelKey_LABEL_KEY_WAREHOUSE_TRANSACTION_TYPE,
-						Label: stock_iface.InboundSource_name[int32(pay.Source)],
+						Label: common.InboundSource_name[int32(pay.Source)],
 					},
 				},
 			)

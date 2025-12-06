@@ -8,7 +8,6 @@ import (
 	"github.com/pdcgo/accounting_service/accounting_model"
 	"github.com/pdcgo/schema/services/accounting_iface/v1"
 	"github.com/pdcgo/schema/services/common/v1"
-	"github.com/pdcgo/schema/services/stock_iface/v1"
 	"github.com/pdcgo/shared/db_models"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
@@ -93,16 +92,16 @@ func NewMigrationHandler(
 			//  Model().
 		}
 
-		inboundsources := []stock_iface.InboundSource{
-			stock_iface.InboundSource_INBOUND_SOURCE_RESTOCK,
-			stock_iface.InboundSource_INBOUND_SOURCE_RETURN,
-			stock_iface.InboundSource_INBOUND_SOURCE_TRANSFER,
+		inboundsources := []common.InboundSource{
+			common.InboundSource_INBOUND_SOURCE_RESTOCK,
+			common.InboundSource_INBOUND_SOURCE_RETURN,
+			common.InboundSource_INBOUND_SOURCE_TRANSFER,
 		}
 
 		for _, src := range inboundsources {
 			srco := &accounting_core.TypeLabel{
 				Key:   accounting_iface.LabelKey_LABEL_KEY_WAREHOUSE_TRANSACTION_TYPE,
-				Label: stock_iface.InboundSource_name[int32(src)],
+				Label: common.InboundSource_name[int32(src)],
 			}
 
 			err = db.

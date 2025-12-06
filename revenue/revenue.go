@@ -157,7 +157,7 @@ func (r *revenueProcessor) fund(fund *revenue_iface.RevenueStreamEventFund) erro
 			AddTypeLabel([]*accounting_iface.TypeLabel{
 				{
 					Key:   accounting_iface.LabelKey_LABEL_KEY_REVENUE_SOURCE,
-					Label: revenue_iface.RevenueSource_name[int32(revenue_iface.RevenueSource_REVENUE_SOURCE_FUND)],
+					Label: accounting_iface.RevenueSource_name[int32(accounting_iface.RevenueSource_REVENUE_SOURCE_FUND)],
 				},
 			}).
 			Err()
@@ -382,7 +382,7 @@ func (r *revenueProcessor) adjustment(adj *revenue_iface.RevenueStreamEventAdjus
 			AddTypeLabel([]*accounting_iface.TypeLabel{
 				{
 					Key:   accounting_iface.LabelKey_LABEL_KEY_REVENUE_SOURCE,
-					Label: revenue_iface.RevenueSource_name[int32(adj.Source)],
+					Label: accounting_iface.RevenueSource_name[int32(adj.Source)],
 				},
 			}).
 			Err()

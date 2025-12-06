@@ -7,6 +7,7 @@ import (
 
 	"connectrpc.com/connect"
 	"github.com/pdcgo/accounting_service/accounting_core"
+	"github.com/pdcgo/schema/services/common/v1"
 	"github.com/pdcgo/schema/services/stock_iface/v1"
 	"github.com/pdcgo/shared/db_models"
 	"github.com/pdcgo/shared/interfaces/authorization_iface"
@@ -38,12 +39,12 @@ func (s *stockServiceImpl) InboundUpdate(
 	err = accounting_core.OpenTransaction(ctx, db, func(tx *gorm.DB, bookmng accounting_core.BookManage) error {
 		var ref accounting_core.RefID
 		switch pay.Source {
-		case stock_iface.InboundSource_INBOUND_SOURCE_RESTOCK:
+		case common.InboundSource_INBOUND_SOURCE_RESTOCK:
 			ref = accounting_core.NewRefID(&accounting_core.RefData{
 				RefType: accounting_core.RestockRef,
 				ID:      uint(pay.ExtTxId),
 			})
-		case stock_iface.InboundSource_INBOUND_SOURCE_RETURN:
+		case common.InboundSource_INBOUND_SOURCE_RETURN:
 			ref = accounting_core.NewRefID(&accounting_core.RefData{
 				RefType: accounting_core.StockReturnRef,
 				ID:      uint(pay.ExtTxId),

@@ -7,6 +7,7 @@ import (
 	"github.com/pdcgo/accounting_service/accounting_core"
 	"github.com/pdcgo/accounting_service/accounting_mock"
 	"github.com/pdcgo/accounting_service/stock"
+	"github.com/pdcgo/schema/services/common/v1"
 	"github.com/pdcgo/schema/services/stock_iface/v1"
 	"github.com/pdcgo/shared/authorization/authorization_mock"
 	"github.com/pdcgo/shared/pkg/moretest"
@@ -65,7 +66,7 @@ func TestUpdateInbound(t *testing.T) {
 							Receipt:         "testrestockreceipt",
 							ExternalOrderId: "externalorder",
 						},
-						Source:        stock_iface.InboundSource_INBOUND_SOURCE_RESTOCK,
+						Source:        common.InboundSource_INBOUND_SOURCE_RESTOCK,
 						PaymentMethod: stock_iface.PaymentMethod_PAYMENT_METHOD_CASH,
 						ShippingFee:   10000,
 						Products: []*stock_iface.VariantItem{
@@ -90,7 +91,7 @@ func TestUpdateInbound(t *testing.T) {
 						TeamId:        50,
 						WarehouseId:   51,
 						ExtTxId:       1,
-						Source:        stock_iface.InboundSource_INBOUND_SOURCE_RESTOCK,
+						Source:        common.InboundSource_INBOUND_SOURCE_RESTOCK,
 						PaymentMethod: stock_iface.PaymentMethod_PAYMENT_METHOD_CASH,
 						ShippingFee:   12000,
 						Products: []*stock_iface.VariantItem{
