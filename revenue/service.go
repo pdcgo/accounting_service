@@ -7,14 +7,19 @@ import (
 
 	"connectrpc.com/connect"
 	"github.com/pdcgo/accounting_service/accounting_core"
+	"github.com/pdcgo/accounting_service/report"
 	"github.com/pdcgo/schema/services/revenue_iface/v1"
+	"github.com/pdcgo/shared/configs"
 	"github.com/pdcgo/shared/interfaces/authorization_iface"
 	"gorm.io/gorm"
 )
 
 type revenueServiceImpl struct {
-	db   *gorm.DB
-	auth authorization_iface.Authorization
+	db                      *gorm.DB
+	auth                    authorization_iface.Authorization
+	accountingServiceConfig *configs.AccountingService
+	cfg                     *configs.DispatcherConfig
+	dispatcher              report.ReportDispatcher
 }
 
 // RevenueAdjustment implements revenue_ifaceconnect.RevenueServiceHandler.
@@ -121,9 +126,18 @@ func (r *revenueServiceImpl) Withdrawal(
 	return res, err
 }
 
-func NewRevenueService(db *gorm.DB, auth authorization_iface.Authorization) *revenueServiceImpl {
+func NewRevenueService(
+	db *gorm.DB,
+	auth authorization_iface.Authorization,
+	accountingServiceConfig *configs.AccountingService,
+	cfg *configs.DispatcherConfig,
+	dispatcher report.ReportDispatcher,
+) *revenueServiceImpl {
 	return &revenueServiceImpl{
-		db:   db,
-		auth: auth,
+		db:                      db,
+		auth:                    auth,
+		accountingServiceConfig: accountingServiceConfig,
+		cfg:                     cfg,
+		dispatcher:              dispatcher,
 	}
 }

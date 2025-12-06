@@ -8,7 +8,6 @@ import (
 	cloudtasks "cloud.google.com/go/cloudtasks/apiv2"
 	"cloud.google.com/go/cloudtasks/apiv2/cloudtaskspb"
 	"github.com/googleapis/gax-go/v2"
-	"github.com/pdcgo/schema/services/report_iface/v1/report_ifaceconnect"
 )
 
 func NewCloudTaskReportDispatcher(
@@ -20,9 +19,7 @@ func NewCloudTaskReportDispatcher(
 	}
 }
 
-func NewLocalReportDispatcher(
-	reportClient report_ifaceconnect.AccountReportServiceClient,
-) ReportDispatcher {
+func NewLocalReportDispatcher() ReportDispatcher {
 	return func(ctx context.Context, req *cloudtaskspb.CreateTaskRequest, opts ...gax.CallOption) error {
 		httpreq := req.Task.GetHttpRequest()
 

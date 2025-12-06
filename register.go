@@ -69,7 +69,12 @@ func NewRegister(
 			sourceInterceptor,
 		)
 		mux.Handle(path, handler)
-		path, handler = revenue_ifaceconnect.NewRevenueServiceHandler(revenue.NewRevenueService(db, auth), defaultInterceptor)
+		path, handler = revenue_ifaceconnect.NewRevenueServiceHandler(revenue.NewRevenueService(
+			db,
+			auth,
+			&cfg.AccountingService,
+			&cfg.DispatcherConfig,
+			dispather), defaultInterceptor)
 		mux.Handle(path, handler)
 		path, handler = stock_ifaceconnect.NewStockServiceHandler(stock.NewStockService(db, auth), defaultInterceptor)
 		mux.Handle(path, handler)

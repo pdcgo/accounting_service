@@ -5,15 +5,66 @@ import (
 	"fmt"
 	"time"
 
+	"cloud.google.com/go/cloudtasks/apiv2/cloudtaskspb"
 	"connectrpc.com/connect"
 	"github.com/pdcgo/accounting_service/accounting_core"
 	"github.com/pdcgo/schema/services/common/v1"
 	"github.com/pdcgo/schema/services/revenue_iface/v1"
+	"github.com/pdcgo/schema/services/revenue_iface/v1/revenue_ifaceconnect"
 	"github.com/pdcgo/shared/authorization"
+	"github.com/pdcgo/shared/configs"
 	"github.com/pdcgo/shared/db_models"
 	"github.com/pdcgo/shared/interfaces/authorization_iface"
+	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/propagation"
+	"google.golang.org/protobuf/encoding/protojson"
 	"gorm.io/gorm"
 )
+
+// OrderReturnAsync implements revenue_ifaceconnect.RevenueServiceHandler.
+func (r *revenueServiceImpl) OrderReturnAsync(
+	ctx context.Context,
+	req *connect.Request[revenue_iface.OrderReturnAsyncRequest],
+) (*connect.Response[revenue_iface.OrderReturnAsyncResponse], error) {
+	content, err := protojson.Marshal(req.Msg.Data)
+	if err != nil {
+		return &connect.Response[revenue_iface.OrderReturnAsyncResponse]{}, err
+	}
+
+	headers := req.Header()
+	hh := propagation.HeaderCarrier(headers)
+	otel.GetTextMapPropagator().Inject(ctx, hh)
+
+	reqheaders := make(map[string]string)
+	for k, v := range headers {
+		if len(v) > 0 {
+			reqheaders[k] = v[0]
+		}
+	}
+
+	// reqheaders["Content-Type"] = "application/grpc-web"
+	reqheaders["Content-Type"] = "application/json"
+	reqheaders["Connect-Protocol-Version"] = "1"
+
+	httpreq := &cloudtaskspb.Task_HttpRequest{
+		HttpRequest: &cloudtaskspb.HttpRequest{
+			Url:        r.accountingServiceConfig.Endpoint + revenue_ifaceconnect.RevenueServiceOrderReturnProcedure,
+			HttpMethod: cloudtaskspb.HttpMethod_POST,
+			Headers:    reqheaders,
+			Body:       content,
+		},
+	}
+
+	task := cloudtaskspb.CreateTaskRequest{
+		Parent: r.cfg.GetPath(configs.SlowQueue),
+		Task: &cloudtaskspb.Task{
+			MessageType: httpreq,
+		},
+	}
+
+	err = r.dispatcher(ctx, &task)
+	return &connect.Response[revenue_iface.OrderReturnAsyncResponse]{}, err
+}
 
 // OrderReturn implements revenue_ifaceconnect.RevenueServiceHandler.
 func (r *revenueServiceImpl) OrderReturn(

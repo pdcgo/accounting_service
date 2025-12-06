@@ -1,9 +1,12 @@
 package revenue_test
 
 import (
+	"context"
 	"testing"
 
+	"cloud.google.com/go/cloudtasks/apiv2/cloudtaskspb"
 	"connectrpc.com/connect"
+	"github.com/googleapis/gax-go/v2"
 	"github.com/pdcgo/accounting_service/accounting_core"
 	"github.com/pdcgo/accounting_service/accounting_mock"
 	"github.com/pdcgo/accounting_service/revenue"
@@ -101,7 +104,13 @@ func TestOnOrder(t *testing.T) {
 						ID: 20,
 					},
 				},
-			})
+			},
+				nil,
+				nil,
+				func(ctx context.Context, req *cloudtaskspb.CreateTaskRequest, opts ...gax.CallOption) error {
+					return nil
+				},
+			)
 
 			t.Run("successful on order", func(t *testing.T) {
 				req := &connect.Request[revenue_iface.OnOrderRequest]{
@@ -200,7 +209,13 @@ func TestOnOrderCustom(t *testing.T) {
 						ID: 20,
 					},
 				},
-			})
+			},
+				nil,
+				nil,
+				func(ctx context.Context, req *cloudtaskspb.CreateTaskRequest, opts ...gax.CallOption) error {
+					return nil
+				},
+			)
 
 			t.Run("successful on order", func(t *testing.T) {
 				req := &connect.Request[revenue_iface.OnOrderRequest]{
