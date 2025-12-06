@@ -115,6 +115,12 @@ func (a *accountServiceImpl) TransferCreate(
 		err = bookmng.
 			NewTransaction().
 			Create(&trans).
+			AddTypeLabel([]*accounting_iface.TypeLabel{
+				&accounting_iface.TypeLabel{
+					Key:   accounting_iface.LabelKey_LABEL_KEY_TRANSFER_PURPOSE,
+					Label: accounting_iface.MutationPurpose_name[int32(pay.Purpose)],
+				},
+			}).
 			Err()
 
 		if err != nil {
