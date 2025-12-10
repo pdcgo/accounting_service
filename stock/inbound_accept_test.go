@@ -7,6 +7,7 @@ import (
 	"github.com/pdcgo/accounting_service/accounting_core"
 	"github.com/pdcgo/accounting_service/accounting_mock"
 	"github.com/pdcgo/accounting_service/stock"
+	"github.com/pdcgo/scenario_testing/accounting/accounting_suite"
 	"github.com/pdcgo/schema/services/common/v1"
 	"github.com/pdcgo/schema/services/stock_iface/v1"
 	"github.com/pdcgo/shared/authorization/authorization_mock"
@@ -50,25 +51,57 @@ func TestInboundAccept(t *testing.T) {
 				},
 			})
 
-			_, err := srv.InboundAccept(t.Context(), &connect.Request[stock_iface.InboundAcceptRequest]{
+			res, err := srv.InboundAccept(t.Context(), &connect.Request[stock_iface.InboundAcceptRequest]{
 				Msg: &stock_iface.InboundAcceptRequest{
 					TeamId:      51,
 					WarehouseId: 67,
 
 					Source:      common.InboundSource_INBOUND_SOURCE_RESTOCK,
-					ShippingFee: 20000,
+					ShippingFee: 70500,
 					ExtTxId:     575611,
 					Accepts: []*stock_iface.VariantItem{
 						{
-							VariantId: 11639,
-							Count:     12,
-							ItemPrice: 45357.142857142855,
+							VariantId: 180,
+							Count:     36,
+							ItemPrice: 45000,
+						},
+						{
+							VariantId: 1820678,
+							Count:     47,
+							ItemPrice: 33000,
+						},
+					},
+					Losts: []*stock_iface.VariantProblemItem{
+						{
+							VariantId: 20678,
+							Count:     1,
+							ItemPrice: 33000,
+							Reason:    "problem lost_s on transaction 837036",
 						},
 					},
 				},
 			})
 
 			assert.Nil(t, err)
+			assert.NotEmpty(t, res.Msg.TransactionId)
+
+			t.Run("testing total", func(t *testing.T) {
+				var entries accounting_core.JournalEntriesList
+				err = db.
+					Model(&accounting_core.JournalEntry{}).
+					Where("transaction_id = ?", res.Msg.TransactionId).
+					Where("team_id = ?", 51).
+					Find(&entries).
+					Error
+
+				assert.Nil(t, err)
+
+				debit, credit := entries.DebitCredit()
+				accounting_suite.CompareWithPrecision(t, 3274500.00, debit)
+				accounting_suite.CompareWithPrecision(t, 3274500.00, credit)
+
+				// entries.PrintJournalEntries(&db)
+			})
 
 			t.Run("test incident 25-09-2025", func(t *testing.T) {
 				// gegara presisi yang beda

@@ -265,7 +265,12 @@ func (i *inboundAccept) accept() (*stock_iface.InboundAcceptResponse, error) {
 			Commit().
 			Err()
 
-		return err
+		if err != nil {
+			return err
+		}
+
+		result.TransactionId = uint64(tran.ID)
+		return nil
 	})
 
 	return &result, err
