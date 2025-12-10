@@ -7,7 +7,6 @@ import (
 	"github.com/pdcgo/accounting_service/accounting_core"
 	"github.com/pdcgo/accounting_service/accounting_mock"
 	"github.com/pdcgo/accounting_service/stock"
-	"github.com/pdcgo/scenario_testing/accounting/accounting_suite"
 	"github.com/pdcgo/schema/services/common/v1"
 	"github.com/pdcgo/schema/services/stock_iface/v1"
 	"github.com/pdcgo/shared/authorization/authorization_mock"
@@ -97,8 +96,8 @@ func TestInboundAccept(t *testing.T) {
 				assert.Nil(t, err)
 
 				debit, credit := entries.DebitCredit()
-				accounting_suite.CompareWithPrecision(t, 3274500.00, debit)
-				accounting_suite.CompareWithPrecision(t, 3274500.00, credit)
+				assert.True(t, accounting_core.CompareFloatSafe(3274500.00, debit, accounting_core.PrecisionEpsilon))
+				assert.True(t, accounting_core.CompareFloatSafe(3274500.00, credit, accounting_core.PrecisionEpsilon))
 
 				// entries.PrintJournalEntries(&db)
 			})
