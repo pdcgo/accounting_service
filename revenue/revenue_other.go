@@ -60,6 +60,20 @@ func (r *revenueServiceImpl) RevenueOther(ctx context.Context, req *connect.Requ
 			ID:      pay.ExternalRevenueId,
 		})
 
+		refmut := accounting_core.NewTransactionMutation(ctx, tx).
+			ByRefID(ref, true)
+
+		err = refmut.Err()
+		if err != nil {
+			return err
+		}
+
+		texist := refmut.IsExist()
+
+		if texist {
+			return accounting_core.ErrSkipTransaction
+		}
+
 		tran := accounting_core.Transaction{
 			RefID:       ref,
 			TeamID:      uint(pay.TeamId),

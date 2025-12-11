@@ -8,13 +8,9 @@ import (
 	"cloud.google.com/go/cloudtasks/apiv2/cloudtaskspb"
 	"connectrpc.com/connect"
 	"github.com/pdcgo/accounting_service/accounting_core"
-	"github.com/pdcgo/schema/services/common/v1"
 	"github.com/pdcgo/schema/services/revenue_iface/v1"
 	"github.com/pdcgo/schema/services/revenue_iface/v1/revenue_ifaceconnect"
-	"github.com/pdcgo/shared/authorization"
 	"github.com/pdcgo/shared/configs"
-	"github.com/pdcgo/shared/db_models"
-	"github.com/pdcgo/shared/interfaces/authorization_iface"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/propagation"
 	"google.golang.org/protobuf/encoding/protojson"
@@ -76,27 +72,27 @@ func (r *revenueServiceImpl) OrderReturn(
 	result := revenue_iface.OrderReturnResponse{}
 	pay := req.Msg
 
-	var domainCheck uint
-	switch pay.RequestFrom {
-	case common.RequestFrom_REQUEST_FROM_ADMIN:
-		domainCheck = authorization.RootDomain
-	case common.RequestFrom_REQUEST_FROM_SELLING:
-		domainCheck = uint(pay.TeamId)
-	case common.RequestFrom_REQUEST_FROM_WAREHOUSE:
-		domainCheck = uint(pay.WarehouseId)
-	default:
-		domainCheck = uint(pay.TeamId)
-	}
+	// var domainCheck uint
+	// switch pay.RequestFrom {
+	// case common.RequestFrom_REQUEST_FROM_ADMIN:
+	// 	domainCheck = authorization.RootDomain
+	// case common.RequestFrom_REQUEST_FROM_SELLING:
+	// 	domainCheck = uint(pay.TeamId)
+	// case common.RequestFrom_REQUEST_FROM_WAREHOUSE:
+	// 	domainCheck = uint(pay.WarehouseId)
+	// default:
+	// 	domainCheck = uint(pay.TeamId)
+	// }
 
 	identity := r.auth.AuthIdentityFromHeader(req.Header())
 	agent := identity.Identity()
-	identity.
-		HasPermission(authorization_iface.CheckPermissionGroup{
-			&db_models.Order{}: &authorization_iface.CheckPermission{
-				DomainID: domainCheck,
-				Actions:  []authorization_iface.Action{authorization_iface.Update},
-			},
-		})
+	// identity.
+	// 	HasPermission(authorization_iface.CheckPermissionGroup{
+	// 		&db_models.Order{}: &authorization_iface.CheckPermission{
+	// 			DomainID: domainCheck,
+	// 			Actions:  []authorization_iface.Action{authorization_iface.Update},
+	// 		},
+	// 	})
 
 	err = identity.Err()
 	if err != nil {

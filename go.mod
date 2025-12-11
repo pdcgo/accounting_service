@@ -6,8 +6,8 @@ require (
 	cloud.google.com/go/cloudtasks v1.13.7
 	connectrpc.com/connect v1.19.1
 	github.com/google/wire v0.7.0
-	github.com/pdcgo/schema v1.0.77
-	github.com/pdcgo/shared v1.0.104
+	github.com/pdcgo/schema v1.0.78
+	github.com/pdcgo/shared v1.0.105
 	github.com/stretchr/testify v1.11.1
 	github.com/zeebo/assert v1.3.1
 	golang.org/x/net v0.47.0
@@ -26,6 +26,7 @@ require (
 	github.com/dgraph-io/ristretto/v2 v2.3.0 // indirect
 	github.com/dustin/go-humanize v1.0.1 // indirect
 	github.com/goccy/go-yaml v1.18.0 // indirect
+	github.com/grpc-ecosystem/grpc-gateway/v2 v2.27.2 // indirect
 	github.com/quic-go/qpack v0.5.1 // indirect
 	github.com/quic-go/quic-go v0.54.0 // indirect
 	github.com/stretchr/objx v0.5.3 // indirect

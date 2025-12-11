@@ -435,6 +435,8 @@ github.com/googleapis/go-type-adapters v1.0.0/go.mod h1:zHW75FOG2aur7gAO2B+MLby+
 github.com/gorilla/schema v1.4.1 h1:jUg5hUjCSDZpNGLuXQOgIWGdlgrIdYvgQ0wZtdK1M3E=
 github.com/gorilla/schema v1.4.1/go.mod h1:Dg5SSm5PV60mhF2NFaTV1xuYYj8tV8NOPRo4FggUMnM=
 github.com/grpc-ecosystem/grpc-gateway v1.16.0/go.mod h1:BDjrQk3hbvj6Nolgz8mAMFbcEtjT1g+wF4CSlocrBnw=
+github.com/grpc-ecosystem/grpc-gateway/v2 v2.27.2 h1:8Tjv8EJ+pM1xP8mK6egEbD1OgnVTyacbefKhmbLhIhU=
+github.com/grpc-ecosystem/grpc-gateway/v2 v2.27.2/go.mod h1:pkJQ2tZHJ0aFOVEEot6oZmaVEZcRme73eIFmhiVuRWs=
 github.com/hashicorp/golang-lru v0.5.0/go.mod h1:/m3WP610KZHVQ1SGc6re/UDhFvYD7pJ4Ao+sR/qLZy8=
 github.com/hashicorp/golang-lru v0.5.1/go.mod h1:/m3WP610KZHVQ1SGc6re/UDhFvYD7pJ4Ao+sR/qLZy8=
 github.com/iancoleman/strcase v0.3.0 h1:nTXanmYxhfFAMjZL34Ov6gkzEsSJZ5DbhxWjvSASxEI=
@@ -486,10 +488,10 @@ github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd/go.mod h1:6dJ
 github.com/modern-go/reflect2 v1.0.2 h1:xBagoLtFs94CBntxluKeaWgTMpvLxC4ur3nMaC9Gz0M=
 github.com/modern-go/reflect2 v1.0.2/go.mod h1:yWuevngMOJpCy52FWWMvUC8ws7m/LJsjYzDa0/r8luk=
 github.com/niemeyer/pretty v0.0.0-20200227124842-a10e7caefd8e/go.mod h1:zD1mROLANZcx1PVRCS0qkT7pwLkGfwJo4zjcN/Tysno=
-github.com/pdcgo/schema v1.0.77 h1:6cJZMV6nYaVCqzvNCFRLGqMXEEEWrh82XAMofxT7XbM=
-github.com/pdcgo/schema v1.0.77/go.mod h1:7GltuV5pHouP9PkyrczpPuqo64Silxu4D2zB6gdg0pQ=
-github.com/pdcgo/shared v1.0.104 h1:Merx0Rx5Gh0DYgCrP3TutO2k6I4tBEmMVuF1wbhrpNQ=
-github.com/pdcgo/shared v1.0.104/go.mod h1:WNjFkL7YLv+tMIiwRVUe4lECqdK+toWTnJ8IlC5zMg4=
+github.com/pdcgo/schema v1.0.78 h1:k7kfOAZuEgnWLb05H4l99a7Hp2kEEp2Ix06nVn+aLaU=
+github.com/pdcgo/schema v1.0.78/go.mod h1:7GltuV5pHouP9PkyrczpPuqo64Silxu4D2zB6gdg0pQ=
+github.com/pdcgo/shared v1.0.105 h1:OoHUIxnS3lugqCptYGmeOFjWnT0ser+Mg70CU7xPI4I=
+github.com/pdcgo/shared v1.0.105/go.mod h1:WNjFkL7YLv+tMIiwRVUe4lECqdK+toWTnJ8IlC5zMg4=
 github.com/pdcgo/v2_gots_sdk v1.3.10 h1:8rQFfldS6SRJE83VStmIWh74iNjVscr1IATLHKg9lo8=
 github.com/pdcgo/v2_gots_sdk v1.3.10/go.mod h1:nqDzEP3OcyGuvHrA/r4VbR3972JKdII/AOEoY1yy7Kk=
 github.com/pelletier/go-toml/v2 v2.2.4 h1:mye9XuhQ6gvn5h28+VilKrrPoQVanw5PMw/TB0t5Ec4=

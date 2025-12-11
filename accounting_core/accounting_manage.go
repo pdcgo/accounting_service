@@ -114,6 +114,8 @@ func (h *bookManageImpl) afterCommit(c *createEntryImpl) error {
 	return nil
 }
 
+var ErrSkipTransaction = errors.New("skip transaction")
+
 func OpenTransaction(ctx context.Context, tx *gorm.DB, handle func(tx *gorm.DB, bookmng BookManage) error) error {
 	var err error
 
@@ -149,6 +151,10 @@ func OpenTransaction(ctx context.Context, tx *gorm.DB, handle func(tx *gorm.DB, 
 	})
 
 	if err != nil {
+		if errors.Is(err, ErrSkipTransaction) {
+			return nil
+		}
+
 		return err
 	}
 
