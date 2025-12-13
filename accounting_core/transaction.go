@@ -3,7 +3,6 @@ package accounting_core
 import (
 	"context"
 	"errors"
-	"fmt"
 	"math"
 	"time"
 
@@ -26,6 +25,7 @@ type CreateTransaction interface {
 }
 
 var ErrTransactionNotCreated = errors.New("transaction not created")
+var ErrTransactionNotFound = errors.New("transaction not found")
 
 type TxLabelExtra struct {
 	ShopID     uint
@@ -423,7 +423,7 @@ func (t *transactionMutationImpl) ByRefID(refid RefID, lock bool) TransactionMut
 	}
 
 	if t.data.ID == 0 {
-		return t.setErr(fmt.Errorf("transaction %s not found", refid))
+		return t.setErr(ErrTransactionNotFound)
 	}
 	return t
 }

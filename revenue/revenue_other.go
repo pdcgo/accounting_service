@@ -2,6 +2,7 @@ package revenue
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"time"
 
@@ -65,12 +66,10 @@ func (r *revenueServiceImpl) RevenueOther(ctx context.Context, req *connect.Requ
 
 		err = refmut.Err()
 		if err != nil {
-			return err
-		}
-
-		texist := refmut.IsExist()
-
-		if texist {
+			if !errors.Is(err, accounting_core.ErrTransactionNotFound) {
+				return err
+			}
+		} else {
 			return accounting_core.ErrSkipTransaction
 		}
 
