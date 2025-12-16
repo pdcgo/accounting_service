@@ -40,23 +40,32 @@ func defaultRootRolePermission() RoleMap {
 		db_models.RootTeamType: {},
 		db_models.AdminTeamType: RoleItem{
 			"owner": authorization_iface.RoleAddPermissionPayload{
-				&accounting_model.BankTransfer{}:  fullAccess,
-				&accounting_model.ExpenseEntity{}: fullAccess,
-				&accounting_model.Payment{}:       fullAccess,
-				&adjustment.AdjustmentAccess{}:    fullAccess,
-				&ads_expense.AdsExpense{}:         fullAccess,
-				&accounting_model.BankAccountV2{}: fullAccess,
+				&accounting_model.BankTransfer{}:   fullAccess,
+				&accounting_model.ExpenseEntity{}:  fullAccess,
+				&accounting_model.Payment{}:        fullAccess,
+				&adjustment.AdjustmentAccess{}:     fullAccess,
+				&ads_expense.AdsExpense{}:          fullAccess,
+				&accounting_model.BankAccountV2{}:  fullAccess,
+				&db_models.OweLimitConfiguration{}: fullAccess,
 			},
 			"admin": authorization_iface.RoleAddPermissionPayload{
-				&accounting_model.BankTransfer{}:  fullAccess,
-				&accounting_model.ExpenseEntity{}: fullAccess,
-				&accounting_model.Payment{}:       fullAccess,
-				&adjustment.AdjustmentAccess{}:    fullAccess,
-				&ads_expense.AdsExpense{}:         fullAccess,
-				&accounting_model.BankAccountV2{}: fullAccess,
+				&accounting_model.BankTransfer{}:   fullAccess,
+				&accounting_model.ExpenseEntity{}:  fullAccess,
+				&accounting_model.Payment{}:        fullAccess,
+				&adjustment.AdjustmentAccess{}:     fullAccess,
+				&ads_expense.AdsExpense{}:          fullAccess,
+				&accounting_model.BankAccountV2{}:  fullAccess,
+				&db_models.OweLimitConfiguration{}: fullAccess,
 			},
 		},
-		db_models.SellingTeamType:   RoleItem{},
+		db_models.SellingTeamType: RoleItem{
+			"owner": authorization_iface.RoleAddPermissionPayload{
+				&db_models.OweLimitConfiguration{}: fullAccess,
+			},
+			"admin": authorization_iface.RoleAddPermissionPayload{
+				&db_models.OweLimitConfiguration{}: fullAccess,
+			},
+		},
 		db_models.WarehouseTeamType: RoleItem{},
 	}
 
