@@ -9,12 +9,14 @@ import (
 	"connectrpc.com/connect"
 	"github.com/pdcgo/schema/services/accounting_iface/v1"
 	"github.com/pdcgo/shared/interfaces/authorization_iface"
+	"github.com/pdcgo/shared/pkg/ware_cache"
 	"gorm.io/gorm"
 )
 
 type ledgerServiceImpl struct {
-	db   *gorm.DB
-	auth authorization_iface.Authorization
+	db    *gorm.DB
+	auth  authorization_iface.Authorization
+	cache ware_cache.Cache
 }
 
 // EntryListExport implements accounting_ifaceconnect.LedgerServiceHandler.
@@ -89,10 +91,11 @@ func (l *ledgerServiceImpl) EntryListExport(
 	return err
 }
 
-func NewLedgerService(db *gorm.DB, auth authorization_iface.Authorization) *ledgerServiceImpl {
+func NewLedgerService(db *gorm.DB, auth authorization_iface.Authorization, cache ware_cache.Cache) *ledgerServiceImpl {
 	return &ledgerServiceImpl{
-		db:   db,
-		auth: auth,
+		db,
+		auth,
+		cache,
 	}
 }
 

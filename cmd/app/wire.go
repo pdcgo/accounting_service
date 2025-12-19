@@ -27,6 +27,7 @@ func InitializeApp() (*App, error) {
 		custom_connect.NewDefaultInterceptor,
 		NewAuthorization,
 		accounting_service.NewRegister,
+		custom_connect.NewRegisterReflect,
 		NewApp,
 	)
 

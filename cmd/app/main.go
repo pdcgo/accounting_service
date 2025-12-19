@@ -25,7 +25,10 @@ import (
 )
 
 func NewCache(cfg *configs.AppConfig) (ware_cache.Cache, error) {
-	return ware_cache.NewCustomCache(cfg.CacheService.Endpoint), nil
+	return ware_cache.NewCustomCache(
+		cfg.CacheService.Endpoint,
+		// "http://localhost:8080",
+	), nil
 }
 
 func NewCloudTaskClient() (*cloudtasks.Client, error) {
@@ -64,6 +67,7 @@ func NewApp(
 	mux *http.ServeMux,
 	accountingRegister accounting_service.RegisterHandler,
 	reportClient report_ifaceconnect.AccountReportServiceClient,
+	reflectorRegister custom_connect.RegisterReflectFunc,
 	// cache ware_cache.Cache
 	// auth authorization_iface.Authorization,
 ) *App {
@@ -81,7 +85,8 @@ func NewApp(
 				accounting_core.NewDailyBalanceHandler(reportClient),
 			)
 
-			accountingRegister()
+			accGrpcReflectNames := accountingRegister()
+			reflectorRegister(accGrpcReflectNames)
 
 			port := os.Getenv("PORT")
 			if port == "" {

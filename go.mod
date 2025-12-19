@@ -6,8 +6,8 @@ require (
 	cloud.google.com/go/cloudtasks v1.13.7
 	connectrpc.com/connect v1.19.1
 	github.com/google/wire v0.7.0
-	github.com/pdcgo/schema v1.0.80
-	github.com/pdcgo/shared v1.0.105
+	github.com/pdcgo/schema v1.0.81
+	github.com/pdcgo/shared v1.0.109
 	github.com/stretchr/testify v1.11.1
 	github.com/zeebo/assert v1.3.1
 	golang.org/x/net v0.47.0
@@ -17,6 +17,7 @@ require (
 require (
 	cloud.google.com/go/storage v1.57.2 // indirect
 	cloud.google.com/go/trace v1.11.7 // indirect
+	connectrpc.com/grpcreflect v1.3.0 // indirect
 	connectrpc.com/otelconnect v0.8.0 // indirect
 	github.com/GoogleCloudPlatform/opentelemetry-operations-go/exporter/trace v1.30.0 // indirect
 	github.com/GoogleCloudPlatform/opentelemetry-operations-go/internal/resourcemapping v0.54.0 // indirect

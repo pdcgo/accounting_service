@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"log"
+	"log/slog"
 	"net/http"
 
 	"connectrpc.com/connect"
@@ -11,7 +12,7 @@ import (
 	"github.com/pdcgo/schema/services/accounting_iface/v1/accounting_ifaceconnect"
 	"github.com/pdcgo/shared/configs"
 	"github.com/pdcgo/shared/db_connect"
-	"github.com/pdcgo/shared/pkg/debugtool"
+	"github.com/pdcgo/shared/db_models"
 	"gorm.io/gorm"
 )
 
@@ -24,7 +25,11 @@ func NewSetupClient(
 ) accounting_ifaceconnect.AccountingSetupServiceClient {
 	acCfg := cfg.AccountingService
 	log.Println("accounting service endpoint", acCfg.Endpoint)
-	return accounting_ifaceconnect.NewAccountingSetupServiceClient(http.DefaultClient, acCfg.Endpoint, connect.WithGRPC())
+	return accounting_ifaceconnect.NewAccountingSetupServiceClient(
+		http.DefaultClient,
+		// acCfg.Endpoint,
+		"http://localhost:8081",
+		connect.WithGRPC())
 }
 
 type Migration struct {
@@ -48,52 +53,52 @@ func NewMigration(
 			// 	return err
 			// }
 
-			stream, err := setup.Setup(ctx, &connect.Request[accounting_iface.SetupRequest]{
-				Msg: &accounting_iface.SetupRequest{
-					TeamId: 39,
-				},
-			})
-
-			if err != nil {
-				panic(err)
-			}
-
-			for stream.Receive() {
-				dd := stream.Msg()
-
-				debugtool.LogJson(dd)
-			}
-
-			log.Println(stream.Err())
-
-			// var teams []*db_models.Team
-			// err = db.
-			// 	Model(&db_models.Team{}).
-			// 	Find(&teams).
-			// 	Error
+			// stream, err := setup.Setup(ctx, &connect.Request[accounting_iface.SetupRequest]{
+			// 	Msg: &accounting_iface.SetupRequest{
+			// 		TeamId: 39,
+			// 	},
+			// })
 
 			// if err != nil {
-			// 	return err
+			// 	panic(err)
 			// }
 
-			// for _, team := range teams {
-			// 	log.Printf("Setup Accounting %s\n", team.Name)
-			// 	stream, err := setup.Setup(ctx, &connect.Request[accounting_iface.SetupRequest]{
-			// 		Msg: &accounting_iface.SetupRequest{
-			// 			TeamId: uint64(team.ID),
-			// 		},
-			// 	})
+			// for stream.Receive() {
+			// 	dd := stream.Msg()
 
-			// 	if err != nil {
-			// 		slog.Error(err.Error())
-			// 		continue
-			// 	}
-
-			// 	for stream.Receive() {
-			// 		msg := stream.Msg()
-			// 		slog.Info(msg.Message)
-			// 	}
+			// 	debugtool.LogJson(dd)
 			// }
+
+			// log.Println(stream.Err())
+
+			var teams []*db_models.Team
+			err = db.
+				Model(&db_models.Team{}).
+				Find(&teams).
+				Error
+
+			if err != nil {
+				return err
+			}
+
+			for _, team := range teams {
+				log.Printf("Setup Accounting %s\n", team.Name)
+				stream, err := setup.Setup(ctx, &connect.Request[accounting_iface.SetupRequest]{
+					Msg: &accounting_iface.SetupRequest{
+						TeamId: uint64(team.ID),
+					},
+				})
+
+				if err != nil {
+					slog.Error(err.Error())
+					continue
+				}
+
+				for stream.Receive() {
+					msg := stream.Msg()
+					slog.Info(msg.Message)
+				}
+			}
 
 			return nil
 		},

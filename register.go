@@ -31,7 +31,9 @@ import (
 	"gorm.io/gorm"
 )
 
-type RegisterHandler func()
+type ServiceReflectNames []string
+
+type RegisterHandler func() ServiceReflectNames
 
 func NewRegister(
 	cfg *configs.AppConfig,
@@ -43,7 +45,9 @@ func NewRegister(
 	dispather report.ReportDispatcher,
 ) RegisterHandler {
 
-	return func() {
+	return func() ServiceReflectNames {
+
+		grpcReflect := ServiceReflectNames{}
 
 		sourceInterceptor := connect.WithInterceptors(&custom_connect.RequestSourceInterceptor{})
 
@@ -53,6 +57,7 @@ func NewRegister(
 			sourceInterceptor,
 		)
 		mux.Handle(path, handler)
+		grpcReflect = append(grpcReflect, accounting_ifaceconnect.AccountServiceName)
 
 		path, handler = accounting_ifaceconnect.NewExpenseServiceHandler(
 			expense.NewExpenseService(db, auth),
@@ -60,15 +65,18 @@ func NewRegister(
 			sourceInterceptor,
 		)
 		mux.Handle(path, handler)
+		grpcReflect = append(grpcReflect, accounting_ifaceconnect.ExpenseServiceName)
 
 		path, handler = accounting_ifaceconnect.NewAccountingSetupServiceHandler(setup.NewSetupService(db), defaultInterceptor)
 		mux.Handle(path, handler)
 		path, handler = accounting_ifaceconnect.NewLedgerServiceHandler(
-			ledger.NewLedgerService(db, auth),
+			ledger.NewLedgerService(db, auth, cache),
 			defaultInterceptor,
 			sourceInterceptor,
 		)
 		mux.Handle(path, handler)
+		grpcReflect = append(grpcReflect, accounting_ifaceconnect.LedgerServiceName)
+
 		path, handler = revenue_ifaceconnect.NewRevenueServiceHandler(revenue.NewRevenueService(
 			db,
 			auth,
@@ -76,8 +84,11 @@ func NewRegister(
 			&cfg.DispatcherConfig,
 			dispather), defaultInterceptor)
 		mux.Handle(path, handler)
+		grpcReflect = append(grpcReflect, revenue_ifaceconnect.RevenueServiceName)
+
 		path, handler = stock_ifaceconnect.NewStockServiceHandler(stock.NewStockService(db, auth), defaultInterceptor)
 		mux.Handle(path, handler)
+		grpcReflect = append(grpcReflect, stock_ifaceconnect.StockServiceName)
 
 		// report
 		path, handler = report_ifaceconnect.NewAccountReportServiceHandler(
@@ -90,29 +101,44 @@ func NewRegister(
 				dispather),
 			defaultInterceptor)
 		mux.Handle(path, handler)
+		grpcReflect = append(grpcReflect, report_ifaceconnect.AccountReportServiceName)
+
 		path, handler = report_ifaceconnect.NewBalanceServiceHandler(
 			report_balance.NewBalanceService(db, auth),
 			defaultInterceptor,
 			sourceInterceptor,
 		)
 		mux.Handle(path, handler)
+		grpcReflect = append(grpcReflect, report_ifaceconnect.BalanceServiceName)
+
 		path, handler = payment_ifaceconnect.NewPaymentServiceHandler(payment.NewPaymentService(db, auth), defaultInterceptor)
 		mux.Handle(path, handler)
+		grpcReflect = append(grpcReflect, payment_ifaceconnect.PaymentServiceName)
+
 		path, handler = accounting_ifaceconnect.NewAdjustmentServiceHandler(adjustment.NewAdjustmentService(db, auth), defaultInterceptor)
 		mux.Handle(path, handler)
+		grpcReflect = append(grpcReflect, accounting_ifaceconnect.AdjustmentServiceName)
+
 		path, handler = accounting_ifaceconnect.NewCoreServiceHandler(core.NewCoreService(db, auth), defaultInterceptor)
 		mux.Handle(path, handler)
+		grpcReflect = append(grpcReflect, accounting_ifaceconnect.CoreServiceName)
+
 		path, handler = accounting_ifaceconnect.NewAdsExpenseServiceHandler(
 			ads_expense.NewAdsExpenseService(db, auth),
 			defaultInterceptor,
 			sourceInterceptor,
 		)
 		mux.Handle(path, handler)
+		grpcReflect = append(grpcReflect, accounting_ifaceconnect.AdsExpenseServiceName)
 
 		path, handler = accounting_ifaceconnect.NewTagServiceHandler(tag.NewTagService(db, auth), defaultInterceptor)
 		mux.Handle(path, handler)
+		grpcReflect = append(grpcReflect, accounting_ifaceconnect.TagServiceName)
+
 		path, handler = accounting_ifaceconnect.NewTransferServiceHandler(transfer.NewTransferService(db, auth), defaultInterceptor)
 		mux.Handle(path, handler)
+		grpcReflect = append(grpcReflect, accounting_ifaceconnect.TransferServiceName)
+
 		var ledgerClient accounting_ifaceconnect.LedgerServiceClient
 		path, handler = accounting_ifaceconnect.NewStatementServiceHandler(
 			statement.NewStatementService(ledgerClient),
@@ -120,6 +146,9 @@ func NewRegister(
 			sourceInterceptor,
 		)
 		mux.Handle(path, handler)
+		grpcReflect = append(grpcReflect, accounting_ifaceconnect.StatementServiceName)
+
+		return grpcReflect
 	}
 
 }

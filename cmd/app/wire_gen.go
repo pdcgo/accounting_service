@@ -46,6 +46,7 @@ func InitializeApp() (*App, error) {
 		return nil, err
 	}
 	accountReportServiceClient := NewAccountReportServiceClient(appConfig, defaultClientInterceptor)
-	app := NewApp(serveMux, registerHandler, accountReportServiceClient)
+	registerReflectFunc := custom_connect.NewRegisterReflect(serveMux)
+	app := NewApp(serveMux, registerHandler, accountReportServiceClient, registerReflectFunc)
 	return app, nil
 }
