@@ -321,6 +321,41 @@ func (l *ledgerServiceImpl) EntryList(
 		Find(&result.Data).
 		Error
 
+	if err != nil {
+		return connect.NewResponse(&result), err
+	}
+
+	accountMap := map[uint64]*accounting_iface.EntryAccount{}
+	var ok bool
+	for _, d := range result.Data {
+		var account *accounting_iface.EntryAccount
+		account, ok = accountMap[d.AccountId]
+		if !ok {
+			account = &accounting_iface.EntryAccount{}
+			accountMap[d.AccountId] = account
+
+			err = l.
+				db.
+				Table("accounts a").
+				Select([]string{
+					"a.id",
+					"a.team_id",
+					"a.account_key",
+					"a.name",
+				}).
+				Where("id = ?", d.AccountId).
+				Find(account).
+				Error
+
+			if err != nil {
+				return &connect.Response[accounting_iface.EntryListResponse]{}, err
+			}
+
+			d.Account = account
+		}
+
+	}
+
 	return connect.NewResponse(&result), err
 }
 
