@@ -351,8 +351,9 @@ func (l *ledgerServiceImpl) EntryList(
 				return &connect.Response[accounting_iface.EntryListResponse]{}, err
 			}
 
-			d.Account = account
 		}
+
+		d.Account = account
 
 	}
 
