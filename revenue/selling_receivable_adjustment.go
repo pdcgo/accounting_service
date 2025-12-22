@@ -35,19 +35,10 @@ func (r *revenueServiceImpl) SellingReceivableAdjustment(ctx context.Context, re
 
 	err = accounting_core.OpenTransaction(ctx, db, func(tx *gorm.DB, bookmng accounting_core.BookManage) error {
 
-		var ref accounting_core.RefID
-
-		switch pay.Type {
-		case revenue_iface.ReceivableAdjustmentType_RECEIVABLE_ADJUSTMENT_TYPE_RETURN:
-			ref = accounting_core.NewStringRefID(
-				&accounting_core.StringRefData{
-					RefType: accounting_core.SellingReceivableReturnRef,
-					ID:      pay.AdjRefId,
-				},
-			)
-		default:
-			return errors.New("unimplemented")
-		}
+		var ref accounting_core.RefID = accounting_core.NewStringRefID(&accounting_core.StringRefData{
+			RefType: accounting_core.RevenueAdjustmentRef,
+			ID:      pay.AdjRefId,
+		})
 
 		txmut := accounting_core.NewTransactionMutation(ctx, tx)
 		txmut.
@@ -97,20 +88,17 @@ func (r *revenueServiceImpl) SellingReceivableAdjustment(ctx context.Context, re
 		entry := bookmng.
 			NewCreateEntry(uint(pay.TeamId), agent.IdentityID())
 
-		if pay.Amount < 0 {
-			amount := math.Abs(pay.Amount)
-			entry.
-				From(&accounting_core.EntryAccountPayload{
-					Key:    accounting_core.SellingReceivableAccount,
-					TeamID: uint(pay.TeamId),
-				}, amount).
-				To(&accounting_core.EntryAccountPayload{
-					Key:    accounting_core.SellingReturnExpenseAccount,
-					TeamID: uint(pay.TeamId),
-				}, amount)
+		switch pay.Type {
+		case revenue_iface.ReceivableAdjustmentType_RECEIVABLE_ADJUSTMENT_TYPE_RETURN_COST:
+			err = returnCost(entry, pay)
+		case revenue_iface.ReceivableAdjustmentType_RECEIVABLE_ADJUSTMENT_TYPE_REFUND_LOST:
+			err = refundLost(entry, pay)
+		default:
+			return errors.New("unimplemented")
+		}
 
-		} else {
-			return errors.New("positive amount unimplemented")
+		if err != nil {
+			return err
 		}
 
 		err = entry.
@@ -123,4 +111,50 @@ func (r *revenueServiceImpl) SellingReceivableAdjustment(ctx context.Context, re
 
 	return connect.NewResponse(&result), err
 
+}
+
+func refundLost(entry accounting_core.CreateEntry, pay *revenue_iface.SellingReceivableAdjustmentRequest) error {
+	if pay.Amount < 0 {
+		return errors.New("refund lost with value negative not implemented")
+	}
+
+	entry.
+		To(&accounting_core.EntryAccountPayload{
+			Key:    accounting_core.SellingReceivableAccount,
+			TeamID: uint(pay.TeamId),
+		}, pay.Amount).
+		To(&accounting_core.EntryAccountPayload{
+			Key:    accounting_core.OtherRevenueAccount,
+			TeamID: uint(pay.TeamId),
+		}, pay.Amount)
+
+	return nil
+}
+
+func returnCost(entry accounting_core.CreateEntry, pay *revenue_iface.SellingReceivableAdjustmentRequest) error {
+	if pay.Amount < 0 {
+		amount := math.Abs(pay.Amount)
+		entry.
+			From(&accounting_core.EntryAccountPayload{
+				Key:    accounting_core.SellingReceivableAccount,
+				TeamID: uint(pay.TeamId),
+			}, amount).
+			To(&accounting_core.EntryAccountPayload{
+				Key:    accounting_core.SellingReturnExpenseAccount,
+				TeamID: uint(pay.TeamId),
+			}, amount)
+
+	} else {
+		entry.
+			To(&accounting_core.EntryAccountPayload{
+				Key:    accounting_core.OtherRevenueAccount,
+				TeamID: uint(pay.TeamId),
+			}, pay.Amount).
+			To(&accounting_core.EntryAccountPayload{
+				Key:    accounting_core.SellingReceivableAccount,
+				TeamID: uint(pay.TeamId),
+			}, pay.Amount)
+	}
+
+	return nil
 }

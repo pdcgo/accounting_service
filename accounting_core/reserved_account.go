@@ -56,6 +56,7 @@ const (
 
 // expense
 const (
+	SellingOtherExpenseAccount  AccountKey = "selling_other_expense"
 	CodCostAccount              AccountKey = "cod_cost_account"
 	StockCostAccount            AccountKey = "stock_cost_account"
 	StockToBorrowCostAccount    AccountKey = "stock_to_borrow_cost"
@@ -80,6 +81,7 @@ const (
 	ContentMediaExpenseAccount  AccountKey = "content_media_expense"
 	SellingReturnExpenseAccount AccountKey = "return_expense"
 	FakeOrderExpenseAccount     AccountKey = "fake_order_expense"
+
 	// ongkir ?
 	// om + harum ?
 
@@ -219,6 +221,11 @@ func DefaultSeedAccount() []*Account {
 			BalanceType: DebitBalance,
 		},
 		// expense
+		{
+			AccountKey:  SellingOtherExpenseAccount,
+			Coa:         EXPENSE,
+			BalanceType: DebitBalance,
+		},
 		{
 			AccountKey:  AdjExpenseAccount,
 			Coa:         EXPENSE,
