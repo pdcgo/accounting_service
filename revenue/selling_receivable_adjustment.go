@@ -102,8 +102,10 @@ func (r *revenueServiceImpl) SellingReceivableAdjustment(ctx context.Context, re
 			err = refundLost(entry, pay)
 		case revenue_iface.ReceivableAdjustmentType_RECEIVABLE_ADJUSTMENT_TYPE_CREATED_REVENUE:
 			err = createdReceivableAdjustment(entry, pay)
+		case revenue_iface.ReceivableAdjustmentType_RECEIVABLE_ADJUSTMENT_TYPE_ORDER_FUND:
+			return accounting_core.ErrSkipTransaction
 		default:
-			return errors.New("unimplemented")
+			return fmt.Errorf("unimplemented %s", pay.Type)
 		}
 
 		if err != nil {
