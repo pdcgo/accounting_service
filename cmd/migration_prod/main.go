@@ -27,8 +27,8 @@ func NewSetupClient(
 	log.Println("accounting service endpoint", acCfg.Endpoint)
 	return accounting_ifaceconnect.NewAccountingSetupServiceClient(
 		http.DefaultClient,
-		// acCfg.Endpoint,
-		"http://localhost:8081",
+		acCfg.Endpoint,
+		// "http://localhost:8081",
 		connect.WithGRPC())
 }
 

@@ -222,6 +222,7 @@ type RefType string
 
 const (
 	WithdrawalRef                  RefType = "wd"
+	SellingReceivableRef           RefType = "selling_receivable"
 	SellingReceivableReturnRef     RefType = "selling_receivable_return"
 	SellingReceivableRefundLostRef RefType = "selling_receivable_refund_lost"
 	RevenueAdjustmentRef           RefType = "revenue_adjustment"
