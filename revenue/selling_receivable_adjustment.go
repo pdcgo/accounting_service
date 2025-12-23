@@ -102,6 +102,10 @@ func (r *revenueServiceImpl) SellingReceivableAdjustment(ctx context.Context, re
 			err = refundLost(entry, pay)
 		case revenue_iface.ReceivableAdjustmentType_RECEIVABLE_ADJUSTMENT_TYPE_CREATED_REVENUE:
 			err = createdReceivableAdjustment(entry, pay)
+		case revenue_iface.ReceivableAdjustmentType_RECEIVABLE_ADJUSTMENT_TYPE_OTHER_COST:
+			err = createOtherCost(entry, pay)
+		case revenue_iface.ReceivableAdjustmentType_RECEIVABLE_ADJUSTMENT_TYPE_OTHER_REVENUE:
+			err = createOtherRevenue(entry, pay)
 		case revenue_iface.ReceivableAdjustmentType_RECEIVABLE_ADJUSTMENT_TYPE_ORDER_FUND:
 			return accounting_core.ErrSkipTransaction
 		default:
@@ -122,6 +126,43 @@ func (r *revenueServiceImpl) SellingReceivableAdjustment(ctx context.Context, re
 
 	return connect.NewResponse(&result), err
 
+}
+
+func createOtherCost(entry accounting_core.CreateEntry, pay *revenue_iface.SellingReceivableAdjustmentRequest) error {
+	if pay.Amount < 0 {
+		return errors.New("other cost with value negative")
+	}
+
+	entry.
+		From(&accounting_core.EntryAccountPayload{
+			Key:    accounting_core.SellingReceivableAccount,
+			TeamID: uint(pay.TeamId),
+		}, pay.Amount).
+		To(&accounting_core.EntryAccountPayload{
+			Key:    accounting_core.SellingOtherExpenseAccount,
+			TeamID: uint(pay.TeamId),
+		}, pay.Amount)
+
+	return nil
+
+}
+
+func createOtherRevenue(entry accounting_core.CreateEntry, pay *revenue_iface.SellingReceivableAdjustmentRequest) error {
+	if pay.Amount < 0 {
+		return errors.New("other revenue with value negative")
+	}
+
+	entry.
+		To(&accounting_core.EntryAccountPayload{
+			Key:    accounting_core.SellingReceivableAccount,
+			TeamID: uint(pay.TeamId),
+		}, pay.Amount).
+		To(&accounting_core.EntryAccountPayload{
+			Key:    accounting_core.OtherRevenueAccount,
+			TeamID: uint(pay.TeamId),
+		}, pay.Amount)
+
+	return nil
 }
 
 func createdReceivableAdjustment(entry accounting_core.CreateEntry, pay *revenue_iface.SellingReceivableAdjustmentRequest) error {

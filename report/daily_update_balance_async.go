@@ -2,6 +2,7 @@ package report
 
 import (
 	"context"
+	"strings"
 
 	"cloud.google.com/go/cloudtasks/apiv2/cloudtaskspb"
 	"connectrpc.com/connect"
@@ -15,6 +16,14 @@ import (
 
 // DailyUpdateBalanceAsync implements report_ifaceconnect.AccountReportServiceHandler.
 func (a *accountReportImpl) DailyUpdateBalanceAsync(ctx context.Context, req *connect.Request[report_iface.DailyUpdateBalanceAsyncRequest]) (*connect.Response[report_iface.DailyUpdateBalanceAsyncResponse], error) {
+
+	if strings.Contains(a.accConfig.Endpoint, "localhost") {
+		_, err := a.DailyUpdateBalance(ctx, &connect.Request[report_iface.DailyUpdateBalanceRequest]{
+			Msg: req.Msg.Req,
+		})
+		return &connect.Response[report_iface.DailyUpdateBalanceAsyncResponse]{}, err
+	}
+
 	content, err := protojson.Marshal(req.Msg.Req)
 	if err != nil {
 		return &connect.Response[report_iface.DailyUpdateBalanceAsyncResponse]{}, err
