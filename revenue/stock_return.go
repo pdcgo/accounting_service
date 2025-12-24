@@ -17,14 +17,11 @@ import (
 	"gorm.io/gorm"
 )
 
-// OrderReturnAsync implements revenue_ifaceconnect.RevenueServiceHandler.
-func (r *revenueServiceImpl) OrderReturnAsync(
-	ctx context.Context,
-	req *connect.Request[revenue_iface.OrderReturnAsyncRequest],
-) (*connect.Response[revenue_iface.OrderReturnAsyncResponse], error) {
+// StockReturnAsync implements revenue_ifaceconnect.RevenueServiceHandler.
+func (r *revenueServiceImpl) StockReturnAsync(ctx context.Context, req *connect.Request[revenue_iface.StockReturnAsyncRequest]) (*connect.Response[revenue_iface.StockReturnAsyncResponse], error) {
 	content, err := protojson.Marshal(req.Msg.Data)
 	if err != nil {
-		return &connect.Response[revenue_iface.OrderReturnAsyncResponse]{}, err
+		return &connect.Response[revenue_iface.StockReturnAsyncResponse]{}, err
 	}
 
 	headers := req.Header()
@@ -44,7 +41,7 @@ func (r *revenueServiceImpl) OrderReturnAsync(
 
 	httpreq := &cloudtaskspb.Task_HttpRequest{
 		HttpRequest: &cloudtaskspb.HttpRequest{
-			Url:        r.accountingServiceConfig.Endpoint + revenue_ifaceconnect.RevenueServiceOrderReturnProcedure,
+			Url:        r.accountingServiceConfig.Endpoint + revenue_ifaceconnect.RevenueServiceStockReturnProcedure,
 			HttpMethod: cloudtaskspb.HttpMethod_POST,
 			Headers:    reqheaders,
 			Body:       content,
@@ -59,17 +56,14 @@ func (r *revenueServiceImpl) OrderReturnAsync(
 	}
 
 	err = r.dispatcher(ctx, &task)
-	return &connect.Response[revenue_iface.OrderReturnAsyncResponse]{}, err
+	return &connect.Response[revenue_iface.StockReturnAsyncResponse]{}, err
 }
 
-// OrderReturn implements revenue_ifaceconnect.RevenueServiceHandler.
-func (r *revenueServiceImpl) OrderReturn(
-	ctx context.Context,
-	req *connect.Request[revenue_iface.OrderReturnRequest],
-) (*connect.Response[revenue_iface.OrderReturnResponse], error) {
+// StockReturn implements revenue_ifaceconnect.RevenueServiceHandler.
+func (r *revenueServiceImpl) StockReturn(ctx context.Context, req *connect.Request[revenue_iface.StockReturnRequest]) (*connect.Response[revenue_iface.StockReturnResponse], error) {
 	var err error
 
-	result := revenue_iface.OrderReturnResponse{}
+	result := revenue_iface.StockReturnResponse{}
 	pay := req.Msg
 
 	// var domainCheck uint
