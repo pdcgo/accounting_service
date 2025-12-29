@@ -40,9 +40,9 @@ func (r *revenueServiceImpl) OnOrder(
 	case revenue_iface.OrderEvent_ORDER_EVENT_CREATED:
 		err = accounting_core.OpenTransaction(ctx, db, func(tx *gorm.DB, bookmng accounting_core.BookManage) error {
 			// creating transaction
-			ref := accounting_core.NewStringRefID(&accounting_core.StringRefData{
-				RefType: accounting_core.SellingReceivableRef,
-				ID:      pay.OrderInfo.ExternalOrderId,
+			ref := accounting_core.NewRefID(&accounting_core.RefData{
+				RefType: accounting_core.OrderRef,
+				ID:      uint(pay.OrderId),
 			})
 
 			desc := fmt.Sprintf("order from %s", ref)
@@ -58,6 +58,21 @@ func (r *revenueServiceImpl) OnOrder(
 				}
 
 			}
+
+			// txmut := accounting_core.
+			// 	NewTransactionMutation(ctx, tx).
+			// 	ByRefID(ref, true)
+
+			// err = txmut.Err()
+			// if err != nil {
+			// 	if !errors.Is(err, accounting_core.ErrTransactionNotFound) {
+			// 		return err
+			// 	}
+			// }
+
+			// if txmut.Data().ID != 0 {
+			// 	return accounting_core.ErrSkipTransaction
+			// }
 
 			tran := accounting_core.Transaction{
 				RefID:   ref,

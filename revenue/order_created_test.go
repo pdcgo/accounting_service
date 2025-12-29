@@ -153,6 +153,11 @@ func TestOnOrder(t *testing.T) {
 
 					entries.PrintJournalEntries(&db)
 				})
+
+				t.Run("check double", func(t *testing.T) {
+					_, err := service.OnOrder(t.Context(), req)
+					assert.Nil(t, err)
+				})
 			})
 
 		},
