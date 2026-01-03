@@ -19,6 +19,11 @@ type revenueServiceImpl struct {
 	dispatcher              report.ReportDispatcher
 }
 
+// OrderEditSellingReceivable implements revenue_ifaceconnect.RevenueServiceHandler.
+func (r *revenueServiceImpl) OrderEditSellingReceivable(context.Context, *connect.Request[revenue_iface.OrderEditSellingReceivableRequest]) (*connect.Response[revenue_iface.OrderEditSellingReceivableResponse], error) {
+	return &connect.Response[revenue_iface.OrderEditSellingReceivableResponse]{}, nil
+}
+
 // RevenueAdjustment implements revenue_ifaceconnect.RevenueServiceHandler.
 func (r *revenueServiceImpl) RevenueAdjustment(context.Context, *connect.Request[revenue_iface.RevenueAdjustmentRequest]) (*connect.Response[revenue_iface.RevenueAdjustmentResponse], error) {
 	panic("unimplemented")
