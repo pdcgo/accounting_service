@@ -22,6 +22,25 @@ const (
 	EXPENSE   CoaCode = 50
 )
 
+func (coa CoaCode) String() string {
+
+	switch coa {
+	case ASSET:
+		return "asset"
+	case LIABILITY:
+		return "liability"
+	case EQUITY:
+		return "equity"
+	case REVENUE:
+		return "revenue"
+	case EXPENSE:
+		return "expense"
+	default:
+		return "unknown"
+	}
+
+}
+
 type BalanceType string
 
 func (b BalanceType) DiffBalance(debit, credit float64) float64 {
@@ -283,6 +302,8 @@ type Transaction struct {
 	RefID       RefID `json:"ref_id" gorm:"index:ref_unique,unique"`
 	TeamID      uint  `json:"team_id"`
 	CreatedByID uint  `json:"created_by_id"`
+	OrderID     *uint `json:"order_id"`
+
 	// Type        SourceType `json:"type" gorm:"not null"`
 	Desc    string    `json:"desc"`
 	Created time.Time `json:"created"`

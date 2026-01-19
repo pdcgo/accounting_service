@@ -50,12 +50,15 @@ func (r *revenueServiceImpl) SellingReceivableAdjustment(ctx context.Context, re
 		err = txmut.Err()
 		if err != nil {
 			if errors.Is(err, accounting_core.ErrTransactionNotFound) {
+				orderID := uint(pay.OrderId)
+
 				tran = &accounting_core.Transaction{
 					RefID:       ref,
 					TeamID:      uint(pay.TeamId),
 					CreatedByID: agent.IdentityID(),
 					Desc:        pay.Desc,
 					Created:     time.Now(),
+					OrderID:     &orderID,
 				}
 
 				err = bookmng.

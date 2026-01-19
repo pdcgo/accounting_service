@@ -73,11 +73,12 @@ func (r *revenueServiceImpl) OnOrder(
 			// if txmut.Data().ID != 0 {
 			// 	return accounting_core.ErrSkipTransaction
 			// }
-
+			txOrderID := uint(pay.OrderId)
 			tran := accounting_core.Transaction{
 				RefID:   ref,
 				Desc:    desc,
 				Created: time.Now(),
+				OrderID: &txOrderID,
 			}
 
 			txcreate := bookmng.
