@@ -109,8 +109,11 @@ func (r *revenueServiceImpl) SellingReceivableAdjustment(ctx context.Context, re
 			err = createOtherCost(entry, pay)
 		case revenue_iface.ReceivableAdjustmentType_RECEIVABLE_ADJUSTMENT_TYPE_OTHER_REVENUE:
 			err = createOtherRevenue(entry, pay)
+		case revenue_iface.ReceivableAdjustmentType_RECEIVABLE_ADJUSTMENT_TYPE_CANCEL_RECEIVE:
+			err = cancelReceivable(entry, pay)
 		case revenue_iface.ReceivableAdjustmentType_RECEIVABLE_ADJUSTMENT_TYPE_ORDER_FUND:
 			return accounting_core.ErrSkipTransaction
+
 		default:
 			return fmt.Errorf("unimplemented %s", pay.Type)
 		}
@@ -129,6 +132,24 @@ func (r *revenueServiceImpl) SellingReceivableAdjustment(ctx context.Context, re
 
 	return connect.NewResponse(&result), err
 
+}
+
+func cancelReceivable(entry accounting_core.CreateEntry, pay *revenue_iface.SellingReceivableAdjustmentRequest) error {
+	if pay.Amount <= 0 {
+		return errors.New("cancel receivable with value negative or zero")
+	}
+
+	entry.
+		From(&accounting_core.EntryAccountPayload{
+			Key:    accounting_core.SellingReceivableAccount,
+			TeamID: uint(pay.TeamId),
+		}, pay.Amount).
+		To(&accounting_core.EntryAccountPayload{
+			Key:    accounting_core.SellingAdjReceivableAccount,
+			TeamID: uint(pay.TeamId),
+		}, pay.Amount)
+
+	return nil
 }
 
 func createOtherCost(entry accounting_core.CreateEntry, pay *revenue_iface.SellingReceivableAdjustmentRequest) error {

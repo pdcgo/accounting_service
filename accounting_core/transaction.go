@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"math"
+	"strings"
 	"time"
 
 	"github.com/pdcgo/schema/services/accounting_iface/v1"
@@ -26,6 +27,7 @@ type CreateTransaction interface {
 
 var ErrTransactionNotCreated = errors.New("transaction not created")
 var ErrTransactionNotFound = errors.New("transaction not found")
+var ErrTransactionAlreadyExist = errors.New("transaction already exist")
 
 type TxLabelExtra struct {
 	ShopID     uint
@@ -288,6 +290,10 @@ func (c *createTansactionImpl) Create(tran *Transaction) CreateTransaction {
 
 	err := c.tx.Save(tran).Error
 	if err != nil {
+		if strings.Contains(err.Error(), "UNIQUE constraint failed") {
+			return c.setErr(ErrTransactionAlreadyExist)
+		}
+
 		return c.setErr(err)
 	}
 

@@ -93,6 +93,9 @@ func (r *revenueServiceImpl) OnOrder(
 				Err()
 
 			if err != nil {
+				if errors.Is(err, accounting_core.ErrTransactionAlreadyExist) {
+					return accounting_core.ErrSkipTransaction
+				}
 				return err
 			}
 
