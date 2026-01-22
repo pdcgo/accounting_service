@@ -492,8 +492,12 @@ github.com/modern-go/reflect2 v1.0.2/go.mod h1:yWuevngMOJpCy52FWWMvUC8ws7m/LJsjY
 github.com/niemeyer/pretty v0.0.0-20200227124842-a10e7caefd8e/go.mod h1:zD1mROLANZcx1PVRCS0qkT7pwLkGfwJo4zjcN/Tysno=
 github.com/pdcgo/schema v1.0.92 h1:0LnIblAxKJfP5a+PL/MXShJ/NJBT2U4hzzgT8ah5Zts=
 github.com/pdcgo/schema v1.0.92/go.mod h1:7GltuV5pHouP9PkyrczpPuqo64Silxu4D2zB6gdg0pQ=
+github.com/pdcgo/schema v1.0.94 h1:nZY+WJyf7wZQUU9h2BqP9zLkezQLLYwIzpAcwzSddt4=
+github.com/pdcgo/schema v1.0.94/go.mod h1:YIGoUD+rq9JzCvxVCSE873UW+A4p6WGHxosWPD4hKIo=
 github.com/pdcgo/shared v1.0.114 h1:B3oBA7AgSrqoHfYmX9J0GZ0nZvJcI5PZi1sS+FosRv4=
 github.com/pdcgo/shared v1.0.114/go.mod h1:gfbbhL5CjOU3ugpNYxL4McL6FL8lqOZ6PEj7IxvjeiY=
+github.com/pdcgo/shared v1.0.118 h1:8uiJiLpfvz67HVPnTmZ7odDWKVMT35v1Lvx7+kPgi44=
+github.com/pdcgo/shared v1.0.118/go.mod h1:bEhNrVfDNSOPR7ekV0CvnsRR/4WgSOc2mzIUrGZ8Eyg=
 github.com/pdcgo/v2_gots_sdk v1.3.10 h1:8rQFfldS6SRJE83VStmIWh74iNjVscr1IATLHKg9lo8=
 github.com/pdcgo/v2_gots_sdk v1.3.10/go.mod h1:nqDzEP3OcyGuvHrA/r4VbR3972JKdII/AOEoY1yy7Kk=
 github.com/pelletier/go-toml/v2 v2.2.4 h1:mye9XuhQ6gvn5h28+VilKrrPoQVanw5PMw/TB0t5Ec4=
@@ -1109,6 +1113,7 @@ google.golang.org/protobuf v1.27.1/go.mod h1:9q0QmTI4eRPtz6boOQmLYwt+qCgq0jsYwAQ
 google.golang.org/protobuf v1.28.0/go.mod h1:HV8QOd/L58Z+nl8r43ehVNZIU/HEI6OcFqwMG9pJV4I=
 google.golang.org/protobuf v1.28.1/go.mod h1:HV8QOd/L58Z+nl8r43ehVNZIU/HEI6OcFqwMG9pJV4I=
 google.golang.org/protobuf v1.36.11 h1:fV6ZwhNocDyBLK0dj+fg8ektcVegBBuEolpbTQyBNVE=
+google.golang.org/protobuf v1.36.11/go.mod h1:HTf+CrKn2C3g5S8VImy6tdcUvCska2kB7j23XfzDpco=
 gopkg.in/check.v1 v0.0.0-20161208181325-20d25e280405/go.mod h1:Co6ibVJAznAaIkqp8huTwlJQCZ016jof/cbN4VW5Yz0=
 gopkg.in/check.v1 v1.0.0-20180628173108-788fd7840127/go.mod h1:Co6ibVJAznAaIkqp8huTwlJQCZ016jof/cbN4VW5Yz0=
 gopkg.in/check.v1 v1.0.0-20200227125254-8fa46927fb4f/go.mod h1:Co6ibVJAznAaIkqp8huTwlJQCZ016jof/cbN4VW5Yz0=
