@@ -7,7 +7,7 @@ require (
 	connectrpc.com/connect v1.19.1
 	github.com/google/wire v0.7.0
 	github.com/pdcgo/schema v1.0.94
-	github.com/pdcgo/shared v1.0.118
+	github.com/pdcgo/shared v1.0.119
 	github.com/stretchr/testify v1.11.1
 	github.com/zeebo/assert v1.3.1
 	golang.org/x/net v0.47.0
@@ -15,7 +15,6 @@ require (
 )
 
 require (
-	cloud.google.com/go/storage v1.57.2 // indirect
 	cloud.google.com/go/trace v1.11.7 // indirect
 	connectrpc.com/grpcreflect v1.3.0 // indirect
 	connectrpc.com/otelconnect v0.8.0 // indirect
